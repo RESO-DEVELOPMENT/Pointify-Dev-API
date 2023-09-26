@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "zinc-chiller-304407",
+  "private_key_id": "f53ac846c4d6fdc96f8b901fd02b7971837b2aa1",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQCeOGSqe1255NiL\nv+hkCIiidFbnj6RaVInoM5uAQiE1+xd1xVkl/1eTni/ieQmZsbVo02ajGiQuiXNk\nfOVxUq6DKJoZ1hQ+/90UVd3sIHXpinuG+iM/fO3LdsPxn3zEtCg0oDdTOLKCC5xU\nlKpUQ7JBfpb13Tvomala892eobz0VPemoF6FAkuLKqT45haMkKGogz89/9Y+DPvD\nHhiCfMH97Pj2vSiC/4/jGRUjoztdY9Rq2TjM9v46oF9n9kEyFVukXdpcAr1rq5HR\n2ygDFJitkX3d8LgTH8/wXOPIVK/e/YHGxW1wwVyoDjLii5clPty49Sd0a+5dnvYC\ny5Rm6cTZAgMBAAECgf8h0RVSHIiOZr+A9Y3i9idSuxVNoDIHfV0s0drxfZG+MrHG\nkmsJSMvMeKWFJon++RTJf9suVC03Hw388z9Ha3zTVFNWTgAMtVAm/iV6+/+D0r7u\nJOJjwLsgVmgcMjUpE/58+89GEoGz6QWm1u8iIVX0sJLmb3refd2cZf+M8o8gvjWU\nV3w5DayvbAYro3RSOcm4RCvpRGDUNqIZaKx7GlAQDtd8htmTUia6go1QKNYkvSDk\nFmDxXdAcjp8HJ9TEZaPInBHgKeC5bmqn8HOt/r5TDR8JyoV/YBmVyK/wbmDfc2Um\ncnFr91Up6hprxdKbNLkNuQWgSYBMSyYccM6bTEkCgYEA12942TRqssI0jSnovGou\negnoQKnd/lsNLgh8dOY366F/WCQW+O8JrYKj2gRdM0bc6zPjr93OX5Bp+pczDpYo\n/8LlzrdddMSVmU4An9k5sVfsNYDPZtq1IvZ+2ygLVfqvgVKGIXy9zhhhphvOl0C/\nirTs1xRWbVExsjbJWQJtqI0CgYEAvAMB6jyO+OjBNJYVrcfS4YEkMkngYOO1X+XO\npJGeIQPCOnFT/+72+RijVmDMEKjrz5IBXGiK8KURI80QnN+Eyc5467hKokMB9teK\n/sl+o1OSQMzxjjXNGqrfemZS3c/cNObKpuqTV7TE6EZWsuGErAknw0SGloa3jOOd\nlKKmWH0CgYBoTPa0KfVyYCWzJlQgTEP+H6fLDrKEf66M19zxd7ghI0oU8TwR/yCv\nWW1ckvpQZgF0+eVE8t0EVVWJ1gQJDtgAo2pBP3NGohpPY31X5oJRAuFAMgG3qTFD\nIRXfoq6CTOEFel+n/M2j5xf3pMTLY7SYQencY2NIf6PQxUeMCWnvzQKBgBuPeU1j\n+TVlsUTLJ3xlCXXDH5I7oCez2ZeoMWWQbxS531P/3udqmUukn/T+lYtvp7my1n48\nWPmzyNJtshy861NF8BXl2xL0LaqIqDh3QxggHRVgtZw6KMna+I2RyF35pXcfyd80\nDctSlXbTMMxiILezU9/dALm6H9gIWcY7HZVlAoGBAIjrWcSt4oEqNWoczZAcELXp\ncLQt+OTb9I05Hmn1G9rgD3BIa24FCF/8J4NJwXZ11z1uz4BBtAXxOFR5CtxmmBDc\na1kGXEkmWsHIVK1yrmUa8VI+oPJvCgvOMT4Fr77O8w9en27EdM+UwNK+AZds7H4t\nlOYTiAsTAtOFo+N3OgAr\n-----END PRIVATE KEY-----\n",
+  "client_email": "nguyen-do@zinc-chiller-304407.iam.gserviceaccount.com",
+  "client_id": "110203975384452609151",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nguyen-do%40zinc-chiller-304407.iam.gserviceaccount.com"
+}
