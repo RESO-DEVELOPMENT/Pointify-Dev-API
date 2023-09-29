@@ -7,6 +7,7 @@ namespace Infrastructure.Models
     {
         public WalletType()
         {
+            MemberActionType = new HashSet<MemberActionType>();
             MemberWallet = new HashSet<MemberWallet>();
         }
 
@@ -14,8 +15,10 @@ namespace Infrastructure.Models
         public string Name { get; set; }
         public Guid MemberShipProgramId { get; set; }
         public bool? DelFlag { get; set; }
+        public string Currency { get; set; }
 
         public virtual MembershipProgram MemberShipProgram { get; set; }
+        public virtual ICollection<MemberActionType> MemberActionType { get; set; }
         public virtual ICollection<MemberWallet> MemberWallet { get; set; }
     }
 }

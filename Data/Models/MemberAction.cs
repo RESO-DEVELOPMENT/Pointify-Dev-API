@@ -11,7 +11,7 @@ namespace Infrastructure.Models
         }
 
         public Guid Id { get; set; }
-        public decimal? ActionValue { get; set; }
+        public double? ActionValue { get; set; }
         public string Status { get; set; }
         public string Description { get; set; }
         public bool? DelFlag { get; set; }

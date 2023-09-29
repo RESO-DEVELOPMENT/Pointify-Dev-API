@@ -155,7 +155,7 @@ namespace ApplicationCore.Chain
                 }
                 else if (invalidPromotions == 1)
                 {
-                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_MemberLevel, message: AppConstant.ErrMessage.Invalid_MemberLevel);
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Exclusive_Promotion, message: AppConstant.ErrMessage.Exclusive_Promotion);
                 }
             }
             _timeframeHandle.SetPromotions(_promotions);

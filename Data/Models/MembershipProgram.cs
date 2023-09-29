@@ -10,6 +10,7 @@ namespace Infrastructure.Models
             Member = new HashSet<Member>();
             MemberActionType = new HashSet<MemberActionType>();
             MembershipCardType = new HashSet<MembershipCardType>();
+            MembershipLevel = new HashSet<MembershipLevel>();
             WalletType = new HashSet<WalletType>();
         }
 
@@ -26,6 +27,7 @@ namespace Infrastructure.Models
         public virtual ICollection<Member> Member { get; set; }
         public virtual ICollection<MemberActionType> MemberActionType { get; set; }
         public virtual ICollection<MembershipCardType> MembershipCardType { get; set; }
+        public virtual ICollection<MembershipLevel> MembershipLevel { get; set; }
         public virtual ICollection<WalletType> WalletType { get; set; }
     }
 }

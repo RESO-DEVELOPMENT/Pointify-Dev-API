@@ -8,7 +8,6 @@ namespace Infrastructure.Models
         public MembershipCard()
         {
             MemberAction = new HashSet<MemberAction>();
-            MembershipLevel = new HashSet<MembershipLevel>();
         }
 
         public Guid Id { get; set; }
@@ -23,6 +22,5 @@ namespace Infrastructure.Models
         public virtual Member Member { get; set; }
         public virtual MembershipCardType MembershipCardType { get; set; }
         public virtual ICollection<MemberAction> MemberAction { get; set; }
-        public virtual ICollection<MembershipLevel> MembershipLevel { get; set; }
     }
 }

@@ -279,7 +279,7 @@ namespace PromotionEngineAPI.Controllers
 
         // GET: api/Promotions/count
         [HttpGet]
-        [Authorize]
+        // [Authorize]
         [Route("countSearch")]
         public async Task<IActionResult> CountPromotion([FromQuery] SearchPagingRequestParam param, [FromQuery] Guid BrandId)
         {
@@ -298,7 +298,7 @@ namespace PromotionEngineAPI.Controllers
 
         // GET: api/Promotions
         [HttpGet]
-        [Authorize]
+        // [Authorize]
         [Route("search")]
         // api/Promotions?SearchContent=...?pageIndex=...&pageSize=...
         public async Task<IActionResult> SearchPromotion(
@@ -331,7 +331,7 @@ namespace PromotionEngineAPI.Controllers
 
         // GET: api/Promotions/count
         [HttpGet]
-        [Authorize]
+        // [Authorize]
         [Route("count")]
         public async Task<IActionResult> CountSearchResultPromotion([FromQuery] string status, [FromQuery] Guid brandId)
         {

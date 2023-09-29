@@ -16,8 +16,8 @@ namespace Infrastructure.Models
         public bool? DelFlag { get; set; }
         public Guid? MemberId { get; set; }
         public Guid? WalletTypeId { get; set; }
-        public int Balance { get; set; }
-        public int? BalanceHistory { get; set; }
+        public double Balance { get; set; }
+        public double? BalanceHistory { get; set; }
 
         public virtual Member Member { get; set; }
         public virtual WalletType WalletType { get; set; }

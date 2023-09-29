@@ -546,6 +546,12 @@ namespace Infrastructure.Models
                     .HasForeignKey(d => d.CustomerId)
                     .HasConstraintName("FK_Member_Customer");
 
+                entity.HasOne(d => d.MemberLevel)
+                    .WithMany(p => p.Member)
+                    .HasForeignKey(d => d.MemberLevelId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("Member___fk_MemberLevel");
+
                 entity.HasOne(d => d.MemberProgram)
                     .WithMany(p => p.Member)
                     .HasForeignKey(d => d.MemberProgramId)
@@ -555,8 +561,6 @@ namespace Infrastructure.Models
             modelBuilder.Entity<MemberAction>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
-
-                entity.Property(e => e.ActionValue).HasColumnType("money");
 
                 entity.Property(e => e.Description).IsRequired();
 
@@ -582,12 +586,21 @@ namespace Infrastructure.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
+                entity.Property(e => e.Code)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Name).HasMaxLength(50);
 
                 entity.HasOne(d => d.MemberShipProgram)
                     .WithMany(p => p.MemberActionType)
                     .HasForeignKey(d => d.MemberShipProgramId)
                     .HasConstraintName("FK_MemberActionType_MembershipProgram");
+
+                entity.HasOne(d => d.MemberWalletType)
+                    .WithMany(p => p.MemberActionType)
+                    .HasForeignKey(d => d.MemberWalletTypeId)
+                    .HasConstraintName("MemberActionType___fk_type");
             });
 
             modelBuilder.Entity<MemberLevel>(entity =>
@@ -689,17 +702,16 @@ namespace Infrastructure.Models
 
                 entity.Property(e => e.MembershipCardCode)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
 
-                entity.Property(e => e.PhysicalCardCode)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                entity.Property(e => e.PhysicalCardCode).HasMaxLength(50);
 
                 entity.HasOne(d => d.Member)
                     .WithMany(p => p.MembershipCard)
                     .HasForeignKey(d => d.MemberId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_MemberShipCard_Member");
+                    .HasConstraintName("MembershipCard_Member_Id_fk");
 
                 entity.HasOne(d => d.MembershipCardType)
                     .WithMany(p => p.MembershipCard)
@@ -733,10 +745,10 @@ namespace Infrastructure.Models
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.MembershipCard)
+                entity.HasOne(d => d.Program)
                     .WithMany(p => p.MembershipLevel)
-                    .HasForeignKey(d => d.MembershipCardId)
-                    .HasConstraintName("FK_MembershipLevel_MembershipCard");
+                    .HasForeignKey(d => d.ProgramId)
+                    .HasConstraintName("MembershipLevel___fk_Program");
             });
 
             modelBuilder.Entity<MembershipProgram>(entity =>
@@ -1105,6 +1117,8 @@ namespace Infrastructure.Models
             {
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
+                entity.Property(e => e.Currency).HasMaxLength(20);
+
                 entity.Property(e => e.InsDate).HasColumnType("datetime");
 
                 entity.Property(e => e.TransactionJson)
@@ -1256,6 +1270,8 @@ namespace Infrastructure.Models
             modelBuilder.Entity<WalletType>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Currency).HasMaxLength(20);
 
                 entity.Property(e => e.Name).HasMaxLength(50);
 
