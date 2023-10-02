@@ -11,5 +11,8 @@ namespace ApplicationCore.Services
     public interface IMembershipService : IBaseService<Membership, MembershipDto>
     {
         public Task<MembershipDto> CreateNewMember(Guid apiKey, MembershipDto dto);
+        public Task<Membership> GetMembershipById(Guid id);
+        public Task<string> DeleteMembership(Guid id);
+        public Task<MembershipDto> UpdateMemberShip(Guid id, UpMembership update);
     }
 }

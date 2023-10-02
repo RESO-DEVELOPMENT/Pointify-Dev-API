@@ -25,7 +25,7 @@ namespace WebAPI.Controllers
 
         // GET: api/member-wallet
         [HttpGet]
-        public async Task<ActionResult> GetMemberWallet([FromQuery] PagingRequestParam param)
+        public async Task<IActionResult> GetMemberWallet([FromQuery] PagingRequestParam param)
         {
             var result = await _service.GetAsync(
                 pageIndex: param.page,
@@ -40,32 +40,26 @@ namespace WebAPI.Controllers
             return Ok(result);
         }
 
-        // GET: api/member-wallet/5
+        // GET: api/member-wallet/id
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetMemberWalletDetail(Guid id)
+        public async Task<IActionResult> GetMemberWallet([FromRoute] Guid id)
         {
-            var memberWallet = _service.GetWalletDetail(id);
-
-            if (memberWallet == null)
+            var result = await _service.GetByIdAsync(id);
+            if (result == null)
             {
                 return NotFound();
             }
-
-            return Ok(memberWallet);
+            return Ok(result);
         }
 
         // PATCH: api/member-wallet/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPatch("{id}")]
-        public async Task<IActionResult> PutMemberWallet([FromRoute] Guid id, [FromBody] MemberWalletDto dto)
+        public async Task<IActionResult> PutMemberWallet([FromRoute] Guid id, [FromBody] UpMemberWallet dto)
         {
-            if (id != dto.Id)
-            {
-                return BadRequest();
-            }
 
-            var result = await _service.UpdateAsync(dto);
+            var result = await _service.UpdateWallet(id,dto);
 
             if (result == null)
             {
@@ -76,8 +70,6 @@ namespace WebAPI.Controllers
         }
 
         // POST: api/member-wallet
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<IActionResult> PostMemberWallet([FromBody] MemberWalletDto dto)
         {
@@ -102,18 +94,14 @@ namespace WebAPI.Controllers
 
         // DELETE: api/member-wallet/5
         [HttpDelete]
-        public async Task<IActionResult> DeleteBrand([FromQuery] Guid id)
+        public async Task<IActionResult> DeleteWallet([FromQuery] Guid id)
         {
             if (id == null)
             {
                 return BadRequest();
             }
-            var result = await _service.DeleteAsync(id);
-            if (result == false)
-            {
-                return NotFound();
-            }
-            return Ok();
+            var result = await _service.DeleteWallet(id);
+            return Ok(result);
         }
     }
 }

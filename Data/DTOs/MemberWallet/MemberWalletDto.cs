@@ -12,8 +12,14 @@ namespace Infrastructure.DTOs
         public Guid? MemberId { get; set; }
         public Guid? WalletTypeId { get; set; }
         public double Balance { get; set; }
-
         public int? BalanceHistory { get; set; }
 
+    }
+
+   public class UpMemberWallet
+    {
+        public string Name { get; set; }
+        public double Balance { get; set; }
+        public int? BalanceHistory { get; set; }
     }
 }

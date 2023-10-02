@@ -53,15 +53,46 @@ namespace ApplicationCore.Services
             return await _unitOfWork.SaveAsync() > 0;
         }
 
-        public async Task<MemberWalletDto> GetWalletDetail(Guid id)
+        public async Task<MemberWallet> GetMemberWalletById(Guid id)
         {
+            //check id
+            if (id.Equals(Guid.Empty))
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                                       description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+            }
             try
             {
-                var result = await _repository.GetFirst(
-                    el => el.Id.Equals(id)
-                          && (bool) el.DelFlag,
-                    includeProperties: "Transaction,MemberAction"
-                );
+                var result = await _repository.GetFirst(filter: o => o.Id.Equals(id));
+                return result;
+            }
+            catch (ErrorObj e)
+            {
+                throw e;
+            }
+        }
+
+        public async Task<MemberWalletDto> UpdateWallet(Guid id,UpMemberWallet dto)
+        {
+            //check id
+            if (id.Equals(Guid.Empty))
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                                                                             description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+            }
+            try
+            {
+                var result = await _repository.GetFirst(filter: o => o.Id.Equals(id));
+                if (result == null)
+                {
+                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                                                                                                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                }
+                result.Name = dto.Name;
+                result.Balance = dto.Balance;
+                result.BalanceHistory = dto.BalanceHistory;
+                _repository.Update(result);
+                await _unitOfWork.SaveAsync();
                 return _mapper.Map<MemberWalletDto>(result);
             }
             catch (ErrorObj e)
@@ -70,9 +101,31 @@ namespace ApplicationCore.Services
             }
         }
 
-        public Task<MemberWalletDto> UpdateWallet(MemberDto dto)
+        public async Task<string> DeleteWallet(Guid id)
         {
-            throw new NotImplementedException();
+            //check id
+            if (id.Equals(Guid.Empty))
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                                                          description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+            }
+            try
+            {
+                var result = await _repository.GetFirst(filter: o => o.Id.Equals(id));
+                if (result == null)
+                {
+                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                                               description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                }
+                result.DelFlag = true;
+                _repository.Update(result);
+                await _unitOfWork.SaveAsync();
+                return "Bạn đã xoá MemberWallet thành công";
+            }
+            catch (ErrorObj e)
+            {
+                return "Bạn đã xoá MemberWallet thất bại";
+            }
         }
     }
 }

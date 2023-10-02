@@ -24,7 +24,8 @@ namespace PromotionEngineAPI.Controllers
         // api/Memberships?pageIndex=...&pageSize=...
         public async Task<IActionResult> GetMembership([FromQuery] PagingRequestParam param)
         {
-            var result = await _service.GetAsync(pageIndex: param.page, pageSize: param.size, filter: el => !el.DelFlg);
+            var result = await _service.GetAsync(pageIndex: param.page, pageSize: param.size, filter: el => !el.DelFlg
+             ,includeProperties: "MemberLevel,MemberProgram,MemberWallet");
             if (result == null)
             {
                 return NotFound();
@@ -45,7 +46,7 @@ namespace PromotionEngineAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMembership([FromRoute] Guid id)
         {
-            var result = await _service.GetByIdAsync(id);
+            var result = await _service.GetMembershipById(id);
             if (result == null)
             {
                 return NotFound();
@@ -56,16 +57,10 @@ namespace PromotionEngineAPI.Controllers
 
         // PUT: api/Memberships/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMembership([FromRoute] Guid id, [FromBody] MembershipDto dto)
+        public async Task<IActionResult> PutMembership([FromRoute] Guid id, [FromBody] UpMembership dto)
         {
-            if (id != dto.MembershipId)
-            {
-                return BadRequest();
-            }
 
-            dto.UpdDate = DateTime.Now;
-
-            var result = await _service.UpdateAsync(dto);
+            var result = await _service.UpdateMemberShip(id,dto);
 
             if (result == null)
             {
@@ -75,20 +70,22 @@ namespace PromotionEngineAPI.Controllers
             return Ok(result);
         }
 
+        //done
         // POST: api/Memberships
+        //tạo hàm create new member có đầu vào là apikey và dto
         [HttpPost]
-        public async Task<IActionResult> PostMembership([FromRoute] Guid apiKey, [FromBody] MembershipDto dto)
+        public async Task<IActionResult> CreateNewMember([FromQuery] Guid apiKey, [FromBody] MembershipDto dto)
         {
-            dto.MembershipId = Guid.NewGuid();
+            if (dto == null)
+            {
+                return BadRequest();
+            }
 
             var result = await _service.CreateNewMember(apiKey, dto);
-
             if (result == null)
             {
                 return NotFound();
             }
-
-            //var result = dto;
 
             return Ok(result);
         }
@@ -102,12 +99,8 @@ namespace PromotionEngineAPI.Controllers
                 return BadRequest();
             }
 
-            var result = await _service.DeleteAsync(id);
-            if (result == false)
-            {
-                return NotFound();
-            }
-            return Ok();
+            string result = await _service.DeleteMembership(id);
+            return Ok(result);
         }
     }
 }
