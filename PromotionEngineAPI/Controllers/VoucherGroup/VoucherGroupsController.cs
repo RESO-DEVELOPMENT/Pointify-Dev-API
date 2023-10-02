@@ -17,7 +17,7 @@ namespace PromotionEngineAPI.Controllers
 {
     [Route("api/voucher-groups")]
     [ApiController]
-    [Authorize]
+    // [Authorize]
     public class VoucherGroupsController : ControllerBase
     {
         private readonly IVoucherGroupService _service;

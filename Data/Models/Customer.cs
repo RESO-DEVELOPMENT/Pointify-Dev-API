@@ -5,11 +5,6 @@ namespace Infrastructure.Models
 {
     public partial class Customer
     {
-        public Customer()
-        {
-            Member = new HashSet<Member>();
-        }
-
         public Guid Id { get; set; }
         public string UserName { get; set; }
         public DateTime StartDate { get; set; }
@@ -26,6 +21,5 @@ namespace Infrastructure.Models
         public int? Point { get; set; }
 
         public virtual Brand Brand { get; set; }
-        public virtual ICollection<Member> Member { get; set; }
     }
 }

@@ -8,6 +8,7 @@ namespace Infrastructure.Models
         public MemberLevel()
         {
             MemberLevelMapping = new HashSet<MemberLevelMapping>();
+            Membership = new HashSet<Membership>();
         }
 
         public Guid MemberLevelId { get; set; }
@@ -16,8 +17,10 @@ namespace Infrastructure.Models
         public bool DelFlg { get; set; }
         public DateTime UpdDate { get; set; }
         public DateTime InsDate { get; set; }
+        public int? IndexLevel { get; set; }
 
         public virtual Brand Brand { get; set; }
         public virtual ICollection<MemberLevelMapping> MemberLevelMapping { get; set; }
+        public virtual ICollection<Membership> Membership { get; set; }
     }
 }

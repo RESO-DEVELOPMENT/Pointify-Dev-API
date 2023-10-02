@@ -11,9 +11,11 @@ namespace ApplicationCore.Services
         where TEntity : class
         where TDto : class
     {
-        Task<GenericRespones<TEntity>> GetAsync(int pageIndex = 0, int pageSize = 0, Expression<Func<TEntity, bool>> filter = null,
-                                                        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-                                                        string includeProperties = "");
+        Task<GenericRespones<TEntity>> GetAsync(int pageIndex = 0, int pageSize = 0,
+            Expression<Func<TEntity, bool>> filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+            string includeProperties = "");
+
         Task<TDto> CreateAsync(TDto dto);
         Task<TDto> UpdateAsync(TDto dto);
         Task<bool> DeleteAsync(Guid id);
@@ -22,6 +24,5 @@ namespace ApplicationCore.Services
         Task<TDto> GetByIdAsync(Guid id);
         Task<int> CountAsync(Expression<Func<TEntity, bool>> filter = null);
         Task<TEntity> GetFirst(Expression<Func<TEntity, bool>> filter = null, string includeProperties = "");
-
     }
 }

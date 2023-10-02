@@ -19,7 +19,7 @@ namespace Infrastructure.Models
         public double Balance { get; set; }
         public double? BalanceHistory { get; set; }
 
-        public virtual Member Member { get; set; }
+        public virtual Membership Member { get; set; }
         public virtual WalletType WalletType { get; set; }
         public virtual ICollection<MemberAction> MemberAction { get; set; }
         public virtual ICollection<Transaction> Transaction { get; set; }

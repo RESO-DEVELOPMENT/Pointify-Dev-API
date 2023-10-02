@@ -41,37 +41,39 @@ namespace PromotionEngineAPI
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials()
-                        .WithOrigins("http://localhost:8080")
+                        .WithOrigins("http://localhost:8000")
+                        .WithOrigins("https://promo.reso.vn")
                         .WithOrigins("https://manage-pe.reso.vn")
                         .WithOrigins("https://stg-admin.unilo.net")
                         .WithOrigins("https://stg-api.beanoi.com")
-                        .WithOrigins("https://stg-manage-pe.reso.vn");
-
+                        .WithOrigins("https://stg-manage-pe.reso.vn")
+                        .WithOrigins("https://admin.reso.vn");
                 });
             });
             services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
+                {
+                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
                 .AddJwtBearer(options =>
                 {
                     options.RequireHttpsMetadata = false;
                     options.SaveToken = true;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-
                         ValidateIssuer = false,
                         ValidateAudience = false,
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["AppSettings:SecretKey"]))
+                        IssuerSigningKey =
+                            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["AppSettings:SecretKey"]))
                     };
                 });
             services.AddControllers();
             // add config swagger
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Promotion Engine API", Version = "1" });
+                c.SwaggerDoc("v1",
+                    new Microsoft.OpenApi.Models.OpenApiInfo {Title = "Promotion Engine API", Version = "1"});
             });
             services.AddDbContext<PromotionEngineContext>(options =>
                 options.UseSqlServer(Configuration["ConnectionStrings:PromotionEngineDatabase"]));
@@ -83,14 +85,15 @@ namespace PromotionEngineAPI
             //DI for all service
             ServiceAddScoped(services);
             // configure controller
-            services.AddControllers().AddNewtonsoftJson(option => option.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            services.AddControllers().AddNewtonsoftJson(option =>
+                option.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSignalR();
-
         }
+
         #region Add Scope
+
         private void ServiceAddScoped(IServiceCollection services)
         {
-
             //Account
             services.AddScoped<IAccountService, AccountService>();
             //Action
@@ -151,7 +154,6 @@ namespace PromotionEngineAPI
             // Customer
             services.AddScoped<ICustomerService, CustomerService>();
             //Member
-            services.AddScoped<IMemberService, MemberService>();
             //MemberWallet
             services.AddScoped<IMemberWalletService, MemberWalletService>();
             //MemberShipCard
@@ -159,8 +161,8 @@ namespace PromotionEngineAPI
             ChainOfResponsibilityServices(services);
 
             WorkerServices(services);
-
         }
+
         private void ChainOfResponsibilityServices(IServiceCollection services)
         {
             //ApplyPromotionHandler
@@ -180,10 +182,12 @@ namespace PromotionEngineAPI
             //ApplyPromotion
             services.AddScoped<IApplyPromotion, ApplyPromotion>();
         }
+
         private void WorkerServices(IServiceCollection services)
         {
             services.AddScoped<IVoucherWorker, VoucherWorker>();
         }
+
         #endregion
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -193,6 +197,7 @@ namespace PromotionEngineAPI
             {
                 app.UseDeveloperExceptionPage();
             }
+
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseHttpsRedirection();
@@ -202,10 +207,7 @@ namespace PromotionEngineAPI
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Promotion Engine API V1");
-            });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Promotion Engine API V1"); });
 
             app.UseRouting();
 
@@ -219,12 +221,15 @@ namespace PromotionEngineAPI
                 endpoints.MapControllers();
             });
         }
+
         #region Register hubs
+
         private void ReigsterHubs(IEndpointRouteBuilder endpoints)
         {
             endpoints.MapHub<VoucherHub>("/voucher/notify");
             endpoints.MapHub<NotifyMessageHub>("/notify/message");
         }
+
         #endregion
     }
 }

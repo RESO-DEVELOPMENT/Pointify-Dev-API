@@ -19,7 +19,7 @@ namespace Infrastructure.Models
         public Guid MembershipCardTypeId { get; set; }
         public string PhysicalCardCode { get; set; }
 
-        public virtual Member Member { get; set; }
+        public virtual Membership Member { get; set; }
         public virtual MembershipCardType MembershipCardType { get; set; }
         public virtual ICollection<MemberAction> MemberAction { get; set; }
     }

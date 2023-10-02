@@ -7,10 +7,9 @@ namespace Infrastructure.Models
     {
         public MembershipProgram()
         {
-            Member = new HashSet<Member>();
             MemberActionType = new HashSet<MemberActionType>();
+            Membership = new HashSet<Membership>();
             MembershipCardType = new HashSet<MembershipCardType>();
-            MembershipLevel = new HashSet<MembershipLevel>();
             WalletType = new HashSet<WalletType>();
         }
 
@@ -24,10 +23,9 @@ namespace Infrastructure.Models
         public string Status { get; set; }
 
         public virtual Brand Brand { get; set; }
-        public virtual ICollection<Member> Member { get; set; }
         public virtual ICollection<MemberActionType> MemberActionType { get; set; }
+        public virtual ICollection<Membership> Membership { get; set; }
         public virtual ICollection<MembershipCardType> MembershipCardType { get; set; }
-        public virtual ICollection<MembershipLevel> MembershipLevel { get; set; }
         public virtual ICollection<WalletType> WalletType { get; set; }
     }
 }

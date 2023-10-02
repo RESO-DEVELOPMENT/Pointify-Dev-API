@@ -7,6 +7,8 @@ namespace Infrastructure.Models
     {
         public Membership()
         {
+            MemberWallet = new HashSet<MemberWallet>();
+            MembershipCard = new HashSet<MembershipCard>();
             Voucher = new HashSet<Voucher>();
         }
 
@@ -17,7 +19,13 @@ namespace Infrastructure.Models
         public bool DelFlg { get; set; }
         public DateTime InsDate { get; set; }
         public DateTime UpdDate { get; set; }
+        public Guid? MemberProgramId { get; set; }
+        public Guid? MemberLevelId { get; set; }
 
+        public virtual MemberLevel MemberLevel { get; set; }
+        public virtual MembershipProgram MemberProgram { get; set; }
+        public virtual ICollection<MemberWallet> MemberWallet { get; set; }
+        public virtual ICollection<MembershipCard> MembershipCard { get; set; }
         public virtual ICollection<Voucher> Voucher { get; set; }
     }
 }

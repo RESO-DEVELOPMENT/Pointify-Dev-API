@@ -14,7 +14,7 @@ namespace PromotionEngineAPI.Controllers
 {
     [Route("api/post-actions")]
     [ApiController]
-    [Authorize]
+    // [Authorize]
     public class GiftsController : ControllerBase
     {
         private readonly IGiftService _service;

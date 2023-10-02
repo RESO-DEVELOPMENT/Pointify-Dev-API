@@ -18,8 +18,7 @@ namespace PromotionEngineAPI.Controllers.Product
         {
             _service = service;
         }
-
-        [Authorize]
+        
         [HttpGet]
         public async Task<IActionResult> GetProduct([FromQuery] PagingRequestParam param, [FromQuery] Guid productCateId)
         {
@@ -35,8 +34,7 @@ namespace PromotionEngineAPI.Controllers.Product
             }
 
         }
-
-        [Authorize]
+        
         [HttpGet]
         [Route("brand")]
         public async Task<IActionResult> GetBrandProduct([FromQuery] PagingRequestParam param, [FromQuery] Guid brandId)
@@ -52,8 +50,7 @@ namespace PromotionEngineAPI.Controllers.Product
             }
 
         }
-
-        [Authorize]
+        
         [HttpGet]
         [Route("brand/all/{brandId}")]
         public async Task<IActionResult> GetAllBrandProduct([FromRoute] Guid brandId)
@@ -69,8 +66,7 @@ namespace PromotionEngineAPI.Controllers.Product
             }
 
         }
-
-        [Authorize]
+        
         [HttpGet]
         [Route("count")]
         public async Task<IActionResult> CountProduct()
@@ -85,8 +81,7 @@ namespace PromotionEngineAPI.Controllers.Product
             }
 
         }
-
-        [Authorize]
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProduct([FromRoute] Guid id)
         {
@@ -101,8 +96,7 @@ namespace PromotionEngineAPI.Controllers.Product
                 return StatusCode(statusCode: e.Code, e);
             }
         }
-
-        [Authorize]
+        
         [HttpGet]
         [Route("exist")]
         public async Task<IActionResult> ExistProduct([FromQuery] string ProductCode, [FromQuery] Guid BrandId, [FromQuery] Guid ProductId)
@@ -122,8 +116,7 @@ namespace PromotionEngineAPI.Controllers.Product
                 return StatusCode(statusCode: e.Code, e);
             }
         }
-
-        [Authorize]
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProduct([FromRoute] Guid id, [FromBody] ProductDto dto)
         {
@@ -141,8 +134,7 @@ namespace PromotionEngineAPI.Controllers.Product
                 return StatusCode(statusCode: e.Code, e);
             }
         }
-
-        [Authorize]
+        
         [HttpPost]
         public async Task<IActionResult> PostProduct([FromBody] ProductDto dto)
         {
@@ -164,7 +156,6 @@ namespace PromotionEngineAPI.Controllers.Product
             }
         }
         
-        [Authorize]
         [HttpPost]
         [Route("sync-product")]
         public async Task<IActionResult> SyncProduct([FromQuery] Guid brandId, [FromBody] ProductRequestParam productRequestParam)
@@ -183,8 +174,7 @@ namespace PromotionEngineAPI.Controllers.Product
             }
 
         }
-
-        [Authorize]
+        
         [HttpDelete]
         public async Task<IActionResult> DeleteProduct([FromQuery] Guid id)
         {

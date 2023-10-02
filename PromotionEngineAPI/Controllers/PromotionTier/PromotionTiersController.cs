@@ -12,7 +12,7 @@ namespace PromotionEngineAPI.Controllers
 {
     [Route("api/promotion-tiers")]
     [ApiController]
-    [Authorize]
+
     public class PromotionTiersController : ControllerBase
     {
         private readonly IPromotionTierService _service;

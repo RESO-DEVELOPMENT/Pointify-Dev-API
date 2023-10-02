@@ -30,6 +30,7 @@ namespace Infrastructure.Models
         public DateTime UpdDate { get; set; }
         public string Name { get; set; }
         public Guid? BrandId { get; set; }
+        public double? BonusPointRate { get; set; }
 
         public virtual Brand Brand { get; set; }
         public virtual ICollection<ActionProductMapping> ActionProductMapping { get; set; }

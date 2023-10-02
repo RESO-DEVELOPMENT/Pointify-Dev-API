@@ -19,8 +19,9 @@ namespace ApplicationCore.Services
         }
 
         protected override IGenericRepository<MemberWallet> _repository => _unitOfWork.MemberWalletRepository;
+
         //protected IGenericRepository<Member> _members => _unitOfWork.MemberRepository;
-        private IMemberService _member;
+        private IMembershipService _member;
         //protected IGenericRepository<WalletType> _wallet => _unitOfWork.Wall
 
 
@@ -36,13 +37,13 @@ namespace ApplicationCore.Services
                 //WallType == null
                 await _unitOfWork.SaveAsync();
                 return _mapper.Map<MemberWalletDto>(entity);
-
             }
             catch (System.Exception e)
             {
                 Debug.WriteLine(e.StackTrace);
                 Debug.WriteLine(e.InnerException);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int) HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
 
@@ -58,7 +59,7 @@ namespace ApplicationCore.Services
             {
                 var result = await _repository.GetFirst(
                     el => el.Id.Equals(id)
-                          && (bool)el.DelFlag,
+                          && (bool) el.DelFlag,
                     includeProperties: "Transaction,MemberAction"
                 );
                 return _mapper.Map<MemberWalletDto>(result);
@@ -73,7 +74,5 @@ namespace ApplicationCore.Services
         {
             throw new NotImplementedException();
         }
-
-
     }
 }

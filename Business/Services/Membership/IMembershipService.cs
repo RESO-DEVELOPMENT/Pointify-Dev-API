@@ -1,5 +1,4 @@
-﻿
-using Infrastructure.DTOs;
+﻿using Infrastructure.DTOs;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -11,6 +10,6 @@ namespace ApplicationCore.Services
 {
     public interface IMembershipService : IBaseService<Membership, MembershipDto>
     {
-        
+        public Task<MembershipDto> CreateNewMember(Guid apiKey, MembershipDto dto);
     }
 }

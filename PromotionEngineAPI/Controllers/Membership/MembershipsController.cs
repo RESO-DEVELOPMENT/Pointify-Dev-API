@@ -29,6 +29,7 @@ namespace PromotionEngineAPI.Controllers
             {
                 return NotFound();
             }
+
             return Ok(result);
         }
 
@@ -42,19 +43,20 @@ namespace PromotionEngineAPI.Controllers
 
         // GET: api/Memberships/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetMembership([FromRoute]Guid id)
+        public async Task<IActionResult> GetMembership([FromRoute] Guid id)
         {
             var result = await _service.GetByIdAsync(id);
             if (result == null)
             {
                 return NotFound();
             }
+
             return Ok(result);
         }
 
         // PUT: api/Memberships/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMembership([FromRoute]Guid id, [FromBody] MembershipDto dto)
+        public async Task<IActionResult> PutMembership([FromRoute] Guid id, [FromBody] MembershipDto dto)
         {
             if (id != dto.MembershipId)
             {
@@ -71,16 +73,15 @@ namespace PromotionEngineAPI.Controllers
             }
 
             return Ok(result);
-
         }
 
         // POST: api/Memberships
         [HttpPost]
-        public async Task<IActionResult> PostMembership([FromBody] MembershipDto dto)
+        public async Task<IActionResult> PostMembership([FromRoute] Guid apiKey, [FromBody] MembershipDto dto)
         {
             dto.MembershipId = Guid.NewGuid();
 
-            var result = await _service.CreateAsync(dto);
+            var result = await _service.CreateNewMember(apiKey, dto);
 
             if (result == null)
             {
@@ -94,12 +95,13 @@ namespace PromotionEngineAPI.Controllers
 
         // DELETE: api/Memberships/5
         [HttpDelete]
-        public async Task<IActionResult> DeleteMembership([FromQuery]Guid id)
+        public async Task<IActionResult> DeleteMembership([FromQuery] Guid id)
         {
             if (id == null)
             {
                 return BadRequest();
             }
+
             var result = await _service.DeleteAsync(id);
             if (result == false)
             {
@@ -107,8 +109,5 @@ namespace PromotionEngineAPI.Controllers
             }
             return Ok();
         }
-
-        
-
     }
 }

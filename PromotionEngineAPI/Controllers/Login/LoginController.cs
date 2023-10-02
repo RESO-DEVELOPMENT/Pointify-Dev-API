@@ -14,7 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace PromotionEngineAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/login")]
     [ApiController]
     public class LoginController : ControllerBase
     {
@@ -25,7 +25,7 @@ namespace PromotionEngineAPI.Controllers
             _loginService = loginService;
         }
 
-        [AllowAnonymous]
+  
         [HttpPost]
         public async Task<IActionResult> Login([FromBody]UserModel loginInfo)
         {

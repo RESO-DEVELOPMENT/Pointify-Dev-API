@@ -29,7 +29,6 @@ namespace Infrastructure.Models
         public virtual DbSet<GameMaster> GameMaster { get; set; }
         public virtual DbSet<Gift> Gift { get; set; }
         public virtual DbSet<GiftProductMapping> GiftProductMapping { get; set; }
-        public virtual DbSet<Member> Member { get; set; }
         public virtual DbSet<MemberAction> MemberAction { get; set; }
         public virtual DbSet<MemberActionType> MemberActionType { get; set; }
         public virtual DbSet<MemberLevel> MemberLevel { get; set; }
@@ -38,7 +37,6 @@ namespace Infrastructure.Models
         public virtual DbSet<Membership> Membership { get; set; }
         public virtual DbSet<MembershipCard> MembershipCard { get; set; }
         public virtual DbSet<MembershipCardType> MembershipCardType { get; set; }
-        public virtual DbSet<MembershipLevel> MembershipLevel { get; set; }
         public virtual DbSet<MembershipProgram> MembershipProgram { get; set; }
         public virtual DbSet<OrderCondition> OrderCondition { get; set; }
         public virtual DbSet<Product> Product { get; set; }
@@ -523,41 +521,6 @@ namespace Infrastructure.Models
                     .HasConstraintName("FK_PostActionProductMapping_Product");
             });
 
-            modelBuilder.Entity<Member>(entity =>
-            {
-                entity.Property(e => e.Id).ValueGeneratedNever();
-
-                entity.Property(e => e.Email)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.FullName).HasMaxLength(50);
-
-                entity.Property(e => e.InsDate).HasColumnType("datetime");
-
-                entity.Property(e => e.PhoneNumber)
-                    .HasMaxLength(12)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.UpdDate).HasColumnType("datetime");
-
-                entity.HasOne(d => d.Customer)
-                    .WithMany(p => p.Member)
-                    .HasForeignKey(d => d.CustomerId)
-                    .HasConstraintName("FK_Member_Customer");
-
-                entity.HasOne(d => d.MemberLevel)
-                    .WithMany(p => p.Member)
-                    .HasForeignKey(d => d.MemberLevelId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("Member___fk_MemberLevel");
-
-                entity.HasOne(d => d.MemberProgram)
-                    .WithMany(p => p.Member)
-                    .HasForeignKey(d => d.MemberProgramId)
-                    .HasConstraintName("FK_Member_MembershipProgram");
-            });
-
             modelBuilder.Entity<MemberAction>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
@@ -660,7 +623,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Member)
                     .WithMany(p => p.MemberWallet)
                     .HasForeignKey(d => d.MemberId)
-                    .HasConstraintName("FK_MemberWallet_Member");
+                    .HasConstraintName("MemberWallet_Membership_MembershipId_fk");
 
                 entity.HasOne(d => d.WalletType)
                     .WithMany(p => p.MemberWallet)
@@ -692,6 +655,16 @@ namespace Infrastructure.Models
                 entity.Property(e => e.UpdDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
+
+                entity.HasOne(d => d.MemberLevel)
+                    .WithMany(p => p.Membership)
+                    .HasForeignKey(d => d.MemberLevelId)
+                    .HasConstraintName("Membership_MemberLevel_MemberLevelId_fk");
+
+                entity.HasOne(d => d.MemberProgram)
+                    .WithMany(p => p.Membership)
+                    .HasForeignKey(d => d.MemberProgramId)
+                    .HasConstraintName("Membership_MembershipProgram_Id_fk");
             });
 
             modelBuilder.Entity<MembershipCard>(entity =>
@@ -711,7 +684,7 @@ namespace Infrastructure.Models
                     .WithMany(p => p.MembershipCard)
                     .HasForeignKey(d => d.MemberId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("MembershipCard_Member_Id_fk");
+                    .HasConstraintName("MembershipCard_Membership_MembershipId_fk");
 
                 entity.HasOne(d => d.MembershipCardType)
                     .WithMany(p => p.MembershipCard)
@@ -733,22 +706,6 @@ namespace Infrastructure.Models
                     .HasForeignKey(d => d.MemberShipProgramId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_MemberShipCardType_MembershipProgram");
-            });
-
-            modelBuilder.Entity<MembershipLevel>(entity =>
-            {
-                entity.Property(e => e.Id).ValueGeneratedNever();
-
-                entity.Property(e => e.Name).HasMaxLength(50);
-
-                entity.Property(e => e.Status)
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.Program)
-                    .WithMany(p => p.MembershipLevel)
-                    .HasForeignKey(d => d.ProgramId)
-                    .HasConstraintName("MembershipLevel___fk_Program");
             });
 
             modelBuilder.Entity<MembershipProgram>(entity =>

@@ -8,14 +8,10 @@ namespace Infrastructure.DTOs
     public class ActionDto : BaseDto
     {
         public Guid ActionId { get; set; } = Guid.NewGuid();
-        [Required]
-        public string Name { get; set; }
-        [Required]
-        public Guid? BrandId { get; set; }
-        [Required]
-        public int ActionType { get; set; }
-        [Required]
-        public int DiscountType { get; set; }
+        [Required] public string Name { get; set; }
+        [Required] public Guid? BrandId { get; set; }
+        [Required] public int ActionType { get; set; }
+        [Required] public int DiscountType { get; set; }
         public int? DiscountQuantity { get; set; }
         public decimal? DiscountAmount { get; set; }
         public decimal? DiscountPercentage { get; set; }
@@ -27,6 +23,8 @@ namespace Infrastructure.DTOs
         public decimal? BundlePrice { get; set; }
         public int? BundleQuantity { get; set; }
         public int? BundleStrategy { get; set; }
+
+        public double? BonusPointRate { get; set; }
         public List<ActionProductMap> ListProduct { get; set; }
         public List<ActionProductMapping> ListProductMapp { get; set; }
     }
@@ -37,18 +35,14 @@ namespace Infrastructure.DTOs
         public Guid ProductId { get; set; }
         public int Quantity { get; set; }
         public Guid Id { get; set; }
-
     }
 
     public class ActionModel
     {
         public string Name { get; set; }
-        [Required]
-        public Guid? BrandId { get; set; }
-        [Required]
-        public int ActionType { get; set; }
-        [Required]
-        public int DiscountType { get; set; }
+        [Required] public Guid? BrandId { get; set; }
+        [Required] public int ActionType { get; set; }
+        [Required] public int DiscountType { get; set; }
         public int? DiscountQuantity { get; set; }
         public decimal? DiscountAmount { get; set; }
         public decimal? DiscountPercentage { get; set; }
@@ -60,5 +54,7 @@ namespace Infrastructure.DTOs
         public decimal? BundlePrice { get; set; }
         public int? BundleQuantity { get; set; }
         public int? BundleStrategy { get; set; }
+
+        public double? BonusPointRate { get; set; }
     }
 }

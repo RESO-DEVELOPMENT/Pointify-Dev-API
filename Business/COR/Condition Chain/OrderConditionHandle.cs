@@ -8,7 +8,6 @@ namespace ApplicationCore.Chain
     public interface IOrderConditionHandle : IHandler<Order>
     {
         void SetConditionModel(ConditionModel conditions);
-
     }
     public class OrderConditionHandle : Handler<Order>, IOrderConditionHandle
     {
