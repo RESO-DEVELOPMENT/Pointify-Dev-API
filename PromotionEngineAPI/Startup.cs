@@ -37,17 +37,10 @@ namespace PromotionEngineAPI
             {
                 options.AddPolicy("VueCorsPolicy", builder =>
                 {
-                    builder
+                    builder.AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod()
-                        .AllowCredentials()
-                        .WithOrigins("http://localhost:8000")
-                        .WithOrigins("https://promo.reso.vn")
-                        .WithOrigins("https://manage-pe.reso.vn")
-                        .WithOrigins("https://stg-admin.unilo.net")
-                        .WithOrigins("https://stg-api.beanoi.com")
-                        .WithOrigins("https://stg-manage-pe.reso.vn")
-                        .WithOrigins("https://admin.reso.vn");
+                        .AllowCredentials();
                 });
             });
             services.AddAuthentication(x =>
