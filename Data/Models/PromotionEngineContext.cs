@@ -534,11 +534,6 @@ namespace Infrastructure.Models
                     .HasForeignKey(d => d.MemberActionTypeId)
                     .HasConstraintName("FK_MemberAction_MemberActionType");
 
-                entity.HasOne(d => d.MemberShipCard)
-                    .WithMany(p => p.MemberAction)
-                    .HasForeignKey(d => d.MemberShipCardId)
-                    .HasConstraintName("FK_MemberAction_MemberShipCard");
-
                 entity.HasOne(d => d.MemberWallet)
                     .WithMany(p => p.MemberAction)
                     .HasForeignKey(d => d.MemberWalletId)

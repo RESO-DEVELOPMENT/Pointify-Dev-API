@@ -5,11 +5,6 @@ namespace Infrastructure.Models
 {
     public partial class MembershipCard
     {
-        public MembershipCard()
-        {
-            MemberAction = new HashSet<MemberAction>();
-        }
-
         public Guid Id { get; set; }
         public Guid MemberId { get; set; }
         public string MembershipCardCode { get; set; }
@@ -21,6 +16,5 @@ namespace Infrastructure.Models
 
         public virtual Membership Member { get; set; }
         public virtual MembershipCardType MembershipCardType { get; set; }
-        public virtual ICollection<MemberAction> MemberAction { get; set; }
     }
 }

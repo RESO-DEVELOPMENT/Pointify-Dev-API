@@ -494,5 +494,12 @@ namespace Infrastructure.Helper
         //public const string CONNECTION_STRING = "Server=tcp:promotionengine.database.windows.net,1433;Database=PromotionEngine;User ID=adm;Password=Abcd1234;Trusted_Connection=false;MultipleActiveResultSets=true";
         public const string CONNECTION_STRING =
             "Server=13.229.223.108;Database=PromotionEngine;User ID=promotion_engine;Password=H5!d8Q?%s(RPB)J=m:Uug#4x_~fp;Trusted_Connection=false;MultipleActiveResultSets=true";
+
+        public struct MemberActionStatus
+        {
+            public const string Prossecing = "PROSSECING";
+            public const string Done = "DONE";
+            public const string Fail = "FAIL";
+        }
     }
 }

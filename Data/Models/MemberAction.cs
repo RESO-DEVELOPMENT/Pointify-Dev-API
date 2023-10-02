@@ -17,10 +17,8 @@ namespace Infrastructure.Models
         public bool? DelFlag { get; set; }
         public Guid? MemberWalletId { get; set; }
         public Guid? MemberActionTypeId { get; set; }
-        public Guid? MemberShipCardId { get; set; }
 
         public virtual MemberActionType MemberActionType { get; set; }
-        public virtual MembershipCard MemberShipCard { get; set; }
         public virtual MemberWallet MemberWallet { get; set; }
         public virtual ICollection<Transaction> Transaction { get; set; }
     }

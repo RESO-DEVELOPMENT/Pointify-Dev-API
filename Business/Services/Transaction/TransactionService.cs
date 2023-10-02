@@ -103,7 +103,7 @@ namespace ApplicationCore.Services
                 //}
                 List<Promotion> promotionSetDiscounts = new List<Promotion>();
             var channel = brand.Channel.FirstOrDefault(el => el.ChannelCode == channelCode);
-            var store = brand.Store.FirstOrDefault(el => el.StoreCode == order.CustomerOrderInfo.Attributes.StoreInfo.StoreId);
+            var store = brand.Store.FirstOrDefault(el => el.StoreCode == order.CustomerOrderInfo.Attributes.StoreInfo.StoreCode);
             if (order.Effects != null)
             {
                 order.Effects = order.Effects.Where(w => w.EffectType.Contains(AppConstant.EffectMessage.SetDiscount) || w.EffectType.Contains(AppConstant.EffectMessage.AddGift)).ToList();

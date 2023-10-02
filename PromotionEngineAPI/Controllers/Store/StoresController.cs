@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
+using Infrastructure.DTOs.Request;
 
 namespace PromotionEngineAPI.Controllers
 {
@@ -20,10 +21,12 @@ namespace PromotionEngineAPI.Controllers
     public class StoresController : ControllerBase
     {
         private readonly IStoreService _service;
+        private readonly IMemberActionService _memberActionService;
 
-        public StoresController(IStoreService service)
+        public StoresController(IStoreService service, IMemberActionService memberActionService)
         {
             _service = service;
+            _memberActionService = memberActionService;
         }
 
         // GET: api/Stores
@@ -33,10 +36,10 @@ namespace PromotionEngineAPI.Controllers
             try
             {
                 return Ok(await _service.GetAsync(
-                pageIndex: param.page,
-                pageSize: param.size,
-                filter: el => !el.DelFlg && el.BrandId.Equals(BrandId),
-                orderBy: el => el.OrderByDescending(obj => obj.InsDate)
+                    pageIndex: param.page,
+                    pageSize: param.size,
+                    filter: el => !el.DelFlg && el.BrandId.Equals(BrandId),
+                    orderBy: el => el.OrderByDescending(obj => obj.InsDate)
                 ));
             }
             catch (ErrorObj e)
@@ -44,11 +47,13 @@ namespace PromotionEngineAPI.Controllers
                 return StatusCode(statusCode: e.Code, e);
             }
         }
+
         // GET: api/Stores
         [HttpGet]
         //[Authorize]
         [Route("promotions")]
-        public async Task<IActionResult> GetPromotionForStore([FromQuery] string storeCode, [FromQuery] string brandCode)
+        public async Task<IActionResult> GetPromotionForStore([FromQuery] string storeCode,
+            [FromQuery] string brandCode)
         {
             try
             {
@@ -57,6 +62,7 @@ namespace PromotionEngineAPI.Controllers
                 {
                     return NoContent();
                 }
+
                 return Ok(result);
             }
             catch (ErrorObj e)
@@ -86,7 +92,8 @@ namespace PromotionEngineAPI.Controllers
         [HttpGet]
         //[Authorize]
         [Route("promotionsJsonFile")]
-        public async Task<IActionResult> GetPromotionForStoreInJsonFile([FromQuery] string storeCode, [FromQuery] string brandCode)
+        public async Task<IActionResult> GetPromotionForStoreInJsonFile([FromQuery] string storeCode,
+            [FromQuery] string brandCode)
         {
             try
             {
@@ -102,13 +109,16 @@ namespace PromotionEngineAPI.Controllers
                         FileDownloadName = fileName
                     };
                     //return File(stream, MediaTypeNames.Text.Plain, fileName);
-                };
+                }
+
+                ;
             }
             catch (ErrorObj e)
             {
                 return StatusCode(statusCode: e.Code, e);
             }
         }
+
         // GET: api/Stores/count
         [HttpGet]
         [Route("count")]
@@ -122,17 +132,19 @@ namespace PromotionEngineAPI.Controllers
             {
                 return StatusCode(statusCode: e.Code, e);
             }
-
         }
+
         [HttpPost]
         [Route("checkStoreCodeExist")]
         public async Task<IActionResult> CheckEmailExisting([FromBody] DuplicateParam param)
         {
             bool isExisting = false;
             isExisting = (await _service.GetAsync(filter: el =>
-                    el.BrandId == param.BrandID
-                   && (param.StoreId != Guid.Empty ? (el.StoreId != param.StoreId && el.StoreCode == param.StoreCode) : (el.StoreCode == param.StoreCode) && !el.DelFlg)
-                   && !el.DelFlg)).Items.Count > 0;
+                el.BrandId == param.BrandID
+                && (param.StoreId != Guid.Empty
+                    ? (el.StoreId != param.StoreId && el.StoreCode == param.StoreCode)
+                    : (el.StoreCode == param.StoreCode) && !el.DelFlg)
+                && !el.DelFlg)).Items.Count > 0;
             return Ok(isExisting);
         }
 
@@ -148,7 +160,6 @@ namespace PromotionEngineAPI.Controllers
             {
                 return StatusCode(statusCode: e.Code, e);
             }
-
         }
 
         // PUT: api/Stores/5
@@ -158,7 +169,7 @@ namespace PromotionEngineAPI.Controllers
             try
             {
                 if (id != dto.StoreId)
-                    return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, new ErrorResponse().BadRequest);
+                    return StatusCode(statusCode: (int) HttpStatusCode.BadRequest, new ErrorResponse().BadRequest);
                 dto.UpdDate = DateTime.Now;
                 return Ok(await _service.UpdateAsync(dto));
             }
@@ -181,7 +192,6 @@ namespace PromotionEngineAPI.Controllers
             {
                 return StatusCode(statusCode: e.Code, e);
             }
-
         }
 
         // DELETE: api/Stores/5
@@ -205,11 +215,11 @@ namespace PromotionEngineAPI.Controllers
         {
             if (promotionId.Equals(Guid.Empty) || brandId.Equals(Guid.Empty))
             {
-                return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, new ErrorResponse().BadRequest);
+                return StatusCode(statusCode: (int) HttpStatusCode.BadRequest, new ErrorResponse().BadRequest);
             }
+
             try
             {
-
                 return Ok(await _service.GetStoreOfPromotion(promotionId: promotionId, brandId: brandId));
             }
             catch (ErrorObj e)
@@ -220,12 +230,14 @@ namespace PromotionEngineAPI.Controllers
 
         [HttpPut]
         [Route("promotion/{promotionId}")]
-        public async Task<IActionResult> UpdateStoreOfPromotion([FromRoute] Guid promotionId, [FromBody] UpdateStoreOfPromotion dto)
+        public async Task<IActionResult> UpdateStoreOfPromotion([FromRoute] Guid promotionId,
+            [FromBody] UpdateStoreOfPromotion dto)
         {
             if (promotionId.Equals(Guid.Empty) || !promotionId.Equals(dto.PromotionId))
             {
-                return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, new ErrorResponse().BadRequest);
+                return StatusCode(statusCode: (int) HttpStatusCode.BadRequest, new ErrorResponse().BadRequest);
             }
+
             try
             {
                 return Ok(await _service.UpdateStoreOfPromotion(dto: dto));
@@ -235,6 +247,19 @@ namespace PromotionEngineAPI.Controllers
                 return StatusCode(statusCode: e.Code, e);
             }
         }
+
+        [HttpPost]
+        [Route("/member-action")]
+        public async Task<IActionResult> MemberAction(MemberActionRequest request)
+        {
+            try
+            {
+                return Ok(await _memberActionService.CreateMemberAction(request));
+            }
+            catch (ErrorObj e)
+            {
+                return StatusCode(statusCode: e.Code, e);
+            }
+        }
     }
 }
-

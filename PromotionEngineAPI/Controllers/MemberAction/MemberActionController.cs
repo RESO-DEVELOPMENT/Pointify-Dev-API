@@ -27,16 +27,18 @@ namespace WebAPI.Controllers.MemberAction
         public async Task<IActionResult> GetMemberAction([FromQuery] PagingRequestParam param)
         {
             var result = await _service.GetAsync(
-                               pageIndex: param.page,
-                               pageSize: param.size,
-                               filter: el => (bool)!el.DelFlag);
+                pageIndex: param.page,
+                pageSize: param.size,
+                filter: el => (bool) !el.DelFlag);
 
             if (result == null)
             {
                 return NotFound();
             }
+
             return Ok(result);
         }
+
         //GET: api/member-actions/{id}
         [HttpGet("member-actions/{id}")]
         public async Task<IActionResult> GetMemberAction([FromRoute] Guid id)
@@ -46,6 +48,7 @@ namespace WebAPI.Controllers.MemberAction
             {
                 return NotFound();
             }
+
             return Ok(result);
         }
 
@@ -56,21 +59,25 @@ namespace WebAPI.Controllers.MemberAction
         {
             var dto = new MemberActionDto
             {
+                Id = new Guid(),
                 Name = model.Name,
                 ActionType = model.ActionType,
                 ActionValue = model.ActionValue,
-                Status = model.Status,
+                Status = 1,
                 Note = model.Note
             };
             //check MemberAction
             var result = await _service.GetFirst(filter: el => el.Id == dto.Id);
             if (result != null)
             {
-                return StatusCode(statusCode: StatusCodes.Status409Conflict, new ErrorObj(StatusCodes.Status409Conflict, "MemberAction is already exist"));
+                return StatusCode(statusCode: StatusCodes.Status409Conflict,
+                    new ErrorObj(StatusCodes.Status409Conflict, "MemberAction is already exist"));
             }
+
             var newMemberAction = await _service.CreateAsync(dto);
             return StatusCode(statusCode: StatusCodes.Status201Created, newMemberAction);
         }
+
         //PATCH: api/member-actions/{id}
         [HttpPatch("member-actions/{id}")]
         public async Task<IActionResult> UpdateMemberAction([FromRoute] Guid id, [FromBody] MemberActionDto dto)
@@ -81,6 +88,7 @@ namespace WebAPI.Controllers.MemberAction
             {
                 return NotFound();
             }
+
             var newMemberAction = await _service.UpdateAsync(dto);
             return Ok(newMemberAction);
         }

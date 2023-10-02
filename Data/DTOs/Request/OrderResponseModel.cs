@@ -9,14 +9,15 @@ namespace ApplicationCore.Request
         public object Code { get; set; }
         public string Message { get; set; }
         public Order Order { get; set; }
-
     }
+
     public class Order
     {
         public Order()
         {
             Gift = new List<Object>();
         }
+
         public List<Effect> Effects { get; set; }
         public CustomerOrderInfo CustomerOrderInfo { get; set; }
 
@@ -26,8 +27,8 @@ namespace ApplicationCore.Request
         public decimal? DiscountOrderDetail { get; set; }
         public decimal? FinalAmount { get; set; }
         public decimal? BonusPoint { get; set; }
-
     }
+
     public class Effect
     {
         public Guid PromotionId { get; set; }
@@ -41,7 +42,6 @@ namespace ApplicationCore.Request
         public int? PromotionType { get; set; }
         public Object Prop { get; set; }
     }
-
     public class CustomerOrderInfo
     {
         public CustomerOrderInfo()
@@ -49,6 +49,7 @@ namespace ApplicationCore.Request
             CartItems = new List<Item>();
             Users = new Users();
         }
+
         public string ApiKey { get; set; }
         public string Id { get; set; }
         public DateTime BookingDate { get; set; }
@@ -60,70 +61,59 @@ namespace ApplicationCore.Request
         public decimal Amount { get; set; }
         public decimal ShippingFee { get; set; }
         public Users Users { get; set; }
-
     }
+
     public class OrderAttribute
     {
         public int SalesMode { get; set; }
         public int PaymentMethod { get; set; }
         public StoreInfo StoreInfo { get; set; }
     }
+
     public class OrderGift
     {
-        [StringLength(20)]
-
-        public string ProductCode { get; set; }
-        [StringLength(20)]
-
-        public string VoucherCode { get; set; }
-        [StringLength(20)]
-
-        public string GameCode { get; set; }
+        [StringLength(20)] public string ProductCode { get; set; }
+        [StringLength(20)] public string VoucherCode { get; set; }
+        [StringLength(20)] public string GameCode { get; set; }
         public int Quantity { get; set; }
-        [StringLength(100)]
-
-        public string ProductName { get; set; }
+        [StringLength(100)] public string ProductName { get; set; }
     }
+
     public class CouponCode
     {
         public string PromotionCode { get; set; }
         public string VoucherCode { get; set; }
     }
+
     public class StoreInfo
     {
-        public string StoreId { get; set; }
-        [StringLength(100)]
-        public string BrandCode { get; set; }
+        public string StoreCode { get; set; }
+        [StringLength(100)] public string BrandCode { get; set; }
         public string Applier { get; set; }
     }
+
     public class Item
     {
-        [StringLength(20)]
-        public string ProductCode { get; set; }
-        [StringLength(20)]
-        public string CategoryCode { get; set; }
-        [StringLength(100)]
-        public string ProductName { get; set; }
+        [StringLength(20)] public string ProductCode { get; set; }
+        [StringLength(20)] public string CategoryCode { get; set; }
+        [StringLength(100)] public string ProductName { get; set; }
         public decimal UnitPrice { get; set; }
         public int Quantity { get; set; }
         public decimal SubTotal { get; set; }
         public decimal Discount { get; set; }
         public decimal DiscountFromOrder { get; set; }
         public decimal Total { get; set; }
-        [StringLength(1000)]
-        public string UrlImg { get; set; }
+        [StringLength(1000)] public string UrlImg { get; set; }
         public string PromotionCodeApply { get; set; }
     }
+
     public class Users
     {
-        [StringLength(100)]
-        public string UserName { get; set; }
-        [StringLength(100)]
-        public string UserEmail { get; set; }
-        [StringLength(12)]
-        public string UserPhoneNo { get; set; }
+        public Guid MembershipId { get; set; }
+        [StringLength(100)] public string UserName { get; set; }
+        [StringLength(100)] public string UserEmail { get; set; }
+        [StringLength(12)] public string UserPhoneNo { get; set; }
         public int UserGender { get; set; } = 3;
-        [StringLength(100)]
-        public string UserLevel { get; set; }
+        [StringLength(100)] public string UserLevel { get; set; }
     }
 }

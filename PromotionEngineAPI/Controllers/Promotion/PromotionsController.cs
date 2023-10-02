@@ -74,7 +74,7 @@ namespace PromotionEngineAPI.Controllers
                 foreach (var promotion in promotions)
                 {
                     if (!promotion.PromotionStoreMapping.Any(e =>
-                            e.Store.StoreCode == orderInfo.Attributes.StoreInfo.StoreId))
+                            e.Store.StoreCode == orderInfo.Attributes.StoreInfo.StoreCode))
                     {
                         if (promotion.PromotionStoreMapping.Count() == 0)
                         {
