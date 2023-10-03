@@ -255,16 +255,6 @@ namespace ApplicationCore.Chain
                     effectType = AppConstant.EffectMessage.SetDiscount;
                     discount = discount > (decimal) final ? (decimal) final : discount;
                     order.Discount = discount;
-                    if (action.BonusPointRate != null)
-                    {
-                        var bonusRate = (decimal) action.BonusPointRate;
-                        order.BonusPoint = order.TotalAmount * bonusRate;
-                    }
-                    else
-                    {
-                        order.BonusPoint = 0;
-                    }
-
                     SetDiscountFromOrder(order, discount, final, promotion);
                     break;
                 case (int) AppConstant.EnvVar.ActionType.Amount_Order:
@@ -273,15 +263,6 @@ namespace ApplicationCore.Chain
 
                     discount = discount > (decimal) final ? (decimal) final : discount;
                     order.Discount = discount;
-                    if (action.BonusPointRate != null)
-                    {
-                        var bonusRate = (decimal) action.BonusPointRate;
-                        order.BonusPoint = order.TotalAmount * bonusRate;
-                    }
-                    else
-                    {
-                        order.BonusPoint = 0;
-                    }
 
                     SetDiscountFromOrder(order, discount, final, promotion);
                     break;
@@ -290,17 +271,6 @@ namespace ApplicationCore.Chain
                     {
                         discount = (decimal) action.DiscountAmount;
                     }
-
-                    if (action.BonusPointRate != null)
-                    {
-                        var bonusRate = (decimal) action.BonusPointRate;
-                        order.BonusPoint = order.TotalAmount * bonusRate;
-                    }
-                    else
-                    {
-                        order.BonusPoint = 0;
-                    }
-
                     if (action.DiscountPercentage > 0)
                     {
                         discount = (decimal) final * (decimal) action.DiscountPercentage / 100;
@@ -314,7 +284,7 @@ namespace ApplicationCore.Chain
                         : 0;
                     break;
                 case (int) AppConstant.EnvVar.ActionType.BonusPoint:
-                    effectType = AppConstant.EffectMessage.AddPoint;
+                    effectType = AppConstant.EffectMessage.GetPoint;
                     order.Discount = discount;
                     if (action.BonusPointRate != null)
                     {
@@ -325,11 +295,9 @@ namespace ApplicationCore.Chain
                     {
                         order.BonusPoint = 0;
                     }
-
                     SetDiscountFromOrder(order, discount, final, promotion);
                     break;
             }
-
             // effectType = discount > 0 ? effectType : AppConstant.EffectMessage.NoProductMatch;
             SetEffect(order, promotion, discount, effectType, promotionTier);
         }

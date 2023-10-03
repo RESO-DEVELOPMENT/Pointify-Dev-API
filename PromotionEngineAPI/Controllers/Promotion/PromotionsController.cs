@@ -23,6 +23,7 @@ namespace PromotionEngineAPI.Controllers
         private readonly IVoucherService _voucherService;
         private readonly IPromotionStoreMappingService _promotionStoreMappingService;
         private readonly IMemberLevelService _memberLevelService;
+        private readonly IMembershipService _membershipService;
         private readonly IChannelService _channelService;
 
 
@@ -30,13 +31,14 @@ namespace PromotionEngineAPI.Controllers
             IPromotionStoreMappingService promotionStoreMappingService,
             IVoucherService voucherService,
             IMemberLevelService memberLevelService,
-            IChannelService channelService)
+            IChannelService channelService, IMembershipService membershipService)
         {
             _promotionService = promotionService;
             _promotionStoreMappingService = promotionStoreMappingService;
             _voucherService = voucherService;
             _memberLevelService = memberLevelService;
             _channelService = channelService;
+            _membershipService = membershipService;
         }
 
         [HttpPost]
@@ -45,6 +47,16 @@ namespace PromotionEngineAPI.Controllers
             [FromQuery] Guid promotionId)
         {
             //Lấy promotion bởi voucher code
+            if (orderInfo.Users.MembershipId != null)
+            {
+                Membership membership = await _membershipService.GetMembershipById(orderInfo.Users.MembershipId);
+                orderInfo.Users.UserEmail = membership.Email;
+                orderInfo.Users.UserName = membership.Fullname;
+                orderInfo.Users.UserGender = membership.Gender ?? 3;
+                orderInfo.Users.UserPhoneNo = membership.PhoneNumber;
+                orderInfo.Users.UserLevel = membership.MemberLevel.Name;
+            }
+
             Order responseModel = new Order();
             var list_remove_voucher = new List<CouponCode>();
             foreach (var voucher in orderInfo.Vouchers)
@@ -73,10 +85,10 @@ namespace PromotionEngineAPI.Controllers
                 var list_remove_promotion = new List<Promotion>();
                 foreach (var promotion in promotions)
                 {
-                    if (!promotion.PromotionStoreMapping.Any(e =>
-                            e.Store.StoreCode == orderInfo.Attributes.StoreInfo.StoreCode))
+                    if (promotion.PromotionStoreMapping.All(e =>
+                            e.Store.StoreCode != orderInfo.Attributes.StoreInfo.StoreCode))
                     {
-                        if (promotion.PromotionStoreMapping.Count() == 0)
+                        if (!promotion.PromotionStoreMapping.Any())
                         {
                             foreach (var promotionAuto in promotions)
                             {
@@ -113,6 +125,7 @@ namespace PromotionEngineAPI.Controllers
                             FinalAmount = orderInfo.Amount,
                             DiscountOrderDetail = 0,
                             Discount = 0,
+                            BonusPoint = 0,
                         }
                     };
                     return Ok(orderResponse);

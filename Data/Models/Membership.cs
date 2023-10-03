@@ -21,6 +21,7 @@ namespace Infrastructure.Models
         public DateTime UpdDate { get; set; }
         public Guid? MemberProgramId { get; set; }
         public Guid? MemberLevelId { get; set; }
+        public int? Gender { get; set; }
 
         public virtual MemberLevel MemberLevel { get; set; }
         public virtual MembershipProgram MemberProgram { get; set; }

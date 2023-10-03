@@ -14,7 +14,7 @@ namespace Infrastructure.Models
         public Guid Id { get; set; }
         public string Name { get; set; }
         public Guid MemberShipProgramId { get; set; }
-        public bool? DelFlag { get; set; }
+        public bool DelFlag { get; set; }
         public string Currency { get; set; }
 
         public virtual MembershipProgram MemberShipProgram { get; set; }

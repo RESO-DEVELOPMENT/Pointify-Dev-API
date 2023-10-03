@@ -42,6 +42,7 @@ namespace ApplicationCore.Request
         public int? PromotionType { get; set; }
         public Object Prop { get; set; }
     }
+
     public class CustomerOrderInfo
     {
         public CustomerOrderInfo()
@@ -109,11 +110,11 @@ namespace ApplicationCore.Request
 
     public class Users
     {
-        public Guid MembershipId { get; set; }
-        [StringLength(100)] public string UserName { get; set; }
-        [StringLength(100)] public string UserEmail { get; set; }
-        [StringLength(12)] public string UserPhoneNo { get; set; }
+        public Guid? MembershipId { get; set; }
+        public string UserName { get; set; }
+        public string UserEmail { get; set; }
+        public string UserPhoneNo { get; set; }
         public int UserGender { get; set; } = 3;
-        [StringLength(100)] public string UserLevel { get; set; }
+        public string UserLevel { get; set; }
     }
 }

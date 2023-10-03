@@ -345,6 +345,7 @@ namespace Infrastructure.Helper
             public const string SetLadder = "setDiscountLadder";
 
             public const string SetBundle = "setDiscountBundle";
+            public const string GetPoint = "GET_POINT";
 
             //Chỉ có 1 set shipping fee => action có discount lớn nhất tùy vào Discount Type
             public const string SetShippingFee = "setShippingFee";

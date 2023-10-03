@@ -26,7 +26,7 @@ namespace ApplicationCore.Services
 
         IGenericRepository<WalletType> _wallet => _unitOfWork.WalletTypeRepository;
         IGenericRepository<MemberWallet> _memberWallet => _unitOfWork.MemberWalletRepository;
-        
+
         //done
         public async Task<MembershipDto> CreateNewMember(Guid apiKey, MembershipDto dto)
         {
@@ -34,9 +34,9 @@ namespace ApplicationCore.Services
             {
                 var lowestLevel = await _level.GetFirst(filter: o =>
                     !o.DelFlg
-                    && o.BrandId.Equals(apiKey) && o.IndexLevel == 0 && o.MemberLevelId.Equals(dto.MemberLevelId));
+                    && o.BrandId.Equals(apiKey) && o.IndexLevel == 0);
                 var listWallet = (await _wallet.Get(filter: o =>
-                    !o.DelFlag ?? true
+                    !o.DelFlag
                     && o.MemberShipProgramId.Equals(dto.MemberProgramId))).ToList();
                 dto.MembershipId = Guid.NewGuid();
                 dto.InsDate = DateTime.Now;
@@ -45,11 +45,9 @@ namespace ApplicationCore.Services
                 dto.MemberLevelId = lowestLevel.MemberLevelId;
                 var entity = _mapper.Map<Membership>(dto);
                 _repository.Add(entity);
-                List<MemberWallet> memberWallets = new List<MemberWallet>();
-                MemberWallet memberWallet = null;
                 foreach (var walletType in listWallet)
                 {
-                    memberWallet = new MemberWallet()
+                    MemberWallet  memberWallet = new MemberWallet()
                     {
                         Id = Guid.NewGuid(),
                         Balance = 0,
@@ -59,10 +57,10 @@ namespace ApplicationCore.Services
                         Name = walletType.Name,
                         WalletTypeId = walletType.Id
                     };
-                    memberWallets.Add(memberWallet);
+                    _memberWallet.Add(memberWallet);
                 }
+
                 // add member wallet vào db
-                _memberWallet.Add(memberWallet);
                 await _unitOfWork.SaveAsync();
                 return _mapper.Map<MembershipDto>(entity);
             }
@@ -74,21 +72,24 @@ namespace ApplicationCore.Services
                     description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
+
         //done
-        public async Task<Membership> GetMembershipById(Guid id)
+        public async Task<Membership> GetMembershipById(Guid? id)
         {
             //check id
-            if (id.Equals(Guid.Empty))
+            if (id.Equals(Guid.Empty) || id == null)
             {
-                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                       description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
             }
+
             try
             {
                 var result = await _repository.GetFirst(filter: o =>
-                                   !o.DelFlg
-                                   && o.MembershipId.Equals(id),
-                                   includeProperties: "MemberLevel,MemberProgram,MemberWallet");
+                        !o.DelFlg
+                        && o.MembershipId.Equals(id),
+                    includeProperties: "MemberLevel,MemberProgram,MemberWallet");
                 return result;
             }
             catch (ErrorObj e)
@@ -96,23 +97,28 @@ namespace ApplicationCore.Services
                 throw e;
             }
         }
+
         //done
         public async Task<string> DeleteMembership(Guid id)
         {
             //check id
             if (id.Equals(Guid.Empty))
             {
-                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                                          description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
             }
+
             try
             {
                 var result = await _repository.GetFirst(filter: o => o.MembershipId.Equals(id));
                 if (result == null)
                 {
-                    throw new ErrorObj(code: (int) HttpStatusCode.NotFound, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                               description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                    throw new ErrorObj(code: (int) HttpStatusCode.NotFound,
+                        message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                        description: AppConstant.ErrMessage.ApiKey_Not_Exist);
                 }
+
                 result.DelFlg = true;
                 _repository.Update(result);
                 await _unitOfWork.SaveAsync();
@@ -124,22 +130,26 @@ namespace ApplicationCore.Services
             }
         }
 
-        public async Task<MembershipDto> UpdateMemberShip (Guid id, UpMembership update)
+        public async Task<MembershipDto> UpdateMemberShip(Guid id, UpMembership update)
         {
             //check id
             if (id.Equals(Guid.Empty))
             {
-                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                                                             description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
             }
+
             try
             {
                 var result = await _repository.GetFirst(filter: o => o.MembershipId.Equals(id) && !o.DelFlg);
                 if (result == null)
                 {
-                    throw new ErrorObj(code: (int) HttpStatusCode.NotFound, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                                                                                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                    throw new ErrorObj(code: (int) HttpStatusCode.NotFound,
+                        message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                        description: AppConstant.ErrMessage.ApiKey_Not_Exist);
                 }
+
                 result.PhoneNumber = update.PhoneNumber;
                 result.Email = update.Email;
                 result.Fullname = update.Fullname;
@@ -154,6 +164,5 @@ namespace ApplicationCore.Services
                 throw e;
             }
         }
-
     }
 }

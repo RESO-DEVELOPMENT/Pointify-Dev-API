@@ -1223,9 +1223,13 @@ namespace Infrastructure.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.Property(e => e.Currency).HasMaxLength(20);
+                entity.Property(e => e.Currency)
+                    .IsRequired()
+                    .HasMaxLength(20);
 
-                entity.Property(e => e.Name).HasMaxLength(50);
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(50);
 
                 entity.HasOne(d => d.MemberShipProgram)
                     .WithMany(p => p.WalletType)
