@@ -55,17 +55,8 @@ namespace WebAPI.Controllers.MemberAction
         //done
         // POST : api/member-action
         [HttpPost("member-action")]
-        public async Task<IActionResult> CreateMemberAction([FromBody] MemberActionModel model)
+        public async Task<IActionResult> CreateMemberAction([FromBody] MemberActionDto dto)
         {
-            var dto = new MemberActionDto
-            {
-                Id = new Guid(),
-                Name = model.Name,
-                ActionType = model.ActionType,
-                ActionValue = model.ActionValue,
-                Status = 1,
-                Note = model.Note
-            };
             //check MemberAction
             var result = await _service.GetFirst(filter: el => el.Id == dto.Id);
             if (result != null)

@@ -249,7 +249,7 @@ namespace PromotionEngineAPI.Controllers
         }
 
         [HttpPost]
-        [Route("/member-action")]
+        [Route("member-action")]
         public async Task<IActionResult> MemberAction(MemberActionRequest request)
         {
             try

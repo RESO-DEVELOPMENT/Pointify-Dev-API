@@ -271,6 +271,7 @@ namespace ApplicationCore.Chain
                     {
                         discount = (decimal) action.DiscountAmount;
                     }
+
                     if (action.DiscountPercentage > 0)
                     {
                         discount = (decimal) final * (decimal) action.DiscountPercentage / 100;
@@ -295,9 +296,11 @@ namespace ApplicationCore.Chain
                     {
                         order.BonusPoint = 0;
                     }
+
                     SetDiscountFromOrder(order, discount, final, promotion);
                     break;
             }
+
             // effectType = discount > 0 ? effectType : AppConstant.EffectMessage.NoProductMatch;
             SetEffect(order, promotion, discount, effectType, promotionTier);
         }

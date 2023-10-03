@@ -30,13 +30,14 @@ namespace WebAPI.Controllers
             var result = await _service.GetAsync(
                 pageIndex: param.page,
                 pageSize: param.size,
-                filter: el => (bool)!el.DelFlag
-                );
+                filter: el => (bool) !el.DelFlag
+            );
 
             if (result == null)
             {
                 return NotFound();
             }
+
             return Ok(result);
         }
 
@@ -49,6 +50,7 @@ namespace WebAPI.Controllers
             {
                 return NotFound();
             }
+
             return Ok(result);
         }
 
@@ -58,8 +60,7 @@ namespace WebAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> PutMemberWallet([FromRoute] Guid id, [FromBody] UpMemberWallet dto)
         {
-
-            var result = await _service.UpdateWallet(id,dto);
+            var result = await _service.UpdateWallet(id, dto);
 
             if (result == null)
             {
@@ -77,12 +78,13 @@ namespace WebAPI.Controllers
             {
                 dto.Id = Guid.NewGuid();
                 dto.DelFlag = false;
-                dto.Balance = 0.0;
+                dto.Balance = 0;
                 var result = await _service.CreateWallet(dto);
                 if (result == null)
                 {
                     return NotFound();
                 }
+
                 return Ok(result);
             }
             catch (ErrorObj e)
@@ -100,6 +102,7 @@ namespace WebAPI.Controllers
             {
                 return BadRequest();
             }
+
             var result = await _service.DeleteWallet(id);
             return Ok(result);
         }

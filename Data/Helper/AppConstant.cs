@@ -499,7 +499,7 @@ namespace Infrastructure.Helper
         public struct MemberActionStatus
         {
             public const string Prossecing = "PROSSECING";
-            public const string Done = "DONE";
+            public const string Success = "SUCCESS";
             public const string Fail = "FAIL";
         }
     }

@@ -17,7 +17,7 @@ namespace ApplicationCore.Services
         }
 
         protected override IGenericRepository<MemberAction> _repository => _unitOfWork.MemberActionRepository;
-        
+
         protected IGenericRepository<MemberActionType> _memberActionType => _unitOfWork.MemberActionTypeRepository;
         protected IGenericRepository<MemberWallet> _memberWallet => _unitOfWork.MemberWalletRepository;
         protected IGenericRepository<Transaction> _transaction => _unitOfWork.TransactionRepository;
@@ -27,12 +27,12 @@ namespace ApplicationCore.Services
         {
             MemberActionType actionType = await _memberActionType
                 .GetFirst(
-                    filter: x => x.Id.Equals(request.MemberActionTypeId));
+                    filter: x => x.Code.Equals(request.MemberActionType));
 
             MemberWallet wallet = await _memberWallet.GetFirst(
                 filter: x =>
                     x.MemberId.Equals(request.MembershipId) && x.WalletTypeId.Equals(actionType.MemberWalletTypeId),
-                "MemberWallet.WalletType"
+                "WalletType"
             );
 
             MemberAction memberAction = new MemberAction()
@@ -42,18 +42,18 @@ namespace ApplicationCore.Services
                 Status = AppConstant.MemberActionStatus.Prossecing,
                 ActionValue = 0,
                 MemberWalletId = wallet.Id,
-                MemberActionTypeId = request.MemberActionTypeId,
+                MemberActionTypeId = actionType.Id,
             };
             _repository.Add(memberAction);
             await _unitOfWork.SaveAsync();
-            switch (actionType.Code)
+            switch (request.MemberActionType)
             {
                 case "GET_POINT":
                 {
                     wallet.Balance += request.Amount;
                     wallet.BalanceHistory += request.Amount;
                     memberAction.ActionValue = request.Amount;
-                    memberAction.Status = AppConstant.MemberActionStatus.Done;
+                    memberAction.Status = AppConstant.MemberActionStatus.Success;
                     memberAction.Description = "[Thành công] " + request.Description;
                     break;
                 }
@@ -62,7 +62,7 @@ namespace ApplicationCore.Services
                     wallet.Balance += request.Amount;
                     wallet.BalanceHistory += request.Amount;
                     memberAction.ActionValue = request.Amount;
-                    memberAction.Status = AppConstant.MemberActionStatus.Done;
+                    memberAction.Status = AppConstant.MemberActionStatus.Success;
                     memberAction.Description = "[Thành công] " + request.Description;
                     break;
                 }
@@ -77,13 +77,13 @@ namespace ApplicationCore.Services
 
                     wallet.Balance -= request.Amount;
                     memberAction.ActionValue = request.Amount;
-                    memberAction.Status = AppConstant.MemberActionStatus.Done;
+                    memberAction.Status = AppConstant.MemberActionStatus.Success;
                     memberAction.Description = "[Thành công] " + request.Description;
                     break;
                 }
             }
 
-            if (memberAction.Status == AppConstant.MemberActionStatus.Done)
+            if (memberAction.Status == AppConstant.MemberActionStatus.Success)
             {
                 Transaction transaction = new Transaction()
                 {
@@ -102,7 +102,7 @@ namespace ApplicationCore.Services
                 var isSuccess = await _unitOfWork.SaveAsync();
                 if (isSuccess < 1)
                 {
-                    memberAction.Status = AppConstant.MemberActionStatus.Done;
+                    memberAction.Status = AppConstant.MemberActionStatus.Fail;
                     memberAction.Description = "[Thất bại] Giao dịch thất bại";
                 }
             }

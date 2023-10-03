@@ -110,7 +110,7 @@ namespace ApplicationCore.Request
 
     public class Users
     {
-        public Guid? MembershipId { get; set; }
+        public Guid MembershipId { get; set; }
         public string UserName { get; set; }
         public string UserEmail { get; set; }
         public string UserPhoneNo { get; set; }

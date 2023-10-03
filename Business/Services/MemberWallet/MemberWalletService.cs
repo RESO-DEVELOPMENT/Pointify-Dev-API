@@ -31,7 +31,7 @@ namespace ApplicationCore.Services
             {
                 dto.Id = Guid.NewGuid();
                 dto.DelFlag = false;
-                dto.Balance = 0.0;
+                dto.Balance = 0;
                 var entity = _mapper.Map<MemberWallet>(dto);
                 _repository.Add(entity);
                 //WallType == null
@@ -58,9 +58,11 @@ namespace ApplicationCore.Services
             //check id
             if (id.Equals(Guid.Empty))
             {
-                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                       description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
             }
+
             try
             {
                 var result = await _repository.GetFirst(filter: o => o.Id.Equals(id));
@@ -72,22 +74,26 @@ namespace ApplicationCore.Services
             }
         }
 
-        public async Task<MemberWalletDto> UpdateWallet(Guid id,UpMemberWallet dto)
+        public async Task<MemberWalletDto> UpdateWallet(Guid id, UpMemberWallet dto)
         {
             //check id
             if (id.Equals(Guid.Empty))
             {
-                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                                                             description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
             }
+
             try
             {
                 var result = await _repository.GetFirst(filter: o => o.Id.Equals(id));
                 if (result == null)
                 {
-                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                                                                                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                    throw new ErrorObj(code: (int) HttpStatusCode.NotFound,
+                        message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                        description: AppConstant.ErrMessage.ApiKey_Not_Exist);
                 }
+
                 result.Name = dto.Name;
                 result.Balance = dto.Balance;
                 result.BalanceHistory = dto.BalanceHistory;
@@ -106,17 +112,21 @@ namespace ApplicationCore.Services
             //check id
             if (id.Equals(Guid.Empty))
             {
-                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                                          description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
             }
+
             try
             {
                 var result = await _repository.GetFirst(filter: o => o.Id.Equals(id));
                 if (result == null)
                 {
-                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                                               description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                    throw new ErrorObj(code: (int) HttpStatusCode.NotFound,
+                        message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                        description: AppConstant.ErrMessage.ApiKey_Not_Exist);
                 }
+
                 result.DelFlag = true;
                 _repository.Update(result);
                 await _unitOfWork.SaveAsync();

@@ -525,6 +525,8 @@ namespace Infrastructure.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
+                entity.Property(e => e.ActionValue).HasColumnType("decimal(18, 0)");
+
                 entity.Property(e => e.Description).IsRequired();
 
                 entity.Property(e => e.Status).HasMaxLength(50);
@@ -612,6 +614,10 @@ namespace Infrastructure.Models
             modelBuilder.Entity<MemberWallet>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Balance).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.BalanceHistory).HasColumnType("decimal(18, 0)");
 
                 entity.Property(e => e.Name).HasMaxLength(50);
 
@@ -1068,6 +1074,8 @@ namespace Infrastructure.Models
             modelBuilder.Entity<Transaction>(entity =>
             {
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+
+                entity.Property(e => e.Amount).HasColumnType("decimal(18, 0)");
 
                 entity.Property(e => e.Currency).HasMaxLength(20);
 
