@@ -12,5 +12,109 @@ namespace ApplicationCore.Services
         {
         }
         protected override IGenericRepository<MemberAction> _repository => _unitOfWork.MemberActionRepository;
+<<<<<<< Updated upstream
+=======
+
+        protected IGenericRepository<MemberActionType> _memberActionType => _unitOfWork.MemberActionTypeRepository;
+        protected IGenericRepository<MemberWallet> _memberWallet => _unitOfWork.MemberWalletRepository;
+        protected IGenericRepository<Transaction> _transaction => _unitOfWork.TransactionRepository;
+
+
+        public async Task<MemberActionDto> CreateMemberAction(MemberActionRequest request)
+        {
+            MemberActionType actionType = await _memberActionType
+                .GetFirst(
+                    filter: x => x.Code.Equals(request.MemberActionType));
+
+            MemberWallet wallet = await _memberWallet.GetFirst(
+                filter: x =>
+                    x.MemberId.Equals(request.MembershipId) && x.WalletTypeId.Equals(actionType.MemberWalletTypeId),
+                "WalletType"
+            );
+
+            MemberAction memberAction = new MemberAction()
+            {
+                Id = Guid.NewGuid(),
+                Description = request.Description,
+                Status = AppConstant.MemberActionStatus.Prossecing,
+                ActionValue = 0,
+                MemberWalletId = wallet.Id,
+                MemberActionTypeId = actionType.Id,
+                InsDate = DateTime.Now,
+                UpdDate = DateTime.Now
+            };
+            _repository.Add(memberAction);
+            await _unitOfWork.SaveAsync();
+            switch (request.MemberActionType)
+            {
+                case "GET_POINT":
+                {
+                    wallet.Balance += request.Amount;
+                    wallet.BalanceHistory += request.Amount;
+                    memberAction.ActionValue = request.Amount;
+                    memberAction.Status = AppConstant.MemberActionStatus.Success;
+                    memberAction.UpdDate = DateTime.Now;
+                    memberAction.Description = "[Thành công] " + request.Description;
+                    break;
+                }
+                case "TOP_UP":
+                {
+                    wallet.Balance += request.Amount;
+                    wallet.BalanceHistory += request.Amount;
+                    memberAction.ActionValue = request.Amount;
+                    memberAction.Status = AppConstant.MemberActionStatus.Success;
+                    memberAction.UpdDate = DateTime.Now;
+                    memberAction.Description = "[Thành công] " + request.Description;
+                    break;
+                }
+                case "PAYMENT":
+                {
+                    if (wallet.Balance < request.Amount)
+                    {
+                        memberAction.UpdDate = DateTime.Now;
+                        memberAction.Status = AppConstant.MemberActionStatus.Fail;
+                        memberAction.Description = "[Thất bại] Số dư tài khoản không đủ";
+                        break;
+                    }
+
+                    wallet.Balance -= request.Amount;
+                    memberAction.ActionValue = request.Amount;
+                    memberAction.UpdDate = DateTime.Now;
+                    memberAction.Status = AppConstant.MemberActionStatus.Success;
+                    memberAction.Description = "[Thành công] " + request.Description;
+                    break;
+                }
+            }
+
+            if (memberAction.Status == AppConstant.MemberActionStatus.Success)
+            {
+                Transaction transaction = new Transaction()
+                {
+                    Id = Guid.NewGuid(),
+                    BrandId = request.ApiKey,
+                    InsDate = DateTime.Now,
+                    UpdDate = DateTime.Now,
+                    MemberActionId = memberAction.Id,
+                    MemberWalletId = memberAction.MemberWalletId,
+                    TransactionJson = memberAction.Description,
+                    Amount = memberAction.ActionValue,
+                    Currency = wallet.WalletType.Currency
+                };
+
+                _transaction.Add(transaction);
+                var isSuccess = await _unitOfWork.SaveAsync();
+                if (isSuccess < 1)
+                {
+                    memberAction.Status = AppConstant.MemberActionStatus.Fail;
+                    memberAction.Description = "[Thất bại] Giao dịch thất bại";
+                }
+            }
+
+            _memberWallet.Update(wallet);
+            _repository.Update(memberAction);
+            var isSuccessful = await _unitOfWork.SaveAsync();
+            return isSuccessful > 0 ? _mapper.Map<MemberActionDto>(memberAction) : null;
+        }
+>>>>>>> Stashed changes
     }
 }

@@ -102,5 +102,19 @@ namespace PromotionEngineAPI.Controllers
             string result = await _service.DeleteMembership(id);
             return Ok(result);
         }
+
+        //Scan code
+        [HttpGet]
+        [Route("scan/{code}")]
+        public async Task<IActionResult> ScanCode([FromRoute] string code)
+        {
+            var result = await _service.ScanMemberCode(code);
+            if (result == null)
+            {
+                return Ok("Code không tồn tại");
+            }
+
+            return Ok(result);
+        }   
     }
 }

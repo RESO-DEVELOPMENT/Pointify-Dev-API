@@ -26,7 +26,12 @@ namespace ApplicationCore.Services
 
         IGenericRepository<WalletType> _wallet => _unitOfWork.WalletTypeRepository;
         IGenericRepository<MemberWallet> _memberWallet => _unitOfWork.MemberWalletRepository;
+<<<<<<< Updated upstream
         
+=======
+        IGenericRepository<MembershipCard> _membershipCard => _unitOfWork.MemberShipCardRepository;
+
+>>>>>>> Stashed changes
         //done
         public async Task<MembershipDto> CreateNewMember(Guid apiKey, MembershipDto dto)
         {
@@ -155,5 +160,17 @@ namespace ApplicationCore.Services
             }
         }
 
+<<<<<<< Updated upstream
+=======
+        public async Task<Membership> ScanMemberCode(string code)
+        {
+            var result = await _membershipCard.GetFirst(filter: o => o.MembershipCardCode.Equals(code));
+            var member = await _repository.GetFirst(filter: o =>
+                    !o.DelFlg
+                    && o.MembershipId.Equals(result.MemberId), 
+                    includeProperties: "MemberWallet,MemberLevel,MembershipCard");
+            return member;
+        }
+>>>>>>> Stashed changes
     }
 }

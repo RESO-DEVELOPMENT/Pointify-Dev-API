@@ -527,7 +527,11 @@ namespace Infrastructure.Models
 
                 entity.Property(e => e.Description).IsRequired();
 
+                entity.Property(e => e.InsDate).HasColumnType("datetime");
+
                 entity.Property(e => e.Status).HasMaxLength(50);
+
+                entity.Property(e => e.UpdDate).HasColumnType("datetime");
 
                 entity.HasOne(d => d.MemberActionType)
                     .WithMany(p => p.MemberAction)

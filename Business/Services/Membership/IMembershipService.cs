@@ -14,5 +14,6 @@ namespace ApplicationCore.Services
         public Task<Membership> GetMembershipById(Guid id);
         public Task<string> DeleteMembership(Guid id);
         public Task<MembershipDto> UpdateMemberShip(Guid id, UpMembership update);
+        public Task<Membership> ScanMemberCode(string code);
     }
 }
