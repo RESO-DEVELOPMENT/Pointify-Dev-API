@@ -12,7 +12,8 @@ namespace ApplicationCore.Services
     {
         public Task<MembershipDto> CreateNewMember(Guid apiKey, MembershipDto dto);
         public Task<Membership> GetMembershipById(Guid? id);
+        public Task<Membership> GetMembershipByIdKey(Guid? id, Guid? apiKey);
         public Task<string> DeleteMembership(Guid id);
-        public Task<MembershipDto> UpdateMemberShip(Guid id, UpMembership update);
+        public Task<MembershipDto> UpdateMemberShip(Guid id, UpMembership update,Guid apiKey);
     }
 }

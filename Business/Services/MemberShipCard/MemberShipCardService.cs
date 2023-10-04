@@ -5,9 +5,11 @@ using Infrastructure.Helper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -25,6 +27,8 @@ namespace ApplicationCore.Services
         {
             try
             {
+                var check = await _repository.GetFirst(filter: el => el.BrandId.Equals(dto.BrandId));
+                if (check == null) { return null; }
                 dto.Id = Guid.NewGuid();
                 //dto.MembershipCardCode = Common.makeCode(10);
                 var digit = Common.makeCode(10);
@@ -54,14 +58,69 @@ namespace ApplicationCore.Services
             throw new NotImplementedException();
         }
 
-        public Task<MemberShipCardDto> GetMemberShipCardDetail(Guid id)
+        public Task<MemberShipCardDto> GetMemberShipCardDetail(Guid id, Guid apiKey)
         {
             throw new NotImplementedException();
         }
 
-        public Task<MemberShipCardDto> UpdateMemberShipCard(MemberShipCardDto dto)
+        public async Task<MemberShipCardDto> UpdateMemberShipCard(Guid id, MemberShipCardDto dto, Guid apiKey)
         {
-            throw new NotImplementedException();
+            //check id
+            if (id.Equals(Guid.Empty))
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+            }
+
+            try
+            {
+                var result = await _repository.GetFirst(filter: o => o.Id.Equals(id)
+                                                        && o.BrandId.Equals(apiKey));
+                if (result == null)
+                {
+                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
+                        message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                        description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                }
+
+                result.MemberId = dto.MemberId;
+                result.MembershipCardCode = dto.MembershipCardCode;
+                result.PhysicalCardCode = dto.PhysicalCardCode;
+                _repository.Update(result);
+                await _unitOfWork.SaveAsync();
+                return _mapper.Map<MemberShipCardDto>(result);
+            }
+            catch (ErrorObj e)
+            {
+                throw e;
+            }
+        }
+
+        public async Task<bool> AddCodeForMember(Guid id, Guid apiKey)
+        {
+            try
+            {
+                var check = false;
+                var result = await _repository.GetFirst(filter: o => o.Id.Equals(id)
+                                                        && o.BrandId.Equals(apiKey));
+                if (result == null)
+                {
+                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
+                        message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                        description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                }
+
+                result.PhysicalCardCode = result.MembershipCardCode;
+                _repository.Update(result);
+                await _unitOfWork.SaveAsync();
+                check = true;
+                return check;
+            }
+            catch (ErrorObj e)
+            {
+                throw e;
+            }
         }
     }
 }

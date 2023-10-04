@@ -43,6 +43,8 @@ namespace ApplicationCore.Services
                 ActionValue = 0,
                 MemberWalletId = wallet.Id,
                 MemberActionTypeId = actionType.Id,
+                InsDate = DateTime.Now,
+                UpdDate = DateTime.Now,
             };
             _repository.Add(memberAction);
             await _unitOfWork.SaveAsync();
@@ -106,7 +108,7 @@ namespace ApplicationCore.Services
                     memberAction.Description = "[Thất bại] Giao dịch thất bại";
                 }
             }
-
+            memberAction.UpdDate = DateTime.Now;
             _memberWallet.Update(wallet);
             _repository.Update(memberAction);
             var isSuccessful = await _unitOfWork.SaveAsync();

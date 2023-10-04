@@ -24,12 +24,12 @@ namespace WebAPI.Controllers.MemberAction
 
         // GET: api/v1/member-actions
         [HttpGet("member-actions")]
-        public async Task<IActionResult> GetMemberAction([FromQuery] PagingRequestParam param)
+        public async Task<IActionResult> GetMemberAction([FromQuery] Guid apiKey, [FromQuery] PagingRequestParam param)
         {
             var result = await _service.GetAsync(
                 pageIndex: param.page,
                 pageSize: param.size,
-                filter: el => (bool) !el.DelFlag);
+                filter: el => (bool) !el.DelFlag && el.MemberActionType.MemberShipProgram.BrandId.Equals(apiKey));
 
             if (result == null)
             {
@@ -41,12 +41,13 @@ namespace WebAPI.Controllers.MemberAction
 
         //GET: api/member-actions/{id}
         [HttpGet("member-actions/{id}")]
-        public async Task<IActionResult> GetMemberAction([FromRoute] Guid id)
+        public async Task<IActionResult> GetMemberAction([FromQuery] Guid apiKey, [FromRoute] Guid id)
         {
-            var result = await _service.GetFirst(filter: el => el.Id == id);
+            var result = await _service.GetFirst(filter: el => el.Id == id && el.MemberActionType.MemberShipProgram.BrandId.Equals(apiKey));
             if (result == null)
             {
-                return NotFound();
+                return StatusCode(statusCode: StatusCodes.Status409Conflict,
+                    new ErrorObj(StatusCodes.Status409Conflict, "MemberAction is not exist"));
             }
 
             return Ok(result);
@@ -55,7 +56,7 @@ namespace WebAPI.Controllers.MemberAction
         //done
         // POST : api/member-action
         [HttpPost("member-action")]
-        public async Task<IActionResult> CreateMemberAction([FromBody] MemberActionDto dto)
+        public async Task<IActionResult> CreateMemberAction([FromQuery]Guid apiKey,[FromBody] MemberActionDto dto)
         {
             //check MemberAction
             var result = await _service.GetFirst(filter: el => el.Id == dto.Id);
@@ -71,7 +72,7 @@ namespace WebAPI.Controllers.MemberAction
 
         //PATCH: api/member-actions/{id}
         [HttpPatch("member-actions/{id}")]
-        public async Task<IActionResult> UpdateMemberAction([FromRoute] Guid id, [FromBody] MemberActionDto dto)
+        public async Task<IActionResult> UpdateMemberAction([FromQuery]Guid apiKey,[FromRoute] Guid id, [FromBody] MemberActionDto dto)
         {
             //check MemberAction
             var result = await _service.GetFirst(filter: el => el.Id == id);

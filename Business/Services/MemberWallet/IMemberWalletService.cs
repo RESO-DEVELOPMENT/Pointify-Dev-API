@@ -11,7 +11,8 @@ namespace ApplicationCore.Services
         public Task<MemberWallet> GetMemberWalletById(Guid id);
         public Task<bool> HideWallet(Guid id, string value);
 
-        public Task<MemberWalletDto> UpdateWallet(Guid id, UpMemberWallet dto);
+        public Task<MemberWalletDto> UpdateWallet(Guid id, UpMemberWallet dto, Guid apiKey);
         public Task<string> DeleteWallet(Guid id);
+        public Task<MemberWallet> GetMemberWalletByIdKey(Guid? id, Guid? apiKey);
     }
 }
