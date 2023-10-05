@@ -23,7 +23,7 @@ namespace ApplicationCore.Services
 
         protected override IGenericRepository<Membership> _repository => _unitOfWork.MembershipRepository;
         IGenericRepository<MemberLevel> _level => _unitOfWork.MemberLevelRepository;
-
+        IGenericRepository<MembershipProgram> _program => _unitOfWork.MembershipProgramRepository;
         IGenericRepository<WalletType> _wallet => _unitOfWork.WalletTypeRepository;
         IGenericRepository<MemberWallet> _memberWallet => _unitOfWork.MemberWalletRepository;
 
@@ -73,13 +73,37 @@ namespace ApplicationCore.Services
             }
         }
 
-        //done
+        //Done
+        public async Task<Membership> GetMembershipByIdKey(Guid? id,Guid? apiKey)
+        {
+            if (id.Equals(Guid.Empty) || id == null || apiKey == null)
+            {
+                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+            }
+
+            try
+            {
+                var result = await _repository.GetFirst(filter: o =>
+                        !o.DelFlg
+                        && o.MembershipId.Equals(id)
+                        && o.MemberProgram.BrandId.Equals(apiKey),
+                    includeProperties: "MemberLevel,MemberProgram,MemberWallet");
+                return result;
+            }
+            catch (ErrorObj e)
+            {
+                throw e;
+            }
+        }
+        //Done
         public async Task<Membership> GetMembershipById(Guid? id)
         {
             //check id
             if (id.Equals(Guid.Empty) || id == null)
             {
-                throw new ErrorObj(code: (int) HttpStatusCode.BadRequest,
+                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest,
                     message: AppConstant.ErrMessage.ApiKey_Not_Exist,
                     description: AppConstant.ErrMessage.ApiKey_Not_Exist);
             }
@@ -130,7 +154,7 @@ namespace ApplicationCore.Services
             }
         }
 
-        public async Task<MembershipDto> UpdateMemberShip(Guid id, UpMembership update)
+        public async Task<MembershipDto> UpdateMemberShip(Guid id, UpMembership update, Guid apiKey)
         {
             //check id
             if (id.Equals(Guid.Empty))
@@ -142,7 +166,8 @@ namespace ApplicationCore.Services
 
             try
             {
-                var result = await _repository.GetFirst(filter: o => o.MembershipId.Equals(id) && !o.DelFlg);
+                var result = await _repository.GetFirst(filter: o => o.MembershipId.Equals(id) && !o.DelFlg
+                                                                && o.MemberProgram.BrandId.Equals(apiKey));
                 if (result == null)
                 {
                     throw new ErrorObj(code: (int) HttpStatusCode.NotFound,

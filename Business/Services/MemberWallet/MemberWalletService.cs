@@ -24,7 +24,29 @@ namespace ApplicationCore.Services
         private IMembershipService _member;
         //protected IGenericRepository<WalletType> _wallet => _unitOfWork.Wall
 
+        public async Task<MemberWallet> GetMemberWalletByIdKey(Guid? id, Guid? apiKey)
+        {
+            if (id.Equals(Guid.Empty) || id == null || apiKey == null)
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+            }
 
+            try
+            {
+                var result = await _repository.GetFirst(filter: o =>
+                        (bool)!o.DelFlag
+                        && o.Id.Equals(id)
+                        && o.WalletType.MemberShipProgram.BrandId.Equals(apiKey),
+                    includeProperties: "MemberAction,Transaction");
+                return result;
+            }
+            catch (ErrorObj e)
+            {
+                throw e;
+            }
+        }
         public async Task<MemberWalletDto> CreateWallet(MemberWalletDto dto)
         {
             try
@@ -74,7 +96,7 @@ namespace ApplicationCore.Services
             }
         }
 
-        public async Task<MemberWalletDto> UpdateWallet(Guid id, UpMemberWallet dto)
+        public async Task<MemberWalletDto> UpdateWallet(Guid id, UpMemberWallet dto, Guid apiKey)
         {
             //check id
             if (id.Equals(Guid.Empty))
@@ -86,7 +108,8 @@ namespace ApplicationCore.Services
 
             try
             {
-                var result = await _repository.GetFirst(filter: o => o.Id.Equals(id));
+                var result = await _repository.GetFirst(filter: o => o.Id.Equals(id)
+                                                        && o.WalletType.MemberShipProgram.BrandId.Equals(apiKey));
                 if (result == null)
                 {
                     throw new ErrorObj(code: (int) HttpStatusCode.NotFound,

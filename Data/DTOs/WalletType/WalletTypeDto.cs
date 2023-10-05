@@ -8,5 +8,6 @@ namespace Infrastructure.DTOs.WalletType
         public string Name { get; set; }
         public Guid MemberShipProgramId { get; set; }
         public bool? DelFlag { get; set; }
+        public string Currency { get; set; }
     }
 }

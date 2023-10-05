@@ -24,12 +24,12 @@ namespace PromotionEngineAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetMemberLevel([FromQuery] PagingRequestParam param, [FromQuery] Guid brandId)
+        public async Task<IActionResult> GetMemberLevel([FromQuery] PagingRequestParam param, [FromQuery] Guid apiKey)
         {
             try
             {
                 var result = await _service.GetAsync(pageIndex: param.page, pageSize: param.size,
-                    filter: o => o.BrandId.Equals(brandId) && !o.DelFlg);
+                    filter: o => o.BrandId.Equals(apiKey) && !o.DelFlg);
                 return Ok(result);
             }
             catch (ErrorObj e)
@@ -41,11 +41,11 @@ namespace PromotionEngineAPI.Controllers
 
         [HttpGet]
         [Route("count")]
-        public async Task<IActionResult> CountMemberLevel()
+        public async Task<IActionResult> CountMemberLevel([FromQuery]Guid apiKey)
         {
             try
             {
-                return Ok(await _service.CountAsync());
+                return Ok(await _service.CountAsync(filter: el => el.BrandId.Equals(apiKey)));
             }
             catch (ErrorObj e)
             {
@@ -55,10 +55,12 @@ namespace PromotionEngineAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetMemberLevel([FromRoute] Guid id)
+        public async Task<IActionResult> GetMemberLevel([FromRoute] Guid id, [FromQuery]Guid apiKey)
         {
             try
             {
+                var check = await _service.GetFirst(filter: el => el.BrandId.Equals(apiKey));
+                if(check == null) { return NotFound(); }
                 var result = await _service.GetByIdAsync(id);
                 return Ok(result);
 
@@ -70,7 +72,7 @@ namespace PromotionEngineAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMemberLevel([FromRoute] Guid id, [FromBody] MemberLevelDto dto)
+        public async Task<IActionResult> PutMemberLevel([FromRoute] Guid id, [FromBody] MemberLevelDto dto, [FromQuery]Guid apiKey)
         {
             if (id != dto.MemberLevelId || id.Equals(Guid.Empty))
             {
@@ -78,6 +80,8 @@ namespace PromotionEngineAPI.Controllers
             }
             try
             {
+                var check = await _service.GetFirst(filter: el => el.BrandId.Equals(apiKey));
+                if(check == null) { return NotFound(); }
                 dto.UpdDate = DateTime.Now;
                 var result = await _service.Update(dto);
                 return Ok(result);
@@ -95,7 +99,8 @@ namespace PromotionEngineAPI.Controllers
         [Route("exist")]
         public async Task<IActionResult> ExistMemberLevel([FromQuery] string Level, [FromQuery] Guid BrandId, [FromRoute] Guid MemberLevelId)
         {
-            if (String.IsNullOrEmpty(Level) || BrandId.Equals(Guid.Empty))
+            var check = await _service.GetFirst(filter: el => el.BrandId.Equals(BrandId));
+            if (String.IsNullOrEmpty(Level) || BrandId.Equals(Guid.Empty) || check == null)
             {
                 return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, value: new ErrorResponse().BadRequest);
             }
@@ -131,7 +136,7 @@ namespace PromotionEngineAPI.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteMemberLevel([FromQuery] Guid id)
+        public async Task<IActionResult> DeleteMemberLevel([FromQuery] Guid id, [FromQuery]Guid apiKey)
         {
             if (id.Equals(Guid.Empty))
             {
@@ -139,6 +144,7 @@ namespace PromotionEngineAPI.Controllers
             }
             try
             {
+                var check = await _service.GetFirst(filter: el => el.BrandId.Equals(apiKey));
                 var result = await _service.DeleteAsync(id);
                 return Ok();
             }

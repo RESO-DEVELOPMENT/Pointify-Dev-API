@@ -33,6 +33,20 @@ namespace PromotionEngineAPI.Controllers
 
             return Ok(result);
         }
+        [HttpGet("apiKey")]
+        // api/Memberships?pageIndex=...&pageSize=...&apiKey=...
+        public async Task<IActionResult> GetMembershipbyApiKey([FromQuery] PagingRequestParam param, [FromQuery] Guid apiKey)
+        {
+            var result = await _service.GetAsync(pageIndex: param.page, pageSize: param.size, filter: el => !el.DelFlg 
+            && el.MemberProgram.BrandId.Equals(apiKey)
+             , includeProperties: "MemberLevel,MemberProgram,MemberWallet");
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
 
         // GET: api/Memberships/count
         [HttpGet]
@@ -54,13 +68,25 @@ namespace PromotionEngineAPI.Controllers
 
             return Ok(result);
         }
+        // GET: api/Memberships/5
+        [HttpGet("apiKey/{id}")]
+        public async Task<IActionResult> GetMembershipByApiKey([FromRoute] Guid id,[FromQuery] Guid apiKey)
+        {
+            var result = await _service.GetMembershipByIdKey(id, apiKey);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
 
         // PUT: api/Memberships/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMembership([FromRoute] Guid id, [FromBody] UpMembership dto)
+        public async Task<IActionResult> PutMembership([FromRoute] Guid id,[FromQuery]Guid apiKey, [FromBody] UpMembership dto)
         {
 
-            var result = await _service.UpdateMemberShip(id,dto);
+            var result = await _service.UpdateMemberShip(id, dto, apiKey);
 
             if (result == null)
             {

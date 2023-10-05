@@ -25,9 +25,9 @@ namespace WebAPI.Controllers.MembershipProgram
         // GET:api/v1/membership-programs/{id}
         [HttpGet("membership-programs/{id}")]
 
-        public async Task<IActionResult> GetMembershipProgram([FromRoute] Guid id)
+        public async Task<IActionResult> GetMembershipProgram([FromRoute] Guid id, [FromQuery] Guid apiKey)
         {
-            var result = await _service.GetFirst(filter: el => el.Id == id,
+            var result = await _service.GetFirst(filter: el => el.Id == id && el.BrandId.Equals(apiKey),
                 includeProperties: "WalletType");
             if (result == null)
             {
@@ -40,13 +40,13 @@ namespace WebAPI.Controllers.MembershipProgram
         // GET:api/v1/membership-programs
 
         [HttpGet("membership-programs")]
-        public async Task<IActionResult> GetMembershipProgram([FromQuery] PagingRequestParam param)
+        public async Task<IActionResult> GetMembershipProgram([FromQuery] PagingRequestParam param, [FromQuery]Guid apiKey)
         {
             var result = await _service.GetAsync(
                                pageIndex: param.page,
                                pageSize: param.size,
-                               filter: el => (bool)!el.DelFlg,
-                               orderBy: el => el.OrderByDescending(b => b.StartDay));
+                               filter: el => (bool)!el.DelFlg && el.BrandId.Equals(apiKey),
+                               orderBy: el => el.OrderByDescending(b => b.StartDay)); ;
 
             if (result == null)
             {
@@ -59,10 +59,13 @@ namespace WebAPI.Controllers.MembershipProgram
         [HttpPost("membership-program")]
         public async Task<IActionResult> PostMembershipProgram([FromBody] MembershipProgramDto membershipProgramDto)
         {
-            if (!ModelState.IsValid)
+            var check = await _service.GetFirst(filter: el => el.BrandId.Equals(membershipProgramDto.BrandId));
+            if (!ModelState.IsValid && check == null)
             {
                 return BadRequest(ModelState);
             }
+            membershipProgramDto.Id = Guid.NewGuid();
+            membershipProgramDto.DelFlg = false;
             var result = await _service.CreateAsync(membershipProgramDto);
             if (result == null)
             {
@@ -74,7 +77,7 @@ namespace WebAPI.Controllers.MembershipProgram
         //done
         // PATCH: api/v1/membership-programs/{id}
         [HttpPatch("membership-programs/{id}")]
-        public async Task<IActionResult> PatchMembershipProgram([FromRoute] Guid id, [FromBody] MembershipProgramDto membershipProgramDto)
+        public async Task<IActionResult> PatchMembershipProgram([FromRoute] Guid id, [FromBody] MembershipProgramDto membershipProgramDto, [FromQuery]Guid apiKey)
         {
             if (!ModelState.IsValid)
             {
@@ -86,6 +89,9 @@ namespace WebAPI.Controllers.MembershipProgram
             }
             try
             {
+                var check = await _service.GetFirst(filter: el => el.Id == id && el.BrandId.Equals(apiKey),
+                includeProperties: "WalletType");
+                if (check == null) { return NotFound(); }
                 var result = await _service.UpdateAsync(membershipProgramDto);
                 if (result == null)
                 {
