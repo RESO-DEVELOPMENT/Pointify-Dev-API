@@ -247,19 +247,5 @@ namespace PromotionEngineAPI.Controllers
                 return StatusCode(statusCode: e.Code, e);
             }
         }
-
-        [HttpPost]
-        [Route("member-action")]
-        public async Task<IActionResult> MemberAction(MemberActionRequest request)
-        {
-            try
-            {
-                return Ok(await _memberActionService.CreateMemberAction(request));
-            }
-            catch (ErrorObj e)
-            {
-                return StatusCode(statusCode: e.Code, e);
-            }
-        }
     }
 }

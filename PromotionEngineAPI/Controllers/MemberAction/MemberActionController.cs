@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using Infrastructure.DTOs.Request;
 using static Infrastructure.Helper.AppConstant.EnvVar;
 
 namespace WebAPI.Controllers.MemberAction
@@ -54,19 +55,18 @@ namespace WebAPI.Controllers.MemberAction
 
         //done
         // POST : api/member-action
-        [HttpPost("member-action")]
-        public async Task<IActionResult> CreateMemberAction([FromBody] MemberActionDto dto)
+        [HttpPost]
+        [Route("member-action")]
+        public async Task<IActionResult> MemberAction(MemberActionRequest request)
         {
-            //check MemberAction
-            var result = await _service.GetFirst(filter: el => el.Id == dto.Id);
-            if (result != null)
+            try
             {
-                return StatusCode(statusCode: StatusCodes.Status409Conflict,
-                    new ErrorObj(StatusCodes.Status409Conflict, "MemberAction is already exist"));
+                return Ok(await _service.CreateMemberAction(request));
             }
-
-            var newMemberAction = await _service.CreateAsync(dto);
-            return StatusCode(statusCode: StatusCodes.Status201Created, newMemberAction);
+            catch (ErrorObj e)
+            {
+                return StatusCode(statusCode: e.Code, e);
+            }
         }
 
         //PATCH: api/member-actions/{id}

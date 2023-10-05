@@ -50,6 +50,24 @@ namespace PromotionEngineAPI.Controllers
             if (orderInfo.Users.MembershipId != null)
             {
                 Membership membership = await _membershipService.GetMembershipById(orderInfo.Users.MembershipId);
+                if (membership == null)
+                {
+                    var orderResponseModel = new OrderResponseModel
+                    {
+                        Code = (int) AppConstant.ErrCode.Empty_CustomerInfo,
+                        Message = AppConstant.ErrMessage.Empty_CustomerInfo,
+                        Order = new Order
+                        {
+                            CustomerOrderInfo = orderInfo,
+                            FinalAmount = orderInfo.Amount,
+                            DiscountOrderDetail = 0,
+                            Discount = 0,
+                            BonusPoint = 0,
+                        }
+                    };
+                    return Ok(orderResponseModel);
+                }
+
                 orderInfo.Users.UserEmail = membership.Email;
                 orderInfo.Users.UserName = membership.Fullname;
                 orderInfo.Users.UserGender = membership.Gender ?? 3;
@@ -114,7 +132,7 @@ namespace PromotionEngineAPI.Controllers
                 }
 
                 orderInfo.Vouchers = vouchers;
-                if (promotions.Count() == 0 && orderInfo.Vouchers.Count() == 0)
+                if (!promotions.Any() && !orderInfo.Vouchers.Any())
                 {
                     orderResponse = new OrderResponseModel
                     {
@@ -122,6 +140,7 @@ namespace PromotionEngineAPI.Controllers
                         Message = AppConstant.EnvVar.Success_Message,
                         Order = new Order
                         {
+                            CustomerOrderInfo = orderInfo,
                             FinalAmount = orderInfo.Amount,
                             DiscountOrderDetail = 0,
                             Discount = 0,
@@ -131,7 +150,7 @@ namespace PromotionEngineAPI.Controllers
                     return Ok(orderResponse);
                 }
 
-                if (promotions != null && promotions.Count() > 0 && vouchers.Count() > 0)
+                if (promotions.Any() && vouchers.Any())
                 {
                     // apply auto + voucher or promoCode
                     _promotionService.SetPromotions(promotions);

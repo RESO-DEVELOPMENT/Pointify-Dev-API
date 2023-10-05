@@ -233,6 +233,7 @@ namespace Infrastructure.Helper
             BrandCode_Mismatch = 151,
             Signature_Err = 152,
             HashData_Not_Valid = 153,
+            Empty_CustomerInfo = 154,
             Internal_Server_Error = 500
         }
 
