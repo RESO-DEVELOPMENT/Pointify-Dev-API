@@ -58,11 +58,29 @@ namespace ApplicationCore.Services
             return brandPartner;
         }
 
-        public async Task<BrandPartner> UpdateBalance (Guid ApiKey,UpdateBalance balance)
+        public async Task<BrandPartner> UpdateBalancePartner (Guid ApiKey,UpdateBalance balance)
         {
             var brandPartner = await _repository.GetFirst(filter: o => o.BrandId.Equals(ApiKey) &&
             o.BrandPartnerId.Equals(balance.BrandPartnerId) && !o.DeFlag);
             brandPartner.PartnerBalance = brandPartner.PartnerBalance + balance.PartnerBalance;
+            _repository.Update(brandPartner);
+            await _unitOfWork.SaveAsync();
+            Transaction newTransaction = new Transaction()
+            {
+                Id = Guid.NewGuid(),
+                TransactionJson = "Thanh Toán Nợ",
+                InsDate = DateTime.Now,
+                UpdDate = DateTime.Now,
+                BrandId = ApiKey,
+                Amount = balance.PartnerBalance,
+                BrandPartnerId = balance.BrandPartnerId,
+                IsIncrease = false,
+                Type = "Thanh Toán Nợ",
+                Currency = "VND",
+            };
+            _unitOfWork.TransactionRepository.Add(newTransaction);
+            await _unitOfWork.SaveAsync();
+            return brandPartner;
         }
     }
 }

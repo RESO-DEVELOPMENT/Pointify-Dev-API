@@ -10,5 +10,6 @@ namespace ApplicationCore.Services
         public Task<BrandPartner> CreateNewBrandPartner(BrandPartnerDto dto);
         public  Task<string> DeleteBrandPartner(Guid id);
         public Task<BrandPartner> GetBrandPartnerById(Guid id);
+        public Task<BrandPartner> UpdateBalancePartner(Guid ApiKey, UpdateBalance balance);
     }
 }

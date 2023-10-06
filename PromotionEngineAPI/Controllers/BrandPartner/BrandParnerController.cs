@@ -41,5 +41,11 @@ namespace WebAPI.Controllers.BrandPartner
             var result = await _service.DeleteBrandPartner(id);
             return Ok(result);
         }
+        [HttpPost("BrandPartners/Balance")]
+        public async Task<IActionResult> UpdateBalancePartner(Guid Apikey, [FromBody]UpdateBalance balance)
+        {
+            var result = await _service.UpdateBalancePartner(Apikey ,balance);
+            return Ok(result);
+        }
     }
 }
