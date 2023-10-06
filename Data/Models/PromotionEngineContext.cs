@@ -19,6 +19,7 @@ namespace Infrastructure.Models
         public virtual DbSet<Action> Action { get; set; }
         public virtual DbSet<ActionProductMapping> ActionProductMapping { get; set; }
         public virtual DbSet<Brand> Brand { get; set; }
+        public virtual DbSet<BrandPartner> BrandPartner { get; set; }
         public virtual DbSet<Channel> Channel { get; set; }
         public virtual DbSet<ConditionGroup> ConditionGroup { get; set; }
         public virtual DbSet<ConditionRule> ConditionRule { get; set; }
@@ -223,6 +224,28 @@ namespace Infrastructure.Models
                 entity.Property(e => e.UpdDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
+            });
+
+            modelBuilder.Entity<BrandPartner>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.InsDate).HasColumnType("datetime");
+
+                entity.Property(e => e.PartnerBalance).HasColumnType("money");
+
+                entity.Property(e => e.UpdDate).HasColumnType("datetime");
+
+                entity.HasOne(d => d.Brand)
+                    .WithMany(p => p.BrandPartnerBrand)
+                    .HasForeignKey(d => d.BrandId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_BrandPartner_Brand");
+
+                entity.HasOne(d => d.BrandPartnerNavigation)
+                    .WithMany(p => p.BrandPartnerBrandPartnerNavigation)
+                    .HasForeignKey(d => d.BrandPartnerId)
+                    .HasConstraintName("FK_BrandPartner_Brand1");
             });
 
             modelBuilder.Entity<Channel>(entity =>
@@ -1085,6 +1108,8 @@ namespace Infrastructure.Models
                 entity.Property(e => e.TransactionJson)
                     .IsRequired()
                     .HasMaxLength(4000);
+
+                entity.Property(e => e.Type).HasMaxLength(50);
 
                 entity.Property(e => e.UpdDate).HasColumnType("datetime");
 
