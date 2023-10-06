@@ -503,5 +503,15 @@ namespace Infrastructure.Helper
             public const string Success = "SUCCESS";
             public const string Fail = "FAIL";
         }
+
+        public struct TrasactionType
+        {
+            public const string PAYMENT = "PAYMENT";
+            public const string GET_POINT = "GET_POINT";
+            public const string TOP_UP = "TOP_UP";
+            public const string ORDER = "ORDER";
+            public const string DEBT_PAYMENT = "DEBT";
+
+        }
     }
 }

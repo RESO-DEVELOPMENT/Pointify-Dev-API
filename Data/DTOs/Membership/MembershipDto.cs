@@ -8,7 +8,6 @@ namespace Infrastructure.DTOs
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
         public string Fullname { get; set; }
-
         public int? Gender { get; set; }
         public Guid? MemberProgramId { get; set; }
         public Guid? MemberLevelId { get; set; }

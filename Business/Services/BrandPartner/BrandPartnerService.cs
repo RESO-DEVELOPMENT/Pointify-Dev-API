@@ -75,8 +75,8 @@ namespace ApplicationCore.Services
                 Amount = balance.PartnerBalance,
                 BrandPartnerId = balance.BrandPartnerId,
                 IsIncrease = false,
-                Type = "Thanh Toán Nợ",
-                Currency = "VND",
+                Type = AppConstant.TrasactionType.DEBT_PAYMENT,
+                Currency = "VNĐ",
             };
             _unitOfWork.TransactionRepository.Add(newTransaction);
             await _unitOfWork.SaveAsync();
