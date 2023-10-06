@@ -85,5 +85,8 @@ namespace Infrastructure.UnitOfWork
         IGenericRepository<MembershipCard> MemberShipCardRepository { get; }
         //MemberShipProgram
         IGenericRepository<MembershipProgram> MemberShipProgramRepository { get; }
+
+        //BrandPartner
+        IGenericRepository<BrandPartner> BrandPartnerRepository { get; }
     }
 }

@@ -9,6 +9,8 @@ namespace Infrastructure.Models
         {
             Account = new HashSet<Account>();
             Action = new HashSet<Action>();
+            BrandPartnerBrand = new HashSet<BrandPartner>();
+            BrandPartnerBrandPartnerNavigation = new HashSet<BrandPartner>();
             Channel = new HashSet<Channel>();
             ConditionRule = new HashSet<ConditionRule>();
             Customer = new HashSet<Customer>();
@@ -38,6 +40,8 @@ namespace Infrastructure.Models
 
         public virtual ICollection<Account> Account { get; set; }
         public virtual ICollection<Action> Action { get; set; }
+        public virtual ICollection<BrandPartner> BrandPartnerBrand { get; set; }
+        public virtual ICollection<BrandPartner> BrandPartnerBrandPartnerNavigation { get; set; }
         public virtual ICollection<Channel> Channel { get; set; }
         public virtual ICollection<ConditionRule> ConditionRule { get; set; }
         public virtual ICollection<Customer> Customer { get; set; }

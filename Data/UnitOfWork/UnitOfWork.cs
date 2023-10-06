@@ -107,6 +107,8 @@ namespace Infrastructure.UnitOfWork
         public IGenericRepository<MembershipCard> MemberShipCardRepository { get; set; }
         //MemberShipProgram
         public IGenericRepository<MembershipProgram> MemberShipProgramRepository { get; set; }
+        //BrandPartner
+        public IGenericRepository<BrandPartner> BrandPartnerRepository { get; set; }
         private void initRepository()
         {
             //Account
@@ -180,6 +182,8 @@ namespace Infrastructure.UnitOfWork
             MemberWalletRepository = new GenericRepository<MemberWallet>(_context);
             //MemberShipCard
             MemberShipCardRepository = new GenericRepository<MembershipCard>(_context);
+            //BrandPartner
+            BrandPartnerRepository = new GenericRepository<BrandPartner>(_context);
         }
         public void Dispose()
         {

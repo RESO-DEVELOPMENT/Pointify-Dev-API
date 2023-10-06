@@ -16,6 +16,9 @@ namespace Infrastructure.Models
         public Guid? BrandId { get; set; }
         public decimal? Amount { get; set; }
         public string Currency { get; set; }
+        public Guid? BrandPartnerId { get; set; }
+        public bool? IsIncrease { get; set; }
+        public string Type { get; set; }
 
         public virtual Brand Brand { get; set; }
         public virtual MemberAction MemberAction { get; set; }
