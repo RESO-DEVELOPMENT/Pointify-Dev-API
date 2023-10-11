@@ -6,7 +6,8 @@ namespace Infrastructure.DTOs
 {
     public class ConditionGroupDto : BaseDto
     {
-        public Guid ConditionGroupId { get; set; } = Guid.NewGuid();
+        public Guid ConditionGroupId { get; set; }
+        public Guid ConditionRuleId { get; set; }
         public int GroupNo { get; set; }
         public int NextOperator { get; set; }
         public string Summary { get; set; } = "";

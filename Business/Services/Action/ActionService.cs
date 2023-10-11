@@ -44,7 +44,8 @@ namespace ApplicationCore.Services
         public async Task<ActionDto> GetActionDetail(Guid id)
         {
             var result = new ActionDto();
-            var entity = await _repository.GetFirst(filter: o => o.ActionId.Equals(id), includeProperties: "ActionProductMapping");
+            var entity = await _repository.GetFirst(filter: o => o.ActionId.Equals(id), 
+                                                    includeProperties: "ActionProductMapping");
             if (entity != null)
             {
                 result = _mapper.Map<ActionDto>(entity);

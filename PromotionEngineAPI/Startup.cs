@@ -161,6 +161,8 @@ namespace PromotionEngineAPI
             services.AddScoped<IMemberShipCardService, MemberShipCardService>();
             //BrandPartner
             services.AddScoped<IBrandPartnerService, BrandPartnerService>();
+            //ConditionGroup
+            services.AddScoped<IConditionGroupService, ConditionGroupSevice>();
             ChainOfResponsibilityServices(services);
 
             WorkerServices(services);

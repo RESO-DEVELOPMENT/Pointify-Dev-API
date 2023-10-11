@@ -88,5 +88,7 @@ namespace Infrastructure.UnitOfWork
 
         //BrandPartner
         IGenericRepository<BrandPartner> BrandPartnerRepository { get; }
+        //ConditionGroup
+        IGenericRepository<ConditionGroup> ConditionGroupRespository { get; }
     }
 }

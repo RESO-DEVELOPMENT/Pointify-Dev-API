@@ -600,7 +600,7 @@ namespace ApplicationCore.Services
             listConditionGroupDto.Add(conditionGroupDto);
             ConditionRuleDto conditionRuleDto = new ConditionRuleDto
             {
-                BrandId = actionDto.BrandId,
+                BrandId = (Guid)actionDto.BrandId,
                 Description = $"Order có {productDto.Name}",
                 RuleName = $"Order có {productDto.Name}",
                 ConditionGroup = listConditionGroupDto

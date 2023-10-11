@@ -99,14 +99,14 @@ namespace PromotionEngineAPI.Controllers
         {
             var param = new ConditionRuleDto()
             {
-                BrandId = parammodel.BrandId,
+                BrandId = (Guid)parammodel.BrandId,
                 RuleName = parammodel.RuleName,
                 Description = parammodel.Description,
                 ConditionGroup = parammodel.ConditionGroup
             };
             try
             {
-                var result = await _service.InsertConditionRule(param);
+                var result = await _service.InsertConditionRule_Group(param);
                 return Ok(result);
             }
             catch (ErrorObj e)

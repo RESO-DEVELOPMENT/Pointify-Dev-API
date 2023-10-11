@@ -4,6 +4,7 @@ using Infrastructure.Helper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,10 +18,12 @@ namespace ApplicationCore.Services
     {
         private readonly IActionService _actionService;
         private readonly IGiftService _postActionService;
-        public ConditionRuleService(IUnitOfWork unitOfWork, IMapper mapper, IActionService actionService, IGiftService postActionService) : base(unitOfWork, mapper)
+        private readonly IConditionGroupService _conditionGroupService;
+        public ConditionRuleService(IUnitOfWork unitOfWork, IMapper mapper, IActionService actionService, IGiftService postActionService, IConditionGroupService conditionGroupService) : base(unitOfWork, mapper)
         {
             _actionService = actionService;
             _postActionService = postActionService;
+            _conditionGroupService = conditionGroupService;
         }
 
         protected override IGenericRepository<ConditionRule> _repository => _unitOfWork.ConditionRuleRepository;
@@ -72,13 +75,78 @@ namespace ApplicationCore.Services
         {
             try
             {
-                //var now = Common.GetCurrentDatetime();
-                // Insert condition rule
-                var ruleEntity = _mapper.Map<ConditionRule>(param);
-                ruleEntity.ConditionRuleId = Guid.NewGuid();
-                //ruleEntity.InsDate = now;
-                //ruleEntity.UpdDate = now;
-                _repository.Add(ruleEntity);
+                var ruleEntity = new ConditionRuleDto()
+                {
+                    BrandId = param.BrandId,
+                    RuleName = param.RuleName,
+                    Description = param.Description,
+                    DelFlg = false,
+                    InsDate = DateTime.Now,
+                    UpdDate = DateTime.Now,
+                    ConditionRuleId = Guid.NewGuid()
+
+                };
+                var Entity = _mapper.Map<ConditionRuleDto>(ruleEntity);
+                //var conditionGroup = new ConditionGroupDto()
+                //{
+                //    ConditionGroupId = Guid.NewGuid(),
+                //    ConditionRuleId = ruleEntity.ConditionRuleId,
+                //    GroupNo = g.GroupNo,
+                //    NextOperator = g.NextOperator,
+                //    InsDate = DateTime.UtcNow,
+                //    UpdDate = DateTime.UtcNow,
+                //    Summary = g.Summary
+                //};
+                //var conditionGroup = param.ConditionGroup;
+                //_conditionGroupService.CreateConditionGroup(conditionGroup);
+                await _unitOfWork.SaveAsync();
+                return _mapper.Map<ConditionRuleDto>(ruleEntity);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.StackTrace);
+                Debug.WriteLine(e.InnerException);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+            }
+
+
+        }
+
+        public async Task<ConditionRuleDto> InsertConditionRule_Group(ConditionRuleDto param)
+        {
+            try
+            {
+                var ruleEntity = new ConditionRuleDto()
+                {
+                    BrandId = param.BrandId,
+                    RuleName = param.RuleName,
+                    Description = param.Description,
+                    DelFlg = false,
+                    InsDate = DateTime.Now,
+                    UpdDate = DateTime.Now,
+                    ConditionRuleId = Guid.NewGuid()
+
+                };
+                _repository.Add(_mapper.Map<ConditionRule>(ruleEntity));
+                //var conditionGroup = new ConditionGroupDto()
+                //{
+                //    ConditionGroupId = Guid.NewGuid(),
+                //    ConditionRuleId = ruleEntity.ConditionRuleId,
+                //    GroupNo = g.GroupNo,
+                //    NextOperator = g.NextOperator,
+                //    InsDate = DateTime.UtcNow,
+                //    UpdDate = DateTime.UtcNow,
+                //    Summary = g.Summary
+                //};
+
+                //var conditionGroup = param.ConditionGroup;
+                //_conditionGroupService.CreateConditionGroup(request: param.ConditionGroupDto);
+                List<ConditionGroupDto> group = new List<ConditionGroupDto>(param.ConditionGroup);
+                foreach (var item in group)
+                {
+                    _conditionGroupService.CreateConditionGroup(item, ruleEntity.ConditionRuleId);
+                }
+               
                 await _unitOfWork.SaveAsync();
                 return _mapper.Map<ConditionRuleDto>(ruleEntity);
             }
