@@ -2,7 +2,7 @@
 
 namespace Infrastructure.DTOs
 {
-    public class PromotionTierDto : BaseDto
+    public class PromotionTierDto
     {
         public Guid PromotionTierId { get; set; }
         public Guid? ConditionRuleId { get; set; }
@@ -14,7 +14,8 @@ namespace Infrastructure.DTOs
         public Guid? VoucherGroupId { get; set; }
         public int VoucherQuantity { get; set; } = 0;
         public int Priority { get; set; }
-
+        public DateTime InsDate { get; set; }
+        public DateTime UpdDate { get; set; }
         public int MoreQuantity { get; set; } = 0;
         public string? ProductCode { get; set; }
 

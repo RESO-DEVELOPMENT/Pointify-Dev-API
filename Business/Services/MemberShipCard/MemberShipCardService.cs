@@ -106,28 +106,21 @@ namespace ApplicationCore.Services
 
         public async Task<bool> AddCodeForMember(Guid id, Guid apiKey)
         {
-            try
-            {
-                var check = false;
                 var result = await _repository.GetFirst(filter: o => o.Id.Equals(id)
                                                         && o.BrandId.Equals(apiKey));
                 if (result == null)
                 {
-                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
-                        message: AppConstant.ErrMessage.ApiKey_Not_Exist,
-                        description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+                    return false;
+                    //throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
+                    //    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    //    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
                 }
 
                 result.PhysicalCardCode = result.MembershipCardCode;
                 _repository.Update(result);
                 await _unitOfWork.SaveAsync();
-                check = true;
-                return check;
-            }
-            catch (ErrorObj e)
-            {
-                throw e;
-            }
+                return true;
+            
         }
     }
 }

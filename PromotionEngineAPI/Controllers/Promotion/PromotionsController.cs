@@ -316,7 +316,7 @@ namespace PromotionEngineAPI.Controllers
                     pageSize: param.size,
                     orderBy: el => el.OrderByDescending(b => b.InsDate),
                     filter: HandlePromotionFilter(status, BrandId),
-                    includeProperties: "PromotionStoreMapping,PromotionTier.VoucherGroup,PromotionChannelMapping");
+                    includeProperties: "PromotionStoreMapping,PromotionTier.VoucherGroup,PromotionChannelMapping,MemberLevelMapping");
                 return Ok(result);
             }
             catch (ErrorObj e)
