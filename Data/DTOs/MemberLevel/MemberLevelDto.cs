@@ -12,5 +12,6 @@ namespace Infrastructure.DTOs
         public Guid BrandId { get; set; }
         [StringLength(50)]
         public string Name { get; set; }
+        public int? IndexLevel { get; set; }
     }
 }

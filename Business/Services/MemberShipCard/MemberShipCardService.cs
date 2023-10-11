@@ -17,27 +17,34 @@ namespace ApplicationCore.Services
 {
     public class MemberShipCardService : BaseService<MembershipCard, MemberShipCardDto>, IMemberShipCardService
     {
-        public MemberShipCardService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        private readonly IBrandService _brandService;
+
+        public MemberShipCardService(IUnitOfWork unitOfWork, IMapper mapper, IBrandService brandService) : base(unitOfWork, mapper)
         {
+            _brandService = brandService;
         }
 
         protected override IGenericRepository<MembershipCard> _repository => _unitOfWork.MemberShipCardRepository;
+
+
 
         public async Task<MemberShipCardDto> CreateMemberShipCard(MemberShipCardDto dto)
         {
             try
             {
-                var check = await _repository.GetFirst(filter: el => el.BrandId.Equals(dto.BrandId));
+                var check = await _brandService.GetFirst(filter: el => el.BrandId.Equals(dto.BrandId));
                 if (check == null) { return null; }
                 dto.Id = Guid.NewGuid();
                 //dto.MembershipCardCode = Common.makeCode(10);
                 var digit = Common.makeCode(10);
                 var checkCard = await _repository.GetFirst(filter: o => o.MembershipCardCode == digit);
-                if (checkCard == null)
+                while(checkCard != null)
                 {
-                    dto.MembershipCardCode = digit;
+                    digit = Common.makeCode(10);
+                    checkCard = await _repository.GetFirst(filter: o => o.MembershipCardCode == digit);
                 }
-                dto.Active = false;
+                dto.MembershipCardCode = digit;
+                dto.Active = true;
                 dto.CreatedTime = DateTime.Now;
                 var entity = _mapper.Map<MembershipCard>(dto);
                 _repository.Add(entity);

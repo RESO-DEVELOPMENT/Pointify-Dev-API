@@ -66,22 +66,7 @@ namespace WebAPI.Controllers.MemberShipCard
         [HttpPost]
         public async Task<IActionResult> PostMembership([FromBody] MemberShipCardDto dto)
         {
-            var check = await _service.GetFirst(filter: el => el.BrandId.Equals(dto.BrandId));
-            if (check == null) { return NotFound(); }
-            dto.Id = Guid.NewGuid();
-            dto.MembershipCardCode = Common.makeCode(5);
-            dto.Active = false;
-            dto.CreatedTime = DateTime.Now;
-            var result = await _service.CreateAsync(dto);
-
-            if (result == null)
-            {
-                return NotFound();
-            }
-
-            //var result = dto;
-
-            return Ok(result);
+            return Ok(await _service.CreateMemberShipCard(dto));
         }
 
         //Kích hoạt khi khách hàng nhận thẻ cứng

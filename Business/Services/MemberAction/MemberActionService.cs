@@ -97,7 +97,9 @@ namespace ApplicationCore.Services
                     MemberWalletId = memberAction.MemberWalletId,
                     TransactionJson = memberAction.Description,
                     Amount = memberAction.ActionValue,
-                    Currency = wallet.WalletType.Currency
+                    Currency = wallet.WalletType.Currency,
+                    Type = request.MemberActionType,
+                    IsIncrease = (request.MemberActionType == "GET_POINT" || request.MemberActionType == "TOP_UP")? true : false,
                 };
 
                 _transaction.Add(transaction);

@@ -126,6 +126,7 @@ namespace PromotionEngineAPI.Controllers
                 dto.MemberLevelId = Guid.NewGuid();
                 dto.InsDate = DateTime.Now;
                 dto.UpdDate = DateTime.Now;
+                dto.DelFlg = false;
                 var result = await _service.CreateAsync(dto);
                 return Ok(result);
             }
