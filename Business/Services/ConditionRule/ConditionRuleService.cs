@@ -128,6 +128,7 @@ namespace ApplicationCore.Services
 
                 };
                 _repository.Add(_mapper.Map<ConditionRule>(ruleEntity));
+                await _unitOfWork.SaveAsync();
                 //var conditionGroup = new ConditionGroupDto()
                 //{
                 //    ConditionGroupId = Guid.NewGuid(),

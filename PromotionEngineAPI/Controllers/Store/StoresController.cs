@@ -12,6 +12,7 @@ using System.Net.Mime;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using Infrastructure.DTOs.Request;
+using Infrastructure.DTOs.ScanMembership;
 
 namespace PromotionEngineAPI.Controllers
 {
@@ -246,6 +247,14 @@ namespace PromotionEngineAPI.Controllers
             {
                 return StatusCode(statusCode: e.Code, e);
             }
+        }
+
+        [HttpGet]
+        [Route("store/scan-membership")]
+        public async Task<IActionResult> ScanMembership(string code, int codeType)
+        {
+            var result = await _service.ScanMembership(code, codeType);
+            return (result == null) ? Ok("Member ko tồn tại trong hệ thống") : Ok(result);
         }
     }
 }

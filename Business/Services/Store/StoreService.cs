@@ -14,6 +14,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Net.Mime;
 using System.Text.Json;
+using Infrastructure.DTOs.ScanMembership;
 
 namespace ApplicationCore.Services
 {
@@ -146,6 +147,59 @@ namespace ApplicationCore.Services
             var memStream = new MemoryStream(jsonString);
             
             return memStream;
+        }
+
+        public async Task<ScanMembershipResponse> ScanMembership(string code, int codeType)
+        {
+            if(codeType == 1)
+            {
+                var membership = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.PhoneNumber.Equals(code) && !el.DelFlg);
+                if(membership == null) return null;
+                else
+                {
+                    var membershipLevel = await _unitOfWork.MemberLevelRepository.GetFirst(filter: el => el.MemberLevelId.Equals(membership.MemberLevelId) && !el.DelFlg);
+                    var memberWallet = await _unitOfWork.MemberWalletRepository.Get(filter: el => el.MemberId.Equals(membership.MembershipId) && !el.DelFlag);
+                    ScanMembershipResponse res = new ScanMembershipResponse()
+                    {
+                        MembershipId = membership.MembershipId,
+                        PhoneNumber = membership.PhoneNumber,
+                        Email = membership.Email,
+                        FullName = membership.Fullname,
+                        Gender = membership.Gender,
+                        MemberLevelName = membershipLevel.Name,
+                        Point = memberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Ví Điểm").Balance,
+                        Balance = memberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Ví Tiền").Balance
+                    };
+                    return res;
+                }
+            }
+            else if(codeType == 2)
+            {
+                var membershipcard = await _unitOfWork.MemberShipCardRepository.GetFirst(filter: el => el.MembershipCardCode.Equals(code) && el.Active);
+                if (membershipcard == null) return null;
+                else
+                {
+                var membership = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.MembershipId.Equals(membershipcard.MemberId) && !el.DelFlg);
+                var membershipLevel = await _unitOfWork.MemberLevelRepository.GetFirst(filter: el => el.MemberLevelId.Equals(membership.MemberLevelId) && !el.DelFlg);
+                var memberWallet = await _unitOfWork.MemberWalletRepository.Get(filter: el => el.MemberId.Equals(membership.MembershipId) && !el.DelFlag);
+                    ScanMembershipResponse res = new ScanMembershipResponse()
+                    {
+                        MembershipId = membership.MembershipId,
+                        PhoneNumber = membership.PhoneNumber,
+                        Email = membership.Email,
+                        FullName = membership.Fullname,
+                        Gender = membership.Gender,
+                        MemberLevelName = membershipLevel.Name,
+                        Point = memberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Ví Điểm").Balance,
+                        Balance = memberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Ví Tiền").Balance
+                    };
+                    return res;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 
