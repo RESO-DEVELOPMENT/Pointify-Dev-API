@@ -20,7 +20,6 @@ namespace ApplicationCore.Request
 
         public List<Effect> Effects { get; set; }
         public CustomerOrderInfo CustomerOrderInfo { get; set; }
-
         public List<object> Gift { get; set; }
         public decimal? TotalAmount { get; set; }
         public decimal? Discount { get; set; }

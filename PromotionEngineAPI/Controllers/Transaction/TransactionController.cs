@@ -24,7 +24,7 @@ namespace PromotionEngineAPI.Controllers
         //[Authorize]
         [HttpPost]
         [Route("check-out")]
-        public async Task<IActionResult> Checkout([FromBody] Order order, [FromQuery] Guid brandId, [FromQuery] Guid deviceId)
+        public async Task<IActionResult> Checkout([FromQuery] Guid brandId,[FromBody] Order order, [FromQuery] Guid deviceId)
         {
             try
             {

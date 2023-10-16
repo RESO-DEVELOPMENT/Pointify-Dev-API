@@ -250,11 +250,12 @@ namespace PromotionEngineAPI.Controllers
         }
 
         [HttpGet]
-        [Route("store/scan-membership")]
+        [Route("scan-membership")]
         public async Task<IActionResult> ScanMembership(string code, int codeType)
         {
             var result = await _service.ScanMembership(code, codeType);
             return (result == null) ? Ok("Member ko tồn tại trong hệ thống") : Ok(result);
         }
+
     }
 }

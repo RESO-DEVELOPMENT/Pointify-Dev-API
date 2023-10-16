@@ -681,6 +681,14 @@ namespace PromotionEngineAPI.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost]
+        [Route("check-auto-Promotion")]
+        public async Task<IActionResult> actionResult([FromBody] CustomerOrderInfo orderInfo, [FromQuery] Guid promotionId)
+        {
+            var result = await _promotionService.GetAutoPromotions(orderInfo, promotionId);
+            return Ok(result);
+        }
     }
     /*
                 [HttpPost]

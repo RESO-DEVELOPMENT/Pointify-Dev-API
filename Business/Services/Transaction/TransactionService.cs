@@ -13,8 +13,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Infrastructure.DTOs.Request;
-using ShaNetCore;
-
 
 namespace ApplicationCore.Services
 {
@@ -60,22 +58,23 @@ namespace ApplicationCore.Services
                                 effect.EffectType.Contains(AppConstant.EffectMessage.AddGift) ||
                                 effect.EffectType.Contains(AppConstant.EffectMessage.GetPoint))
                             {
+                                var type = effect.EffectType;
                                 var promotion = await _promotionService.GetByIdAsync(effect.PromotionId);
                                 if (promotion == null ||
-                                    promotion.Status != (int) AppConstant.EnvVar.PromotionStatus.PUBLISH)
+                                    promotion.Status != (int)AppConstant.EnvVar.PromotionStatus.PUBLISH)
                                 {
                                     //neu voucher dang apply vao order ma brand manager xoa promotion hoac change promotion status
-                                    throw new ErrorObj(code: (int) AppConstant.ErrCode.Expire_Promotion,
+                                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Expire_Promotion,
                                         message: AppConstant.ErrMessage.Expire_Promotion,
                                         description: AppConstant.ErrMessage.Expire_Promotion);
                                 }
 
                                 promotionSetDiscounts.Add(_mapper.Map<Promotion>(promotion));
                                 int updatedRecord = await CheckVoucher(order, deviceId, transactionId,
-                                    (Guid) effect.PromotionTierId);
+                                    (Guid)effect.PromotionTierId);
                                 if (updatedRecord > 0)
                                 {
-                                    AddTransactionWithPromo(order: order, brandId: brandId, effect.PromotionId,
+                                    AddTransactionWithPromo(type, order: order, brandId: brandId, effect.PromotionId,
                                         transactionId);
                                 }
                             }
@@ -93,33 +92,49 @@ namespace ApplicationCore.Services
 
                         foreach (var promotionSetDiscount in promotionSetDiscounts)
                         {
-                            if (promotionSetDiscount.IsAuto)
+                            var type = "";
+                            foreach (var effect in order.Effects)
                             {
-                                AddTransactionWithPromo(order, brandId, promotionSetDiscount.PromotionId);
+                                if (effect.EffectType.Contains(AppConstant.EffectMessage.SetDiscount) ||
+                                effect.EffectType.Contains(AppConstant.EffectMessage.AddGift) ||
+                                effect.EffectType.Contains(AppConstant.EffectMessage.GetPoint))
+                                {
+                                    type = effect.EffectType;
+
+                                }
+                            }
+                                if (promotionSetDiscount.IsAuto)
+                                {
+                                    AddTransactionWithPromo(type, order, brandId, promotionSetDiscount.PromotionId);
+                                }
+
+                                if (!promotionSetDiscount.HasVoucher && !promotionSetDiscount.IsAuto)
+                                {
+                                    AddTransactionWithPromo(type, order, brandId, promotionSetDiscount.PromotionId);
+                                }
                             }
 
-                            if (!promotionSetDiscount.HasVoucher && !promotionSetDiscount.IsAuto)
+                            if (await _unitOfWork.SaveAsync() > 0)
                             {
-                                AddTransactionWithPromo(order, brandId, promotionSetDiscount.PromotionId);
+                                return order;
                             }
                         }
-
-                        if (await _unitOfWork.SaveAsync() > 0)
-                        {
-                            return order;
-                        }
+                    else
+                        { AddTransaction(order: order, brandId: brandId, transactionId); }
                     }
-                    else AddTransaction(order: order, brandId: brandId, transactionId);
+                    else 
+                    {
+                        throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError,
+                            message: AppConstant.ErrMessage.Order_Fail, description: AppConstant.ErrMessage.Order_Fail);
+                    }
+                        
                 }
-                else
-                    throw new ErrorObj(code: (int) HttpStatusCode.InternalServerError,
-                        message: AppConstant.ErrMessage.Order_Fail, description: AppConstant.ErrMessage.Order_Fail);
-            }
-            else
-                throw new ErrorObj(code: (int) HttpStatusCode.NotFound,
-                    message: AppConstant.ErrMessage.Not_Found_Resource);
-
-            return order;
+                else 
+                {
+                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
+                        message: AppConstant.ErrMessage.Not_Found_Resource);
+                }
+                return order;
         }
 
         public async Task<Order> PlaceOrderForChannel(Order order, string channelCode)
@@ -155,6 +170,7 @@ namespace ApplicationCore.Services
                 if (effect.EffectType.Contains(AppConstant.EffectMessage.SetDiscount) ||
                     effect.EffectType.Contains(AppConstant.EffectMessage.AddGift))
                 {
+                    var type = effect.EffectType;
                     var promotion = await _promotionService.GetByIdAsync(effect.PromotionId);
                     if (promotion == null || promotion.Status != (int) AppConstant.EnvVar.PromotionStatus.PUBLISH)
                     {
@@ -165,7 +181,7 @@ namespace ApplicationCore.Services
                     }
 
                     promotionSetDiscounts.Add(_mapper.Map<Promotion>(promotion));
-                    var transaction = AddTransactionWithPromo(order: order, brandId: brand.BrandId, effect.PromotionId);
+                    var transaction = AddTransactionWithPromo(type,order: order, brandId: brand.BrandId, effect.PromotionId);
                     if (transaction != null)
                     {
                         int updatedRecord = await CheckVoucherOther(order, transaction.Id,
@@ -195,7 +211,7 @@ namespace ApplicationCore.Services
             return transaction;
         }
 
-        private Transaction AddTransactionWithPromo(Order order, Guid brandId, Guid promotionId,
+        private Transaction AddTransactionWithPromo(string type, Order order, Guid brandId, Guid promotionId,
             Guid? tranactionId = null, Guid? voucherId = null)
         {
             var now = Common.GetCurrentDatetime();
@@ -211,6 +227,10 @@ namespace ApplicationCore.Services
                 VoucherId = voucherId,
                 TransactionJson = jsonString,
                 PromotionId = promotionId,
+                Amount = order.FinalAmount,
+                Currency = "VNĐ",
+                IsIncrease = false,
+                Type = type
             };
 
             _repository.Add(transaction);

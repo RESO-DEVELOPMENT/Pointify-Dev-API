@@ -556,7 +556,7 @@ namespace ApplicationCore.Services
                 }
             }
             _checkPromotionHandler.SetPromotions(_promotions);
-            _checkPromotionHandler.Handle(orderResponse);
+            //_checkPromotionHandler.Handle(orderResponse); //checklai
             _promotions = _checkPromotionHandler.GetPromotions();
             return orderResponse;
         }
@@ -1285,21 +1285,21 @@ namespace ApplicationCore.Services
         {
             var promotions = await _repository.Get(filter: el =>
                     el.IsAuto
-                    && (promotionId != Guid.Empty ? el.PromotionId == promotionId : true)
+                    && el.PromotionId == promotionId 
                     && el.Brand.BrandCode.Equals(orderInfo.Attributes.StoreInfo.BrandCode)
                     && el.StartDate <= orderInfo.BookingDate
                     && (el.EndDate != null ? (el.EndDate >= orderInfo.BookingDate) : true)
                     && el.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH
                     && !el.DelFlg,
                         includeProperties:
-                        "PromotionTier.Action.ActionProductMapping.Product," +
-                        "PromotionTier.Gift.GiftProductMapping.Product," +
-                        "PromotionTier.Gift.GameCampaign.GameMaster," +
-                        "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," +
-                        "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
-                        "PromotionTier.VoucherGroup," +
-                        "PromotionStoreMapping.Store," +
-                        "Brand," +
+                                    "PromotionTier.Action.ActionProductMapping.Product," +
+                                    "PromotionTier.Gift.GiftProductMapping.Product," +
+                                    "PromotionTier.Gift.GameCampaign.GameMaster," +
+                                    //"PromotionTier.ConditionRule.ConditionGroup.OrderCondition," + //checklai
+                                    "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
+                                "PromotionTier.VoucherGroup," +
+                            "PromotionStoreMapping.Store," +
+                            "Brand," +
                         "MemberLevelMapping.MemberLevel"
                     );
             return promotions.ToList();
