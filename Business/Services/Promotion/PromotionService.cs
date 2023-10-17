@@ -8,6 +8,7 @@ using Infrastructure.Helper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +16,7 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Infrastructure.Helper.AppConstant;
 
@@ -36,6 +38,11 @@ namespace ApplicationCore.Services
             _timeframeHandle = timeframeHandle;
         }
         protected override IGenericRepository<Promotion> _repository => _unitOfWork.PromotionRepository;
+        public IGenericRepository<Product> _product => _unitOfWork.ProductRepository;
+        public IGenericRepository<ProductConditionMapping> _productMapping => _unitOfWork.ProductConditionMappingRepository;
+        public IGenericRepository<ProductCondition> _productCondition => _unitOfWork.ProductConditionRepository;
+        public IGenericRepository<ConditionGroup> _conditionGroup => _unitOfWork.ConditionGroupRespository;
+        public IGenericRepository<PromotionTier> _promotionTier => _unitOfWork.PromotionTierRepository;
 
         public void SetPromotions(List<Promotion> promotions)
         {
@@ -1285,7 +1292,7 @@ namespace ApplicationCore.Services
         {
             var promotions = await _repository.Get(filter: el =>
                     el.IsAuto
-                    && el.PromotionId == promotionId 
+                    && el.PromotionId == promotionId
                     && el.Brand.BrandCode.Equals(orderInfo.Attributes.StoreInfo.BrandCode)
                     && el.StartDate <= orderInfo.BookingDate
                     && (el.EndDate != null ? (el.EndDate >= orderInfo.BookingDate) : true)
@@ -1293,9 +1300,9 @@ namespace ApplicationCore.Services
                     && !el.DelFlg,
                         includeProperties:
                                     "PromotionTier.Action.ActionProductMapping.Product," +
-                                    "PromotionTier.Gift.GiftProductMapping.Product," +
-                                    "PromotionTier.Gift.GameCampaign.GameMaster," +
-                                    //"PromotionTier.ConditionRule.ConditionGroup.OrderCondition," + //checklai
+                                    //"PromotionTier.Gift.GiftProductMapping.Product," +
+                                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
+                                    "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," + //checklai
                                     "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
                                 "PromotionTier.VoucherGroup," +
                             "PromotionStoreMapping.Store," +
@@ -1303,6 +1310,49 @@ namespace ApplicationCore.Services
                         "MemberLevelMapping.MemberLevel"
                     );
             return promotions.ToList();
+        }
+
+        public async Task<bool> CheckProduct(CustomerOrderInfo order)
+        {
+            try
+            {
+                var productCode = order.CartItems.ToList();
+                Product product = null;
+                Promotion promotionCode = null;
+                foreach ( var item in productCode )
+                {
+                    product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
+                    promotionCode = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(item.PromotionCodeApply));
+                }
+                var checkProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
+                if (checkProductMapping != null )
+                {
+                    var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
+                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
+                    var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
+                    if (promotionCode.PromotionId.Equals(tier.PromotionId))
+                    {
+                        return true;
+                    }
+                    
+                }
+                return false;
+
+            }
+            catch (ErrorObj e1)
+            {
+                Debug.WriteLine("\n\nError at CheckVoucher: \n" + e1.Message);
+
+                throw e1;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("\n\nError at CheckVoucher: \n" + e.Message);
+
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+            }
+
+
         }
 
         public async Task<bool> ExistPromoCode(string promoCode, Guid brandId)

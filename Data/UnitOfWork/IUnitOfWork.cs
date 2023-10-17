@@ -90,5 +90,7 @@ namespace Infrastructure.UnitOfWork
         IGenericRepository<BrandPartner> BrandPartnerRepository { get; }
         //ConditionGroup
         IGenericRepository<ConditionGroup> ConditionGroupRespository { get; }
+        //MemberLevelMapping
+        IGenericRepository<MemberLevelMapping> MemberLevelMappingResponsitory { get; }
     }
 }

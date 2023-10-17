@@ -234,6 +234,7 @@ namespace Infrastructure.Helper
             Signature_Err = 152,
             HashData_Not_Valid = 153,
             Empty_CustomerInfo = 154,
+            Invaild_Product = 155,
             Internal_Server_Error = 500
         }
 
@@ -322,6 +323,7 @@ namespace Infrastructure.Helper
 
             public const string Empty_CustomerInfo =
                 "Thông tin khách hàng không hợp lệ [CustomerName] [CustomerPhoneNo]!";
+            public const string Invaild_Product = "Sản phẩm không có trong khuyến mãi!";
         }
 
         public class QueueMessage

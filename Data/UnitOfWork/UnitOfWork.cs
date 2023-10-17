@@ -111,6 +111,8 @@ namespace Infrastructure.UnitOfWork
         public IGenericRepository<BrandPartner> BrandPartnerRepository { get; set; }
         //ConditionGroup
         public IGenericRepository<ConditionGroup> ConditionGroupRespository { get; set; }
+        //MemberLevelMapping
+        public IGenericRepository<MemberLevelMapping> MemberLevelMappingResponsitory { get; set; }
         private void initRepository()
         {
             //Account
@@ -188,6 +190,8 @@ namespace Infrastructure.UnitOfWork
             BrandPartnerRepository = new GenericRepository<BrandPartner>(_context);
             //ConditionGroup
             ConditionGroupRespository = new GenericRepository<ConditionGroup>(_context);
+            //MemberLevelMapping
+            MemberLevelMappingResponsitory = new GenericRepository<MemberLevelMapping>(_context);
         }
         public void Dispose()
         {

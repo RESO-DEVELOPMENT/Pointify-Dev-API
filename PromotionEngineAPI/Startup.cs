@@ -163,6 +163,8 @@ namespace PromotionEngineAPI
             services.AddScoped<IBrandPartnerService, BrandPartnerService>();
             //ConditionGroup
             services.AddScoped<IConditionGroupService, ConditionGroupSevice>();
+            //MemberLevelMapping
+            services.AddScoped<IMemberLevelMappingService, MemberLevelMappingService>();
             ChainOfResponsibilityServices(services);
 
             WorkerServices(services);

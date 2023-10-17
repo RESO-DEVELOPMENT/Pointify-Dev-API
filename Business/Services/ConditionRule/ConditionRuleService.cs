@@ -129,19 +129,6 @@ namespace ApplicationCore.Services
                 };
                 _repository.Add(_mapper.Map<ConditionRule>(ruleEntity));
                 await _unitOfWork.SaveAsync();
-                //var conditionGroup = new ConditionGroupDto()
-                //{
-                //    ConditionGroupId = Guid.NewGuid(),
-                //    ConditionRuleId = ruleEntity.ConditionRuleId,
-                //    GroupNo = g.GroupNo,
-                //    NextOperator = g.NextOperator,
-                //    InsDate = DateTime.UtcNow,
-                //    UpdDate = DateTime.UtcNow,
-                //    Summary = g.Summary
-                //};
-
-                //var conditionGroup = param.ConditionGroup;
-                //_conditionGroupService.CreateConditionGroup(request: param.ConditionGroupDto);
                 List<ConditionGroupDto> group = new List<ConditionGroupDto>(param.ConditionGroup);
                 foreach (var item in group)
                 {

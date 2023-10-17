@@ -59,8 +59,8 @@ namespace ApplicationCore.Services
                         && el.Promotion.Brand.BrandCode.Equals(order.Attributes.StoreInfo.BrandCode),
                     includeProperties:
                     "Promotion.PromotionTier.Action.ActionProductMapping.Product," +
-                    "Promotion.PromotionTier.Gift.GiftProductMapping.Product," +
-                    "Promotion.PromotionTier.Gift.GameCampaign.GameMaster," +
+                    //"Promotion.PromotionTier.Gift.GiftProductMapping.Product," +
+                    //"Promotion.PromotionTier.Gift.GameCampaign.GameMaster," +
                     "Promotion.PromotionTier.Action.ActionProductMapping.Product," +
                     "Promotion.PromotionTier.ConditionRule.ConditionGroup.OrderCondition," +
                     "Promotion.PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
@@ -95,8 +95,8 @@ namespace ApplicationCore.Services
                         && !el.DelFlg,
                             includeProperties:
                     "PromotionTier.Action.ActionProductMapping.Product," +
-                    "PromotionTier.Gift.GiftProductMapping.Product," +
-                    "PromotionTier.Gift.GameCampaign.GameMaster," +
+                    //"PromotionTier.Gift.GiftProductMapping.Product," +
+                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
                     "PromotionTier.Action.ActionProductMapping.Product," +
                     "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," +
                     "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +

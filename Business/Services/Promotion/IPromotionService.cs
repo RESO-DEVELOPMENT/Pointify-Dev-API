@@ -25,6 +25,7 @@ namespace ApplicationCore.Services
         Task<bool> DeletePromotion(Guid promotionId);
         public Task<PromotionDto> CreatePromotion(PromotionDto dto);
         public Task<Promotion> GetPromotionByPromotionId(Guid promotionId);
+        public Task<bool> CheckProduct(CustomerOrderInfo order);
 
     }
 }
