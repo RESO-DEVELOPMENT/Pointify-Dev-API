@@ -169,7 +169,24 @@ namespace PromotionEngineAPI.Controllers
                             {
                                 promotion = await _promotionService.GetFirst(filter: el => el.PromotionCode == voucher.PromotionCode);
                                 memberLevelMapp = await _memberLevelMappingService.GetFirst(
-                                                  filter: el => el.PromotionId == promotion.PromotionId);
+                                    filter: el => el.PromotionId == promotion.PromotionId);
+                                if(memberLevelMapp == null)
+                            {
+                                    orderResponse = new OrderResponseModel
+                                    {
+                                        Code = (int)AppConstant.ErrCode.Invalid_MemberLevel,
+                                        Message = AppConstant.ErrMessage.Invalid_MemberLevel,
+                                        Order = new Order
+                                        {
+                                            CustomerOrderInfo = orderInfo,
+                                            FinalAmount = orderInfo.Amount,
+                                            DiscountOrderDetail = 0,
+                                            Discount = 0,
+                                            BonusPoint = 0,
+                                        }
+                                    };
+                                    return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, orderResponse);
+                                }
                             }
                             if (membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
                             {
