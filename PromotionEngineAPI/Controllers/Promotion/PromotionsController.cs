@@ -51,7 +51,7 @@ namespace PromotionEngineAPI.Controllers
         {
             //Lấy promotion bởi voucher code
             Membership membership = null;
-            if (orderInfo.Users.MembershipId != null)
+            if (orderInfo.Users.MembershipId != null && orderInfo.Users.MembershipId != Guid.Empty)
             {
                 membership = await _membershipService.GetMembershipById(orderInfo.Users.MembershipId);
                 if (membership == null)
@@ -159,50 +159,54 @@ namespace PromotionEngineAPI.Controllers
                 //
                 if (promotions.Any() && vouchers.Any())
                 {
-                    //Kiểm tra MembershipId -> Level nào 
-                    Promotion promotion = null;
-                    MemberLevelMapping memberLevelMapp = null;
-                    foreach (var voucher in vouchers)
+                    //check membership trong order có không?
+                    if (orderInfo.Users.MembershipId != null && orderInfo.Users.MembershipId != Guid.Empty)
                     {
-                        promotion = await _promotionService.GetFirst(filter: el => el.PromotionCode == voucher.PromotionCode);
-                        memberLevelMapp = await _memberLevelMappingService.GetFirst(
-                                          filter: el => el.PromotionId == promotion.PromotionId);
-                    }
-                    if (membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
-                    {
-                        // apply auto + voucher or promoCode
-                        _promotionService.SetPromotions(promotions);
-                        var voucherPromotion = await _voucherService.CheckVoucher(orderInfo);
-                        if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count >= 1)
-                        {
-                            //promotions.Add(_promotionService.GetPromotions().First());
-                            promotions.Add(voucherPromotion.First());
-                        }
-
-                        if (promotions != null && promotions.Count() > 0)
-                        {
-                            responseModel.CustomerOrderInfo = orderInfo;
-                            _promotionService.SetPromotions(promotions);
-                        }
-                    }
-                    else
-                    {
-                        orderResponse = new OrderResponseModel
-                        {
-                            Code = (int)AppConstant.ErrCode.Invalid_MemberLevel,
-                            Message = AppConstant.ErrMessage.Invalid_MemberLevel,
-                            Order = new Order
+                        //Kiểm tra MembershipId -> Level nào 
+                            Promotion promotion = null;
+                            MemberLevelMapping memberLevelMapp = null;
+                            foreach (var voucher in vouchers)
                             {
-                                CustomerOrderInfo = orderInfo,
-                                FinalAmount = orderInfo.Amount,
-                                DiscountOrderDetail = 0,
-                                Discount = 0,
-                                BonusPoint = 0,
+                                promotion = await _promotionService.GetFirst(filter: el => el.PromotionCode == voucher.PromotionCode);
+                                memberLevelMapp = await _memberLevelMappingService.GetFirst(
+                                                  filter: el => el.PromotionId == promotion.PromotionId);
                             }
-                        };
-                        return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, orderResponse);
-                    }
+                            if (membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
+                            {
+                                // apply auto + voucher or promoCode
+                                _promotionService.SetPromotions(promotions);
+                                var voucherPromotion = await _voucherService.CheckVoucher(orderInfo);
+                                if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count >= 1)
+                                {
+                                    //promotions.Add(_promotionService.GetPromotions().First());
+                                    promotions.Add(voucherPromotion.First());
+                                }
 
+                                if (promotions != null && promotions.Count() > 0)
+                                {
+                                    responseModel.CustomerOrderInfo = orderInfo;
+                                    _promotionService.SetPromotions(promotions);
+                                }
+                        
+                        }
+                        else
+                        {
+                            orderResponse = new OrderResponseModel
+                            {
+                                Code = (int)AppConstant.ErrCode.Invalid_MemberLevel,
+                                Message = AppConstant.ErrMessage.Invalid_MemberLevel,
+                                Order = new Order
+                                {
+                                    CustomerOrderInfo = orderInfo,
+                                    FinalAmount = orderInfo.Amount,
+                                    DiscountOrderDetail = 0,
+                                    Discount = 0,
+                                    BonusPoint = 0,
+                                }
+                            };
+                            return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, orderResponse);
+                        }
+                    }
                 }
                 else
                 {
