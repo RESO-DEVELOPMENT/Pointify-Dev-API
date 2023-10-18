@@ -1319,35 +1319,50 @@ namespace ApplicationCore.Services
                 var productCode = order.CartItems.ToList();
                 Product product = null;
                 Promotion promotionCode = null;
-                foreach ( var item in productCode )
+                foreach (var item in productCode)
                 {
                     product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
                     promotionCode = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(item.PromotionCodeApply));
                 }
-                var checkProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
-                if (checkProductMapping != null )
+                //Kiểm tra promotion có list product??
+                if (promotionCode != null)
                 {
-                    var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
-                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
-                    var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
-                    if (promotionCode.PromotionId.Equals(tier.PromotionId))
+                    var promotionTier = await _promotionTier.GetFirst(filter: el => el.PromotionId.Equals(promotionCode.PromotionId));
+                    var TierConditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionRuleId.Equals(promotionTier.ConditionRuleId));
+                    if (TierConditionGroup != null)
                     {
+                        var TierproductCondition = await _productCondition.GetFirst(filter: el => el.ConditionGroupId.Equals(TierConditionGroup.ConditionGroupId));
+                        if (TierproductCondition != null)
+                        {
+                            var ProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
+
+                            //Kiểm tra product có trong danh sách Promotion??
+                            if (ProductMapping != null)
+                            {
+                                var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(ProductMapping.ProductConditionId));
+                                var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
+                                var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
+                                if (promotionCode.PromotionId.Equals(tier.PromotionId))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
                         return true;
                     }
-                    
+                    return true; 
                 }
                 return false;
-
             }
             catch (ErrorObj e1)
             {
-                Debug.WriteLine("\n\nError at CheckVoucher: \n" + e1.Message);
+                Debug.WriteLine("\n\nError at CheckProduct: \n" + e1.Message);
 
                 throw e1;
             }
             catch (Exception e)
             {
-                Debug.WriteLine("\n\nError at CheckVoucher: \n" + e.Message);
+                Debug.WriteLine("\n\nError at CheckProduct: \n" + e.Message);
 
                 throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
             }
