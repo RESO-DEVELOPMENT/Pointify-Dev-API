@@ -1324,33 +1324,29 @@ namespace ApplicationCore.Services
                     product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
                     promotionCode = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(item.PromotionCodeApply));
                 }
-                //Kiểm tra promotion có list product??
+                var checkProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
+                bool GetPointCheck = promotionCode.PromotionCode.StartsWith("GETPOINT");
+                if (checkProductMapping != null)
+                {
+                    var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
+                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
+                    var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
+                    if (promotionCode.PromotionId.Equals(tier.PromotionId))
+                    {
+                        return true;
+                    }
+
+                }
+                if (GetPointCheck == true)
+                {
+                    return true;
+                }
                 if (promotionCode != null)
                 {
                     var promotionTier = await _promotionTier.GetFirst(filter: el => el.PromotionId.Equals(promotionCode.PromotionId));
-                    var TierConditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionRuleId.Equals(promotionTier.ConditionRuleId));
-                    if (TierConditionGroup != null)
-                    {
-                        var TierproductCondition = await _productCondition.GetFirst(filter: el => el.ConditionGroupId.Equals(TierConditionGroup.ConditionGroupId));
-                        if (TierproductCondition != null)
-                        {
-                            var ProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
-
-                            //Kiểm tra product có trong danh sách Promotion??
-                            if (ProductMapping != null)
-                            {
-                                var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(ProductMapping.ProductConditionId));
-                                var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
-                                var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
-                                if (promotionCode.PromotionId.Equals(tier.PromotionId))
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                        return true;
-                    }
-                    return true; 
+                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionRuleId.Equals(promotionTier.ConditionRuleId));
+                    var productionCondition = await _productCondition.GetFirst(filter: el => el.ConditionGroupId.Equals(conditionGroup.ConditionGroupId));
+                    if (productionCondition == null) return true;
                 }
                 return false;
             }
