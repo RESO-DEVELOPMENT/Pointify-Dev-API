@@ -29,7 +29,7 @@ namespace Infrastructure.DTOs
         public bool? IsAuto { get; set; }
         public Guid? VoucherGroupId { get; set; }
         public int VoucherQuantity { get; set; } = 0;
-        public Guid? ConditionRuleId { get; set; }
+        public Guid ConditionRuleId { get; set; }
         public int? PromotionType { get; set; } = 0;
 
 

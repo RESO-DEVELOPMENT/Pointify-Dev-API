@@ -432,104 +432,105 @@ namespace ApplicationCore.Services
         }
         public async Task<PromotionInfomation> CheckGiftProduct(ProductDto productDto)
         {
-            try
-            {
-                Promotion promotion = new Promotion();
-                PromotionInfomation promotionInfomation = new PromotionInfomation();
-                var product = _repository.GetFirst(x => x.Code == productDto.Code && x.DelFlg == false).Result;
-                if (product != null)
-                {
-                    promotion = await _promotionTierService.GetPromotionTierByProductCode(product.Code);
-                    // _voucherGroupService.GenerateVoucher(promotion., 1);
-                    var promotionTier = _context.PromotionTier.Where(x => x.ProductCode == productDto.Code)
-                        .Include(x => x.VoucherGroup).FirstOrDefault();
-                    if (promotionTier.VoucherGroupId == null)
-                    {
-                        throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: "Không tìm thấy promotionTier");
-                    }
+            //try
+            //{
+            //    Promotion promotion = new Promotion();
+            //    PromotionInfomation promotionInfomation = new PromotionInfomation();
+            //    var product = _repository.GetFirst(x => x.Code == productDto.Code && x.DelFlg == false).Result;
+            //    if (product != null)
+            //    {
+            //        promotion = await _promotionTierService.GetPromotionTierByProductCode(product.Code);
+            //        // _voucherGroupService.GenerateVoucher(promotion., 1);
+            //        var promotionTier = _context.PromotionTier.Where(x => x.ProductCode == productDto.Code)
+            //            .Include(x => x.VoucherGroup).FirstOrDefault();
+            //        if (promotionTier.VoucherGroupId == null)
+            //        {
+            //            throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: "Không tìm thấy promotionTier");
+            //        }
 
-                    promotionTier.VoucherGroup.Quantity += 1;
-                    _context.VoucherGroup.Update(promotionTier.VoucherGroup);
-                    promotionTier.VoucherQuantity += 1;
-                    _context.PromotionTier.Update(promotionTier);
-                    _context.SaveChanges();
-                    var voucherGroup = _mapper.Map<VoucherGroupDto>(promotionTier.VoucherGroup);
-                    _voucherService.InsertVouchers(voucherDto: voucherGroup);
-                    await _voucherGroupService.AddMoreVoucher((Guid)promotionTier.VoucherGroupId, 1);
-                    // await _voucherGroupService.GenerateVoucher((Guid)promotionTier.VoucherGroupId, 1);
-                    var voucher = UpdateVoucherRedeem((Guid)promotionTier.VoucherGroupId);
-                    voucher.PromotionTierId = promotionTier.PromotionTierId;
-                    voucher.PromotionId = promotion.PromotionId;
-                    _context.Voucher.Update(voucher);
-                    _context.SaveChanges();
-                    promotionInfomation.PromotionId = promotion.PromotionId;
-                    promotionInfomation.PromotionTierId = promotionTier.PromotionTierId;
-                    promotionInfomation.PromotionName = promotion.PromotionName;
-                    promotionInfomation.Description = promotion.Description;
-                    promotionInfomation.PromotionCode = promotion.PromotionCode;
-                    promotionInfomation.VoucherName = promotionTier.VoucherGroup.VoucherName;
-                    promotionInfomation.ImgUrl = promotion.ImgUrl;
-                    promotionInfomation.VoucherCode =
-                        promotion.PromotionCode + promotionTier.TierIndex + "-" + voucher.VoucherCode;
-                    promotionInfomation.StartDate = promotion.StartDate;
-                    promotionInfomation.EndDate = promotion.EndDate;
-                    return promotionInfomation;
-                }
-                else
-                {
-                    productDto.ProductId = Guid.NewGuid();
-                    productDto.InsDate = DateTime.Now;
-                    productDto.UpdDate = DateTime.Now;
-                    await this.CreateAsync(productDto);
+            //        promotionTier.VoucherGroup.Quantity += 1;
+            //        _context.VoucherGroup.Update(promotionTier.VoucherGroup);
+            //        promotionTier.VoucherQuantity += 1;
+            //        _context.PromotionTier.Update(promotionTier);
+            //        _context.SaveChanges();
+            //        var voucherGroup = _mapper.Map<CreateVoucherGroupDto>(promotionTier.VoucherGroup);
+            //        _voucherService.InsertVouchers(voucherDto: voucherGroup);
+            //        await _voucherGroupService.AddMoreVoucher((Guid)promotionTier.VoucherGroupId, 1);
+            //        // await _voucherGroupService.GenerateVoucher((Guid)promotionTier.VoucherGroupId, 1);
+            //        var voucher = UpdateVoucherRedeem((Guid)promotionTier.VoucherGroupId);
+            //        voucher.PromotionTierId = promotionTier.PromotionTierId;
+            //        voucher.PromotionId = promotion.PromotionId;
+            //        _context.Voucher.Update(voucher);
+            //        _context.SaveChanges();
+            //        promotionInfomation.PromotionId = promotion.PromotionId;
+            //        promotionInfomation.PromotionTierId = promotionTier.PromotionTierId;
+            //        promotionInfomation.PromotionName = promotion.PromotionName;
+            //        promotionInfomation.Description = promotion.Description;
+            //        promotionInfomation.PromotionCode = promotion.PromotionCode;
+            //        promotionInfomation.VoucherName = promotionTier.VoucherGroup.VoucherName;
+            //        promotionInfomation.ImgUrl = promotion.ImgUrl;
+            //        promotionInfomation.VoucherCode =
+            //            promotion.PromotionCode + promotionTier.TierIndex + "-" + voucher.VoucherCode;
+            //        promotionInfomation.StartDate = promotion.StartDate;
+            //        promotionInfomation.EndDate = promotion.EndDate;
+            //return promotionInfomation;
+            //    }
+            //    else
+            //    {
+            //        productDto.ProductId = Guid.NewGuid();
+            //        productDto.InsDate = DateTime.Now;
+            //        productDto.UpdDate = DateTime.Now;
+            //        await this.CreateAsync(productDto);
 
-                    var actionDto = CreateAction(productDto);
+            //        var actionDto = CreateAction(productDto);
 
-                    var conditionRule = CreateCondition(productDto, actionDto);
+            //        var conditionRule = CreateCondition(productDto, actionDto);
 
-                    var voucherGroupDto = CreateVoucherGroup(actionDto, productDto);
+            //        var voucherGroupDto = CreateVoucherGroup(actionDto, productDto);
 
-                    var voucher = UpdateVoucherRedeem(voucherGroupDto.VoucherGroupId);
+            //        var voucher = UpdateVoucherRedeem(voucherGroupDto.VoucherGroupId);
 
-                    #region Thêm tier vào promotion
+            //        #region Thêm tier vào promotion
 
-                    PromotionTierDto promotionTierDto = new PromotionTierDto
-                    {
-                        ActionId = actionDto.ActionId,
-                        ConditionRuleId = conditionRule.ConditionRuleId,
-                        Priority = 1,
-                        PromotionId = Guid.Parse("6b53e6ec-840c-46d7-af7e-854b4e86ba57"),
-                        TierIndex = 1,
-                        VoucherGroupId = voucherGroupDto.VoucherGroupId,
-                        VoucherQuantity = 1,
-                        ProductCode = productDto.Code,
-                    };
-                    await _promotionTierService.CreateGiftTier(promotionTierDto);
+            //        PromotionTierDto promotionTierDto = new PromotionTierDto
+            //        {
+            //            ActionId = actionDto.ActionId,
+            //            ConditionRuleId = conditionRule.ConditionRuleId,
+            //            Priority = 1,
+            //            PromotionId = Guid.Parse("6b53e6ec-840c-46d7-af7e-854b4e86ba57"),
+            //            TierIndex = 1,
+            //            VoucherGroupId = voucherGroupDto.VoucherGroupId,
+            //            VoucherQuantity = 1,
+            //            ProductCode = productDto.Code,
+            //        };
+            //        await _promotionTierService.CreateGiftTier(promotionTierDto);
 
-                    #endregion
-                    promotion = await _promotionTierService.GetPromotionTierByProductCode(productDto.Code);
+            //        #endregion
+            //        promotion = await _promotionTierService.GetPromotionTierByProductCode(productDto.Code);
 
-                    promotionInfomation.PromotionId = promotion.PromotionId;
-                    promotionInfomation.PromotionTierId = promotionTierDto.PromotionTierId;
-                    promotionInfomation.PromotionName = promotion.PromotionName;
-                    promotionInfomation.Description = promotion.Description;
-                    promotionInfomation.PromotionCode = promotion.PromotionCode;
-                    promotionInfomation.VoucherName = voucherGroupDto.VoucherName;
-                    promotionInfomation.ImgUrl = promotion.ImgUrl;
-                    promotionInfomation.VoucherCode =
-                        promotion.PromotionCode + promotionTierDto.TierIndex + "-" + voucher.VoucherCode;
-                    promotionInfomation.StartDate = promotion.StartDate;
-                    promotionInfomation.EndDate = promotion.EndDate;
+            //        promotionInfomation.PromotionId = promotion.PromotionId;
+            //        promotionInfomation.PromotionTierId = promotionTierDto.PromotionTierId;
+            //        promotionInfomation.PromotionName = promotion.PromotionName;
+            //        promotionInfomation.Description = promotion.Description;
+            //        promotionInfomation.PromotionCode = promotion.PromotionCode;
+            //        promotionInfomation.VoucherName = voucherGroupDto.VoucherName;
+            //        promotionInfomation.ImgUrl = promotion.ImgUrl;
+            //        promotionInfomation.VoucherCode =
+            //            promotion.PromotionCode + promotionTierDto.TierIndex + "-" + voucher.VoucherCode;
+            //        promotionInfomation.StartDate = promotion.StartDate;
+            //        promotionInfomation.EndDate = promotion.EndDate;
 
-                }
+            //    }
 
-                return promotionInfomation;
-            }
-            catch (Exception e)
-            {
-                //chạy bằng debug mode để xem log
-                Debug.WriteLine("\n\nError at getVoucherForGame: \n" + e.StackTrace);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message);
-            }
+            //    return promotionInfomation;
+            //}
+            //catch (Exception e)
+            //{
+            //    //chạy bằng debug mode để xem log
+            //    Debug.WriteLine("\n\nError at getVoucherForGame: \n" + e.StackTrace);
+            //    throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message);
+            //}
+            return null;
         }
         private ActionDto CreateAction(ProductDto productDto)
         {
@@ -615,38 +616,38 @@ namespace ApplicationCore.Services
                 throw new Exception(ex.Message + " || " + "Create condition failed");
             }
         }
-        private VoucherGroupDto CreateVoucherGroup(ActionDto actionDto, ProductDto productDto)
-        {
-            VoucherGroupDto voucherGroupDto = new VoucherGroupDto
-            {
-                VoucherGroupId = Guid.NewGuid(),
-                ActionId = actionDto.ActionId,
-                BrandId = actionDto.BrandId,
-                Charset = "Alphanumeric",
-                CodeLength = 8,
-                CustomCharset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                VoucherName = $"Voucher giảm {actionDto.DiscountPercentage}% cho {productDto.Name}",
-                Quantity = 0,
-                Postfix = "",
-                Prefix = ""
-            };
-            try
-            {
-                var voucherGroup = _mapper.Map<VoucherGroup>(voucherGroupDto);
-                _context.VoucherGroup.Add(voucherGroup);
-                _context.SaveChanges();
-                _voucherService.InsertVouchers(voucherDto: voucherGroupDto);
-                // _voucherService.AddMoreVoucher(voucherGroupDto.VoucherGroupId, 10000);
-                _voucherGroupService.GenerateVoucher(voucherGroupDto.VoucherGroupId, 1);
-                return voucherGroupDto;
+        //private VoucherGroupDto CreateVoucherGroup(ActionDto actionDto, ProductDto productDto)
+        //{
+        //    VoucherGroupDto voucherGroupDto = new VoucherGroupDto
+        //    {
+        //        VoucherGroupId = Guid.NewGuid(),
+        //        ActionId = actionDto.ActionId,
+        //        BrandId = actionDto.BrandId,
+        //        Charset = "Alphanumeric",
+        //        CodeLength = 8,
+        //        CustomCharset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        //        VoucherName = $"Voucher giảm {actionDto.DiscountPercentage}% cho {productDto.Name}",
+        //        Quantity = 0,
+        //        Postfix = "",
+        //        Prefix = ""
+        //    };
+        //    try
+        //    {
+        //        var voucherGroup = _mapper.Map<VoucherGroup>(voucherGroupDto);
+        //        _context.VoucherGroup.Add(voucherGroup);
+        //        _context.SaveChanges();
+        //        _voucherService.InsertVouchers(voucherDto: voucherGroupDto);
+        //        // _voucherService.AddMoreVoucher(voucherGroupDto.VoucherGroupId, 10000);
+        //        _voucherGroupService.GenerateVoucher(voucherGroupDto.VoucherGroupId, 1);
+        //        return voucherGroupDto;
 
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message + " || " + "Create voucher group failed");
-            }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message + " || " + "Create voucher group failed");
+        //    }
 
-        }
+        //}
 
         private Voucher UpdateVoucherRedeem(Guid voucherGroupId)
         {

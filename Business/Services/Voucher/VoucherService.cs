@@ -3,7 +3,6 @@ using ApplicationCore.Request;
 using ApplicationCore.Utils;
 using AutoMapper;
 using Infrastructure.DTOs;
-
 using Infrastructure.DTOs.VoucherChannel;
 using Infrastructure.Helper;
 using Infrastructure.Models;
@@ -12,6 +11,7 @@ using Infrastructure.UnitOfWork;
 using MailKit.Net.Smtp;
 using MimeKit;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Crypto.Tls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -590,6 +590,46 @@ namespace ApplicationCore.Services
 
             }
             return result;
+        }
+
+        public async Task<VoucherDto> CreateVoucher(VoucherDto dto, Guid VoucherGroupId)
+        {
+            try
+            {
+                VoucherDto voucher = new VoucherDto()
+                {
+                    VoucherId = Guid.NewGuid(),
+                    InsDate = DateTime.Now,
+                    UpdDate = DateTime.Now,
+                    DelFlg = false,
+                    VoucherCode = dto.VoucherCode,
+                    ChannelId = dto.ChannelId,
+                    VoucherGroupId = VoucherGroupId,
+                    StoreId = dto.StoreId,
+                    MembershipId = dto.MembershipId,
+                    IsUsed = dto.IsUsed,
+                    IsRedemped = dto.IsRedemped,
+                    UsedDate = dto.UsedDate,
+                    RedempedDate = dto.RedempedDate,
+                    IsActive = dto.IsActive,
+                    Index = dto.Index,
+                    PromotionId = dto.PromotionId,
+                    OrderId = dto.OrderId,
+                    TransactionId = dto.TransactionId
+                };
+                var entity = _mapper.Map<Voucher>(voucher);
+                _repository.Add(entity);
+                var check = await _unitOfWork.SaveAsync();
+                if (check != 0) return _mapper.Map<VoucherDto>(voucher);
+                return null;
+            }
+            catch (System.Exception e)
+            {
+                Debug.WriteLine(e.StackTrace);
+                Debug.WriteLine(e.InnerException);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
+            }
         }
     }
 }

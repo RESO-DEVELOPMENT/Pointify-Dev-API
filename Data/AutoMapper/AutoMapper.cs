@@ -66,6 +66,12 @@ namespace Infrastructure.AutoMapper
             CreateMap<VoucherGroup, VoucherGroupDto>();
             CreateMap<VoucherGroupDto, VoucherGroup>();
             //VoucherGroup
+            CreateMap<VoucherGroup, CreateVoucherGroupDto>();
+            CreateMap<CreateVoucherGroupDto, VoucherGroup>();
+            //VoucherGroupDto - CreateVoucherGroupDto
+            CreateMap<VoucherGroupDto, CreateVoucherGroupDto>();
+            CreateMap<CreateVoucherGroupDto, VoucherGroupDto>();
+            //ConditionGroup
             CreateMap<ConditionGroup, ConditionGroupDto>();
             CreateMap<ConditionGroupDto, ConditionGroup>();
             //ConditionRequestParam

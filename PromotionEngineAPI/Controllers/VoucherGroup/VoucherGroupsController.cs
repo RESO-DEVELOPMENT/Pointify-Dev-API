@@ -147,18 +147,18 @@ namespace PromotionEngineAPI.Controllers
 
         // POST: api/VoucherGroups
         [HttpPost]
-        public async Task<IActionResult> PostVoucherGroup([FromBody] VoucherGroupDto dto)
+        public async Task<IActionResult> PostVoucherGroup([FromBody] CreateVoucherGroupDto dto)
         {
             try
             {
-                dto.VoucherGroupId = Guid.NewGuid();
-                dto.DelFlg = false;
-                dto.InsDate = DateTime.Now;
-                dto.UpdDate = DateTime.Now;
-                await _service.CreateAsync(dto);
-
+                //dto.VoucherGroupId = Guid.NewGuid();
+                //dto.DelFlg = false;
+                //dto.InsDate = DateTime.Now;
+                //dto.UpdDate = DateTime.Now;
+                //await _service.CreateAsync();
+                var result = await _service.CreatVoucherGroup(dto);
                 _workerService.InsertVouchers(voucherDto: dto);
-                return Ok(dto);
+                return Ok(result);
             }
             catch (ErrorObj e)
             {

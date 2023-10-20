@@ -1012,6 +1012,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.ConditionRule)
                     .WithMany(p => p.PromotionTier)
                     .HasForeignKey(d => d.ConditionRuleId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_PromotionTier_ConditionRule");
 
                 entity.HasOne(d => d.Gift)
@@ -1022,6 +1023,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Promotion)
                     .WithMany(p => p.PromotionTier)
                     .HasForeignKey(d => d.PromotionId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_PromotionTier_Promotion");
 
                 entity.HasOne(d => d.VoucherGroup)
@@ -1164,6 +1166,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Channel)
                     .WithMany(p => p.Voucher)
                     .HasForeignKey(d => d.ChannelId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Voucher_Channel");
 
                 entity.HasOne(d => d.GameCampaign)
@@ -1179,11 +1182,13 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Promotion)
                     .WithMany(p => p.Voucher)
                     .HasForeignKey(d => d.PromotionId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Voucher_Promotion");
 
                 entity.HasOne(d => d.Store)
                     .WithMany(p => p.Voucher)
                     .HasForeignKey(d => d.StoreId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Voucher_Store");
 
                 entity.HasOne(d => d.VoucherGroup)

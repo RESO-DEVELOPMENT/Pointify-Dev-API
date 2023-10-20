@@ -127,7 +127,7 @@ namespace PromotionEngineAPI.Controllers
             {
                 SearchCode = SearchCode.Split("-").Last();
             }
-            Expression<Func<Voucher, bool>> filter = el => el.VoucherGroupId.Equals(VoucherGroupId)
+            Expression<Func<Infrastructure.Models.Voucher, bool>> filter = el => el.VoucherGroupId.Equals(VoucherGroupId)
                                                     && el.VoucherCode.ToUpper().Equals(SearchCode.ToUpper());
             try
             {
@@ -255,7 +255,9 @@ namespace PromotionEngineAPI.Controllers
         {
             try
             {
-                return Ok(await _service.GetByIdAsync(id));
+                var result = await _service.GetFirst(filter: el => el.VoucherId.Equals(id),
+                                includeProperties: "VoucherWallet");
+                return Ok(result);
             }
             catch (ErrorObj e)
             {
@@ -296,31 +298,18 @@ namespace PromotionEngineAPI.Controllers
 
         }
 
-        // PUT: api/Vouchers/active
-        //[HttpPut]
-        //[Route("update-voucher-applied")]
-        //public async Task<IActionResult> UpdateVoucherApplied([FromBody] CustomerOrderInfo order)
-        //{
-        //    try
-        //    {
-        //        return Ok(await _service.UpdateVoucherApplied(order));
-        //    }
-        //    catch (ErrorObj e)
-        //    {
-        //        return StatusCode(statusCode: e.Code, e);
-        //    }
-
-        //}
-
         // POST: api/Vouchers
         [HttpPost]
-        //[Authorize]
-        public async Task<IActionResult> PostVoucher([FromBody] VoucherDto dto)
+        public async Task<IActionResult> PostVoucher([FromQuery] Guid VoucherGroupId, [FromBody] VoucherDto dto)
         {
             try
             {
                 dto.VoucherId = Guid.NewGuid();
+                dto.InsDate = DateTime.Now;
+                dto.UpdDate = DateTime.Now;
+                dto.VoucherGroupId = VoucherGroupId;
                 return Ok(await _service.CreateAsync(dto));
+
             }
             catch (ErrorObj e)
             {

@@ -7,8 +7,9 @@ namespace Infrastructure.DTOs
     {
         public Guid VoucherId { get; set; }
         public string VoucherCode { get; set; }
-        public Guid? VoucherChannelId { get; set; }
-        public Guid? VoucherGroupId { get; set; }
+        public Guid ChannelId { get; set; }
+        public Guid VoucherGroupId { get; set; }
+        public Guid StoreId { get; set; }
         public Guid? MembershipId { get; set; }
         public bool IsUsed { get; set; }
         public bool IsRedemped { get; set; }
@@ -16,11 +17,11 @@ namespace Infrastructure.DTOs
         public DateTime? RedempedDate { get; set; }
         public bool IsActive { get; set; }
         public int Index { get; set; }
-        public Guid? PromotionId { get; set; }
-        public Guid? PromotionTierId { get; set; }
+        public Guid PromotionId { get; set; }
+        public Guid PromotionTierId { get; set; }
         public String OrderId { get; set; }
         public Guid TransactionId { get; set; }
-        public virtual VoucherGroup VoucherGroup { get; set; }
+        public Guid? GameCampaignId { get; set; }
     }
 
     public class PromotionVoucherCount

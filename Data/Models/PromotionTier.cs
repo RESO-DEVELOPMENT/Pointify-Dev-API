@@ -6,9 +6,9 @@ namespace Infrastructure.Models
     public partial class PromotionTier
     {
         public Guid PromotionTierId { get; set; }
-        public Guid? ConditionRuleId { get; set; }
+        public Guid ConditionRuleId { get; set; }
         public Guid? ActionId { get; set; }
-        public Guid? PromotionId { get; set; }
+        public Guid PromotionId { get; set; }
         public Guid? GiftId { get; set; }
         public DateTime InsDate { get; set; }
         public DateTime UpdDate { get; set; }

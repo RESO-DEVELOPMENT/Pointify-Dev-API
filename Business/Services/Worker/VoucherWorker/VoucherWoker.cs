@@ -17,9 +17,9 @@ namespace ApplicationCore.Worker
 {
     public interface IVoucherWorker
     {
-        public void InsertVouchers(VoucherGroupDto voucherDto, bool isAddMore = false, List<Voucher> vouchersAdd = null);
+        public void InsertVouchers(CreateVoucherGroupDto voucherDto, bool isAddMore = false, List<Voucher> vouchersAdd = null);
         public void DeleteVouchers(Guid voucherGroupId);
-        public List<Voucher> GenerateVoucher(VoucherGroupDto dto, bool isAddMore = false);
+        public List<Voucher> GenerateVoucher(CreateVoucherGroupDto dto, bool isAddMore = false);
         public void AddMoreVoucher(Guid voucherGroupId, int quantityParam);
     }
     public class VoucherWorker : IVoucherWorker
@@ -74,7 +74,7 @@ namespace ApplicationCore.Worker
                  }
              });
         }
-        public void InsertVouchers(VoucherGroupDto dto, bool isAddMore, List<Voucher> vouchersAdd)
+        public void InsertVouchers(CreateVoucherGroupDto dto, bool isAddMore, List<Voucher> vouchersAdd)
         {
             // Param để insert
             Guid voucherGroupId = dto.VoucherGroupId;
@@ -121,7 +121,7 @@ namespace ApplicationCore.Worker
                 }
             });
         }
-        private List<Voucher> GenerateDistinctVoucher(VoucherGroupDto dto)
+        private List<Voucher> GenerateDistinctVoucher(CreateVoucherGroupDto dto)
         {
             var now = Common.GetCurrentDatetime();
             var vouchers = new List<Voucher>();
@@ -152,12 +152,12 @@ namespace ApplicationCore.Worker
 
         }
         #region generate voucher
-        public List<Voucher> GenerateVoucher(VoucherGroupDto dto, bool isAddMore = false)
+        public List<Voucher> GenerateVoucher(CreateVoucherGroupDto dto, bool isAddMore = false)
         {
             return _mapper.Map<List<Voucher>>(GenerateBulkCodeVoucher(dto, isAddMore));
         }
 
-        private List<VoucherDto> GenerateBulkCodeVoucher(VoucherGroupDto dto, bool isAddMore = false)
+        private List<VoucherDto> GenerateBulkCodeVoucher(CreateVoucherGroupDto dto, bool isAddMore = false)
         {
             List<VoucherDto> result = new List<VoucherDto>();
             var now = Common.GetCurrentDatetime();

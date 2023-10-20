@@ -164,16 +164,16 @@ namespace Infrastructure.Repository
 
                         foreach (var voucher in vouchers)
                         {
-                            if (voucher.IsUsed || voucher.IsRedemped)
-                            {
-                                voucher.PromotionTierId = null;
-                            }
-                            else
-                            {
-                                voucher.PromotionTierId = null;
-                                voucher.PromotionId = null;
-                                voucher.Promotion = null;
-                            }
+                            //if (voucher.IsUsed || voucher.IsRedemped)
+                            //{
+                            //    voucher.PromotionTierId = null;
+                            //}
+                            //else
+                            //{
+                            //    voucher.PromotionTierId = null;
+                            //    voucher.PromotionId = null;
+                            //    voucher.Promotion = null;
+                            //}
                             voucher.UpdDate = now;
                         }
                         voucherGroup.UpdDate = now;

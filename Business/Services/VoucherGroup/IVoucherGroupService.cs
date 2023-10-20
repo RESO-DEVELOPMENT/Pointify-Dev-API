@@ -40,5 +40,6 @@ namespace ApplicationCore.Services
 
         public Task<VoucherGroupDto> UpdateVoucherGroup(VoucherGroupDto dto);
         public Task<bool> GenerateVoucher(Guid voucherGroupId, int quantity);
+        public Task<VoucherGroup> CreatVoucherGroup(CreateVoucherGroupDto dto);
     }
 }

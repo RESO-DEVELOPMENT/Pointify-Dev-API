@@ -98,8 +98,8 @@ namespace ApplicationCore.Services
                     promotionTier.PromotionId = param.PromotionId;
                 }
                 else
-                {
-                    promotionTier.PromotionId = null;
+                {   //promotionId ~ null
+                    promotionTier.PromotionId = new Guid();
                 }
 
                 // Create action
@@ -1463,14 +1463,14 @@ namespace ApplicationCore.Services
                 }
                 #endregion
                 #region Xóa voucher và tierId
-                foreach (var voucher in promo.Voucher)
-                {
-                    if (!voucher.IsRedemped && !voucher.IsUsed)
-                    {
-                        voucher.PromotionTierId = null;
-                        voucher.PromotionId = null;
-                    }
-                }
+                //foreach (var voucher in promo.Voucher)
+                //{
+                //    if (!voucher.IsRedemped && !voucher.IsUsed)
+                //    {
+                //        voucher.PromotionTierId = null;
+                //        voucher.PromotionId = null;
+                //    }
+                //}
 
                 //promo.Voucher = null;
                 #endregion

@@ -276,8 +276,8 @@ namespace ApplicationCore.Services
                 var completeTotal = voucherGroup.Quantity + quantityParam;
 
                 // DTO tạo voucher mới
-                var dto = _mapper.Map<VoucherGroupDto>(voucherGroup);
-                dto.Voucher = null;
+                var dto = _mapper.Map<CreateVoucherGroupDto>(voucherGroup);
+                //dto.Voucher = null;
                 dto.Quantity = quantityParam;
 
                 // Voucher mới
@@ -291,7 +291,7 @@ namespace ApplicationCore.Services
                 {
                     // Số lượng còn lại
                     var remainTotal = completeTotal - currentTotal;
-                    dto.Voucher = null;
+                    //dto.Voucher = null;
                     dto.Quantity = remainTotal;
 
                     // Voucher mới
@@ -363,7 +363,7 @@ namespace ApplicationCore.Services
                 }
                 var totalItems = await _repository.CountAsync(
                                              filter: o => o.BrandId.Equals(BrandId));
-                GenericRespones<AvailableVoucherDto> response = new GenericRespones<AvailableVoucherDto>(items: result.ToList(), size: PageSize, page: PageIndex, total: totalItems, totalpage: (int)Math.Ceiling(totalItems / (double)PageSize));;
+                GenericRespones<AvailableVoucherDto> response = new GenericRespones<AvailableVoucherDto>(items: result.ToList(), size: PageSize, page: PageIndex, total: totalItems, totalpage: (int)Math.Ceiling(totalItems / (double)PageSize)); ;
                 return response;
             }
             catch (Exception e)
@@ -655,8 +655,8 @@ namespace ApplicationCore.Services
                 var completeTotal = voucherGroup.Quantity + quantityParam;
 
                 // DTO tạo voucher mới
-                var dto = _mapper.Map<VoucherGroupDto>(voucherGroup);
-                dto.Voucher = null;
+                var dto = _mapper.Map<CreateVoucherGroupDto>(voucherGroup);
+                //dto.Voucher = null;
                 dto.Quantity = quantityParam;
 
                 // Voucher mới
@@ -670,7 +670,7 @@ namespace ApplicationCore.Services
                 {
                     // Số lượng còn lại
                     var remainTotal = completeTotal - currentTotal;
-                    dto.Voucher = null;
+                    //dto.Voucher = null;
                     dto.Quantity = remainTotal;
 
                     // Voucher mới
@@ -742,6 +742,44 @@ namespace ApplicationCore.Services
                     tierRepo.Update(tier);
                 }
                 await _unitOfWork.SaveAsync();
+            }
+        }
+
+        public async Task<VoucherGroup> CreatVoucherGroup(CreateVoucherGroupDto dto)
+        {
+            try
+            {
+                CreateVoucherGroupDto group = new CreateVoucherGroupDto()
+                {
+                    VoucherGroupId = Guid.NewGuid(),
+                    BrandId = dto.BrandId,
+                    VoucherName = dto.VoucherName,
+                    Quantity = dto.Quantity,
+                    UsedQuantity = dto.UsedQuantity,
+                    RedempedQuantity = dto.RedempedQuantity,
+                    DelFlg = dto.DelFlg,
+                    InsDate = DateTime.Now,
+                    UpdDate = DateTime.Now,
+                    Charset = "Alphanumeric",
+                    CustomCharset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                    Postfix = dto.Postfix,
+                    Prefix = dto.Prefix,
+                    ActionId = dto.ActionId,
+                    GiftId = dto.GiftId,
+                    CodeLength = dto.CodeLength,
+                    ImgUrl = dto.ImgUrl
+                };
+                var entity = _mapper.Map<VoucherGroup>(group);
+                _repository.Add(entity);
+                await _unitOfWork.SaveAsync();
+                return _mapper.Map<VoucherGroup>(entity);
+            }
+            catch (System.Exception e)
+            {
+                Debug.WriteLine(e.StackTrace);
+                Debug.WriteLine(e.InnerException);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
     }

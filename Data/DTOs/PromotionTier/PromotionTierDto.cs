@@ -5,9 +5,9 @@ namespace Infrastructure.DTOs
     public class PromotionTierDto
     {
         public Guid PromotionTierId { get; set; }
-        public Guid? ConditionRuleId { get; set; }
-        public Guid? ActionId { get; set; }
-        public Guid? PromotionId { get; set; }
+        public Guid ConditionRuleId { get; set; }
+        public Guid ActionId { get; set; }
+        public Guid PromotionId { get; set; }
         public Guid? GiftId { get; set; }
         public string Summary { get; set; } = "";
         public int TierIndex { get; set; } = 0;

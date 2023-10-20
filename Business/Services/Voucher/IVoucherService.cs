@@ -1,6 +1,5 @@
 ﻿using ApplicationCore.Request;
 using Infrastructure.DTOs;
-
 using Infrastructure.DTOs.VoucherChannel;
 using Infrastructure.Models;
 using System;
@@ -30,6 +29,8 @@ namespace ApplicationCore.Services
         public Task<CheckVoucherDto> GetCheckVoucherInfo(string searchCode, Guid voucherGroupId);
         public Task<int> UpdateVoucherOther(Guid transactionId, CustomerOrderInfo order, Guid promotionTierId, Channel channel, Store store);
         public Task<dynamic> GetPromotionCodeByVoucherCode(string voucherCode);
+
+        public Task<VoucherDto> CreateVoucher(VoucherDto dto, Guid VoucherGroupId);
     }
 
 }

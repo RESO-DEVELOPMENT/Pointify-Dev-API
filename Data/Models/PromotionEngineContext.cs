@@ -1046,7 +1046,8 @@ namespace Infrastructure.Models
             {
                 entity.Property(e => e.StoreId).HasDefaultValueSql("(newid())");
 
-                entity.Property(e => e.InsDate)
+                entity.Property(e => e.InsDate
+                )
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
@@ -1134,7 +1135,7 @@ namespace Infrastructure.Models
 
             modelBuilder.Entity<Voucher>(entity =>
             {
-                entity.HasKey(e => new { e.VoucherId, e.VoucherCode })
+                entity.HasKey(e =>  e.VoucherId)
                     .HasName("PK_Voucher_1");
 
                 entity.Property(e => e.VoucherId).HasDefaultValueSql("(newid())");
