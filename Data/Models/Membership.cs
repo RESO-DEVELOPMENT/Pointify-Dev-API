@@ -10,6 +10,7 @@ namespace Infrastructure.Models
             MemberWallet = new HashSet<MemberWallet>();
             MembershipCard = new HashSet<MembershipCard>();
             Voucher = new HashSet<Voucher>();
+            VoucherWallet = new HashSet<VoucherWallet>();
         }
 
         public Guid MembershipId { get; set; }
@@ -28,5 +29,6 @@ namespace Infrastructure.Models
         public virtual ICollection<MemberWallet> MemberWallet { get; set; }
         public virtual ICollection<MembershipCard> MembershipCard { get; set; }
         public virtual ICollection<Voucher> Voucher { get; set; }
+        public virtual ICollection<VoucherWallet> VoucherWallet { get; set; }
     }
 }

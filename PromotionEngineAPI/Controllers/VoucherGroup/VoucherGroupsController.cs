@@ -152,6 +152,9 @@ namespace PromotionEngineAPI.Controllers
             try
             {
                 dto.VoucherGroupId = Guid.NewGuid();
+                dto.DelFlg = false;
+                dto.InsDate = DateTime.Now;
+                dto.UpdDate = DateTime.Now;
                 await _service.CreateAsync(dto);
 
                 _workerService.InsertVouchers(voucherDto: dto);

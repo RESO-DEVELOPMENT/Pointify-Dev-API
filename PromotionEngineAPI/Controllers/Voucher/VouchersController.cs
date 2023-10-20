@@ -250,7 +250,7 @@ namespace PromotionEngineAPI.Controllers
 
         // GET: api/Vouchers/5
         [HttpGet("{id}")]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> GetVoucher([FromRoute] Guid id)
         {
             try
@@ -314,7 +314,7 @@ namespace PromotionEngineAPI.Controllers
 
         // POST: api/Vouchers
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> PostVoucher([FromBody] VoucherDto dto)
         {
             try

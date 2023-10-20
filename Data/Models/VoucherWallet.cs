@@ -11,5 +11,8 @@ namespace Infrastructure.Models
         public string Status { get; set; }
         public DateTime RedeemDate { get; set; }
         public Guid? VoucherId { get; set; }
+
+        public virtual Membership Member { get; set; }
+        public virtual Voucher Voucher { get; set; }
     }
 }

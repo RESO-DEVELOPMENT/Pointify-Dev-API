@@ -5,6 +5,11 @@ namespace Infrastructure.Models
 {
     public partial class Voucher
     {
+        public Voucher()
+        {
+            VoucherWallet = new HashSet<VoucherWallet>();
+        }
+
         public Guid VoucherId { get; set; }
         public string VoucherCode { get; set; }
         public Guid? ChannelId { get; set; }
@@ -30,5 +35,6 @@ namespace Infrastructure.Models
         public virtual Promotion Promotion { get; set; }
         public virtual Store Store { get; set; }
         public virtual VoucherGroup VoucherGroup { get; set; }
+        public virtual ICollection<VoucherWallet> VoucherWallet { get; set; }
     }
 }

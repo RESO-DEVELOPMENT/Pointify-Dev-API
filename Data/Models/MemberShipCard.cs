@@ -9,7 +9,7 @@ namespace Infrastructure.Models
         public Guid MemberId { get; set; }
         public string MembershipCardCode { get; set; }
         public bool Active { get; set; }
-        public DateTime? CreatedTime { get; set; }
+        public DateTime CreatedTime { get; set; }
         public Guid BrandId { get; set; }
         public Guid MembershipCardTypeId { get; set; }
         public string PhysicalCardCode { get; set; }
