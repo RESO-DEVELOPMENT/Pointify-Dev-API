@@ -273,7 +273,7 @@ namespace Infrastructure.Helper
             public const string Invalid_Store = "Đơn hàng không áp dụng tại cửa hàng này.";
             public const string Invalid_MemberLevel = "Đơn hàng không áp dụng cho loại khách hàng này.";
             public const string Invalid_Promotion_Customer = "Khuyến mãi không áp dụng cho loại thành viên này!";
-            public const string Invalid_Membership = "Thành viên chưa tham gia khuyến mãi!";
+            public const string Invalid_Membership = "Thành viên không tồn tại!";
 
             public const string Duplicate_Promotion =
                 "Khuyến mãi không áp dụng cho các voucher thuộc cùng một chương trình khuyến mãi.";

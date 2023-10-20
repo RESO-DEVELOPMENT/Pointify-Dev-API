@@ -1363,7 +1363,37 @@ namespace ApplicationCore.Services
                 throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
             }
 
+        }
 
+        public async Task<bool> CheckProducWithPromotion(CustomerOrderInfo customerOrderInfo, Guid promotionId)
+        {
+            try
+            {
+                var CartItem = customerOrderInfo.CartItems.ToList();
+                Product product = null;
+                Promotion promotionCode = await _repository.GetFirst(filter: pro => pro.PromotionId == promotionId);
+                foreach (var item in CartItem)
+                {
+                    product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
+                }
+                var checkProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
+                if (checkProductMapping != null)
+                {
+                    var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
+                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
+                    var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
+                    if (promotionCode.PromotionId.Equals(tier.PromotionId))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+
+            } catch(Exception e)
+            {
+                Debug.WriteLine($"Error: {e.Message}");
+                throw e;
+            }
         }
 
         public async Task<bool> ExistPromoCode(string promoCode, Guid brandId)

@@ -243,7 +243,6 @@ namespace PromotionEngineAPI.Controllers
                                 promotions = _promotionService.GetPromotions();
 
                                 //Check product có trong điều kiện của promotion?
-                                //Trường hợp product ko có trong điều kiện của promotion??
                                 bool checkProduct = await _promotionService.CheckProduct(orderInfo);
                                 if (checkProduct == false)
                                 {
@@ -299,10 +298,32 @@ namespace PromotionEngineAPI.Controllers
                             return Ok(orderResponseModel);
                         }
                     }
-                    else if (membership == null && !promotionItem.PromotionCode.StartsWith("GETPOINT"))
+                    else if (orderInfo.Users.MembershipId == null && !promotionItem.PromotionCode.StartsWith("GETPOINT"))
                     {
                         bool checkProduct = await _promotionService.CheckProduct(orderInfo);
                         if (checkProduct == false)
+                        {
+                            var orderResponseModel = new OrderResponseModel
+                            {
+                                Code = (int)AppConstant.ErrCode.Invaild_Product,
+                                Message = AppConstant.ErrMessage.Invaild_Product,
+                                Order = new Order
+                                {
+                                    CustomerOrderInfo = orderInfo,
+                                    FinalAmount = orderInfo.Amount,
+                                    DiscountOrderDetail = 0,
+                                    Discount = 0,
+                                    BonusPoint = 0,
+                                }
+                            };
+                            return Ok(orderResponseModel);
+                        }
+                    }
+                    //Case: promotionType = 2: Only promotion
+                    else if (orderInfo.Users.MembershipId != null && orderInfo.Vouchers.Count == 0)
+                    {
+                        bool checkProductWithPromotion = await _promotionService.CheckProducWithPromotion(orderInfo, promotionId);
+                        if (checkProductWithPromotion == false)
                         {
                             var orderResponseModel = new OrderResponseModel
                             {
