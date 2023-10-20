@@ -19,5 +19,6 @@ namespace ApplicationCore.Services
         public Task<List<GroupChannelOfPromotion>> UpdateChannelOfPromotion(UpdateChannelOfPromotion dto);
         public Task<CustomerOrderInfo> DecryptAttribute(ChannelOtherRequestParam param);
         public Task<VoucherForCustomerModel> DecryptCustomer(VoucherForOtherChannel param);
+        public Task<List<PromotionInfomationJsonFile>> GetPromotionsForChannel(string brandCode, int ChannelType);
     }
 }

@@ -100,7 +100,6 @@ namespace ApplicationCore.Services
                                 effect.EffectType.Contains(AppConstant.EffectMessage.GetPoint))
                                 {
                                     type = effect.EffectType;
-
                                 }
                             }
                                 if (promotionSetDiscount.IsAuto)

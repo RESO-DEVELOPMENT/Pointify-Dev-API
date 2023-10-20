@@ -429,5 +429,37 @@ namespace ApplicationCore.Services
 
             return cusInfo;
         }
+
+        public async Task<List<PromotionInfomationJsonFile>> GetPromotionsForChannel(string brandCode, int ChannelType)
+        {
+            List<PromotionInfomationJsonFile> result = null;
+            var channel = await _repository.GetFirst(filter: el =>
+                    !el.DelFlg
+                    && el.ChannelType == ChannelType
+                    && el.Brand.BrandCode.Equals(brandCode),
+                includeProperties: "Brand.Promotion," +
+                "PromotionChannelMapping.Promotion," +
+                "PromotionChannelMapping.Promotion.PromotionTier");
+
+            var promotions = channel.PromotionChannelMapping.Where(w => w.Channel.ChannelType == ChannelType
+                    && w.Promotion.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH)
+                    .Where(w => DateTime.Now <= (w.Promotion.EndDate != null ? w.Promotion.EndDate : DateTime.MaxValue))
+                        .Select(s => s.Promotion);
+
+            if (promotions != null && promotions.Count() > 0)
+            {
+                foreach (var promotion in promotions)
+                {
+                    var promotionInfomation = _mapper.Map<PromotionInfomationJsonFile>(promotion);
+                    if (result == null)
+                    {
+                        result = new List<PromotionInfomationJsonFile>();
+                    }
+                    result.Add(promotionInfomation);
+                }
+            }
+
+            return result;
+        }
     }
 }

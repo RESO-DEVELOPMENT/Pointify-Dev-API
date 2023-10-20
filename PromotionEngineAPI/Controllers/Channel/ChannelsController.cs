@@ -113,12 +113,20 @@ namespace PromotionEngineAPI.Controllers
                 dto.PrivateKey = Common.EncodeToBase64(RSACryptoUtils.ExportPrivateKey(rsaProvider));
             }
             dto.ApiKey = Common.CreateApiKey();
+            dto.DelFlg = false;
+            dto.InsDate = DateTime.Now;
+            dto.UpdDate = DateTime.Now;
             var result = await _service.CreateAsync(dto);
             if (result == null)
             {
                 return NotFound();
             }
             return Ok(result);
+        }
+        [HttpGet("list-promotions")]
+        public async Task<IActionResult> GetListPromotionByChannel([FromQuery] string brandCode, [FromQuery] int ChannelType)
+        {
+            return Ok(await _service.GetPromotionsForChannel(brandCode, ChannelType));
         }
 
         // DELETE: api/Channels/5

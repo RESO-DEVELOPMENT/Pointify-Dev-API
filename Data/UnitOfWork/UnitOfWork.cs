@@ -42,6 +42,9 @@ namespace Infrastructure.UnitOfWork
         //PromotionStoreMapping
         public IGenericRepository<PromotionStoreMapping> PromotionStoreMappingRepository { get; set; }
 
+        //PromotionChannelMapping
+        public IGenericRepository<PromotionChannelMapping> PromotionChannelMappingRepository { get; set; }
+
         //PromotionTier
         public IGenericRepository<PromotionTier> PromotionTierRepository { get; set; }
 
