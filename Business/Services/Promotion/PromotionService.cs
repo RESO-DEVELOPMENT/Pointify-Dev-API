@@ -1307,6 +1307,7 @@ namespace ApplicationCore.Services
                                 "PromotionTier.VoucherGroup," +
                             "PromotionStoreMapping.Store," +
                             "Brand," +
+                            "PromotionChannelMapping.Channel,"+
                         "MemberLevelMapping.MemberLevel"
                     );
             return promotions.ToList();
@@ -1389,7 +1390,8 @@ namespace ApplicationCore.Services
                 }
                 return false;
 
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Debug.WriteLine($"Error: {e.Message}");
                 throw e;

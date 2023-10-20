@@ -68,6 +68,7 @@ namespace ApplicationCore.Request
         public int SalesMode { get; set; }
         public int PaymentMethod { get; set; }
         public StoreInfo StoreInfo { get; set; }
+        public ChannelInfo ChannelInfo { get; set; }
     }
 
     public class OrderGift
@@ -88,6 +89,13 @@ namespace ApplicationCore.Request
     public class StoreInfo
     {
         public string StoreCode { get; set; }
+        [StringLength(100)] public string BrandCode { get; set; }
+        public string Applier { get; set; }
+    }
+
+    public class ChannelInfo
+    {
+        public string ChannelCode { get; set; }
         [StringLength(100)] public string BrandCode { get; set; }
         public string Applier { get; set; }
     }
