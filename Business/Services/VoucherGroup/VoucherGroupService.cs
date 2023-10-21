@@ -266,7 +266,12 @@ namespace ApplicationCore.Services
         {
             try
             {
-                var voucherGroup = await _repository.GetFirst(filter: el => el.VoucherGroupId.Equals(voucherGroupId), includeProperties: "Voucher");
+                var voucherGroup = await _repository.GetFirst(filter: o => o.VoucherGroupId.Equals(voucherGroupId) && !o.DelFlg,
+                                                        includeProperties: "Action.PromotionTier,Gift,Voucher");
+                var promotionTier = await _unitOfWork.PromotionTierRepository.GetFirst(e => e.ActionId == voucherGroup.ActionId);
+                var promotionChannelMapping = await _unitOfWork.VoucherChannelRepository.GetFirst(e => e.PromotionId == promotionTier.PromotionId);
+                var store = await _unitOfWork.StoreRepository.GetFirst(e => e.BrandId == voucherGroup.BrandId);
+                //có promotion từ tier
                 IGenericRepository<Voucher> voucherRepo = _unitOfWork.VoucherRepository;
                 // Voucher cũ
                 var oldVouchers = voucherGroup.Voucher.OrderBy(el => el.InsDate);
@@ -279,7 +284,9 @@ namespace ApplicationCore.Services
                 var dto = _mapper.Map<CreateVoucherGroupDto>(voucherGroup);
                 //dto.Voucher = null;
                 dto.Quantity = quantityParam;
-
+                dto.PromotionId = promotionTier.PromotionId;
+                dto.ConditionRuleId = promotionTier.ConditionRuleId;
+                dto.ActionId = promotionTier.ActionId;
                 // Voucher mới
                 var newVoucherCodes = _voucherWorker.GenerateVoucher(dto, isAddMore: true).Select(el => el.VoucherCode);
 
@@ -318,10 +325,20 @@ namespace ApplicationCore.Services
                         InsDate = now,
                         UpdDate = now,
                         Index = startIndex + i,
+                        VoucherGroupId = voucherGroupId,
+                        PromotionTierId = promotionTier.PromotionTierId,
+                        PromotionId = promotionTier.PromotionId,
+                        ChannelId = promotionChannelMapping.ChannelId,
+                        StoreId =  store.StoreId,
+                        IsUsed = false,
+                        IsRedemped = false,
                     };
-                    voucherRepo.Add(voucherEntity);
+                    //add voucher to list và add voucher vào db
                     insList.Add(voucherEntity);
-                    voucherGroup.Voucher.Add(voucherEntity);
+                    _unitOfWork.VoucherRepository.Add(voucherEntity);
+                    await _unitOfWork.SaveAsync();
+                   voucherGroup.Voucher.Add(voucherEntity);
+
                 }
                 //voucherGroup.Voucher.ToList().AddRange(insList);
                 insList.Count();
@@ -461,7 +478,7 @@ namespace ApplicationCore.Services
             {
                 var result = new VoucherGroupDetailDto();
                 var group = await _repository.GetFirst(filter: o => o.VoucherGroupId.Equals(id) && !o.DelFlg,
-                                                        includeProperties: "Action,Gift");
+                                                        includeProperties: "Action.PromotionTier,Gift,Voucher");
                 if (group != null)
                 {
                     result = new VoucherGroupDetailDto()

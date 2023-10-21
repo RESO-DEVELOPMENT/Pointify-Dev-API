@@ -165,7 +165,7 @@ namespace PromotionEngineAPI.Controllers
                 return StatusCode(statusCode: e.Code, e);
             }
         }
-        [HttpPut]
+        [HttpPost]
         [Route("add-more")]
         public async Task<IActionResult> AddMoreVoucher([FromQuery] Guid voucherGroupId, int quantity)
         {
@@ -178,6 +178,7 @@ namespace PromotionEngineAPI.Controllers
                 }
 
                 return Ok(await _service.AddMoreVoucher(voucherGroupId: voucherGroupId, quantity: quantity));
+                //return Ok(await _service.GenerateVoucher(voucherGroupId: voucherGroupId, quantity: quantity));
             }
             catch (ErrorObj e)
             {
