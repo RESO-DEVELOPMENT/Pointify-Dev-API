@@ -266,10 +266,14 @@ namespace ApplicationCore.Services
         {
             try
             {
+                //checkvoucherGroup có trong DB không
                 var voucherGroup = await _repository.GetFirst(filter: o => o.VoucherGroupId.Equals(voucherGroupId) && !o.DelFlg,
                                                         includeProperties: "Action.PromotionTier,Gift,Voucher");
+                //tìm promotionTier
                 var promotionTier = await _unitOfWork.PromotionTierRepository.GetFirst(e => e.ActionId == voucherGroup.ActionId);
+                //tìm promotionChannelMapping
                 var promotionChannelMapping = await _unitOfWork.VoucherChannelRepository.GetFirst(e => e.PromotionId == promotionTier.PromotionId);
+                //tìm store
                 var store = await _unitOfWork.StoreRepository.GetFirst(e => e.BrandId == voucherGroup.BrandId);
                 //có promotion từ tier
                 IGenericRepository<Voucher> voucherRepo = _unitOfWork.VoucherRepository;
