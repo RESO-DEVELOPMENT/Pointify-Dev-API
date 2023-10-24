@@ -163,18 +163,21 @@ namespace PromotionEngineAPI.Controllers
                 foreach (var promotion in promotions)
                 {
                     promotionItem = await _promotionService.GetFirst(filter: el => el.PromotionId == promotion.PromotionId);
-                    memberLevelMapp = await _memberLevelMappingService.GetFirst(
-                        filter: el => el.PromotionId == promotionItem.PromotionId);
-                    if (membership != null && memberLevelMapp != null)
+                    if (promotionItem.ActionType == (int)AppConstant.EnvVar.ActionType.BonusPoint)
                     {
-                        if (!membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
+                        memberLevelMapp = await _memberLevelMappingService.GetFirst(
+                            filter: el => el.PromotionId == promotionItem.PromotionId);
+                        if (membership != null && memberLevelMapp != null)
+                        {
+                            if (!membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
+                            {
+                                list_remove_promotion_customer.Add(promotion);
+                            }
+                        }
+                        else if (membership == null)
                         {
                             list_remove_promotion_customer.Add(promotion);
                         }
-                    }
-                    else if (membership == null)
-                    {
-                        list_remove_promotion_customer.Add(promotion);
                     }
                 }
 
