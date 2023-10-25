@@ -46,6 +46,7 @@ namespace Infrastructure.DTOs
         public string ImgUrl { get; set; }
         public int? PromotionType { get; set; }
         public int TierIndex { get; set; }
+        public DateTime? EndDate { get; set; }
 
     }
     public class PromotionTypeFilter
