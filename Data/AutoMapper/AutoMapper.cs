@@ -188,6 +188,10 @@ namespace Infrastructure.AutoMapper
             //MemberShipCard
             CreateMap<MembershipCard, MemberShipCardDto>();
             CreateMap<MemberShipCardDto, MembershipCard>();
+
+            //MembershipCardType
+            CreateMap<MembershipCardType, MembershipCardTypeDto>();
+            CreateMap<MemberActionTypeDto, MemberActionType>();
         }
     }
 }

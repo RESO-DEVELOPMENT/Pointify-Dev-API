@@ -26,7 +26,7 @@ namespace WebAPI.Controllers.MemberShipCard
         {
             var result = await _service.GetAsync(pageIndex: param.page, pageSize: param.size,
                 filter: el => (bool)el.Active
-            && el.BrandId.Equals(apiKey));
+            && el.BrandId.Equals(apiKey), includeProperties: "MembershipCardType");
             if (result == null)
             {
                 return NotFound();
@@ -64,10 +64,11 @@ namespace WebAPI.Controllers.MemberShipCard
 
         // POST: api/membership-card
         [HttpPost]
-        public async Task<IActionResult> PostMembership([FromBody] MemberShipCardDto dto)
+        public async Task<IActionResult> PostMembership([FromQuery] Guid MembershipCardTypeId, [FromBody] MemberShipCardDto dto)
         {
-            return Ok(await _service.CreateMemberShipCard(dto));
+            return Ok(await _service.CreateMemberShipCard(dto, MembershipCardTypeId));
         }
+
 
         //Kích hoạt khi khách hàng nhận thẻ cứng
         [HttpPost("add-code")]

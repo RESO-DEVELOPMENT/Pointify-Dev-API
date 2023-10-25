@@ -92,5 +92,7 @@ namespace Infrastructure.UnitOfWork
         IGenericRepository<ConditionGroup> ConditionGroupRespository { get; }
         //MemberLevelMapping
         IGenericRepository<MemberLevelMapping> MemberLevelMappingResponsitory { get; }
+        //MembershipCardType
+        IGenericRepository<MembershipCardType> MembershipCardTypeResponsitory { get; }
     }
 }

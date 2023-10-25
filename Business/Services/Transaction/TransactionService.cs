@@ -272,7 +272,8 @@ namespace ApplicationCore.Services
                 pageIndex: param.page,
                 pageSize: param.size,
                 filter: el => el.PromotionId.Equals(promotionId),
-                orderBy: el => el.OrderByDescending(o => o.InsDate));
+                orderBy: el => el.OrderByDescending(o => o.InsDate),
+                includeProperties: "Brand");
             if (trans.Count() > 0)
             {
                 foreach (var tran in trans)

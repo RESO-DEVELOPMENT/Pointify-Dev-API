@@ -39,7 +39,7 @@ namespace ApplicationCore.Services
                         (bool)!o.DelFlag
                         && o.Id.Equals(id)
                         && o.WalletType.MemberShipProgram.BrandId.Equals(apiKey),
-                    includeProperties: "MemberAction,Transaction");
+                    includeProperties: "MemberAction,Transaction,WalletType");
                 return result;
             }
             catch (ErrorObj e)

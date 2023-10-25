@@ -7,7 +7,7 @@ namespace ApplicationCore.Services
 {
     public interface IMemberShipCardService : IBaseService<MembershipCard, MemberShipCardDto>
     {
-        public Task<MemberShipCardDto> CreateMemberShipCard(MemberShipCardDto dto);
+        public Task<MemberShipCardDto> CreateMemberShipCard(MemberShipCardDto dto, Guid MembershipProgramId);
         public Task<MemberShipCardDto> GetMemberShipCardDetail(Guid id, Guid apiKey);
         public Task<bool> DeleteMemberShipCard(Guid id);
 

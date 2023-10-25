@@ -116,6 +116,8 @@ namespace Infrastructure.UnitOfWork
         public IGenericRepository<ConditionGroup> ConditionGroupRespository { get; set; }
         //MemberLevelMapping
         public IGenericRepository<MemberLevelMapping> MemberLevelMappingResponsitory { get; set; }
+        //MembershipCardType
+        public IGenericRepository<MembershipCardType> MembershipCardTypeResponsitory { get; set; }
         private void initRepository()
         {
             //Account
@@ -195,6 +197,8 @@ namespace Infrastructure.UnitOfWork
             ConditionGroupRespository = new GenericRepository<ConditionGroup>(_context);
             //MemberLevelMapping
             MemberLevelMappingResponsitory = new GenericRepository<MemberLevelMapping>(_context);
+            //MembershipCardType
+            MembershipCardTypeResponsitory = new GenericRepository<MembershipCardType>(_context);
         }
         public void Dispose()
         {

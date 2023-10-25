@@ -31,7 +31,8 @@ namespace WebAPI.Controllers
             var result = await _service.GetAsync(
                 pageIndex: param.page,
                 pageSize: param.size,
-                filter: el => (bool)!el.DelFlag && el.WalletType.MemberShipProgram.BrandId.Equals(apiKey)
+                filter: el => (bool)!el.DelFlag && el.WalletType.MemberShipProgram.BrandId.Equals(apiKey),
+                includeProperties: "WalletType"
             );
 
             if (result == null)

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using ApplicationCore.Utils;
 using AutoMapper;
 using Infrastructure.DTOs;
 using Infrastructure.Helper;
@@ -26,6 +27,9 @@ namespace ApplicationCore.Services
         IGenericRepository<MembershipProgram> _program => _unitOfWork.MembershipProgramRepository;
         IGenericRepository<WalletType> _wallet => _unitOfWork.WalletTypeRepository;
         IGenericRepository<MemberWallet> _memberWallet => _unitOfWork.MemberWalletRepository;
+        IGenericRepository<MembershipCard> _membershipCard => _unitOfWork.MemberShipCardRepository;
+        IGenericRepository<MembershipCardType> _membershipCardType => _unitOfWork.MembershipCardTypeResponsitory;
+
 
         //done
         public async Task<MembershipDto> CreateNewMember(Guid apiKey, MembershipDto dto)
@@ -38,8 +42,9 @@ namespace ApplicationCore.Services
                 var listWallet = (await _wallet.Get(filter: o =>
                     !o.DelFlag
                     && o.MemberShipProgramId.Equals(dto.MemberProgramId))).ToList();
-                if (dto.MembershipId == null || dto.MembershipId.Equals(Guid.NewGuid())) { 
-                    dto.MembershipId = Guid.NewGuid(); 
+                if (dto.MembershipId == null || dto.MembershipId.Equals(System.Guid.Empty))
+                {
+                    dto.MembershipId = Guid.NewGuid();
                 }
                 dto.InsDate = DateTime.Now;
                 dto.UpdDate = DateTime.Now;
@@ -62,7 +67,37 @@ namespace ApplicationCore.Services
                     _memberWallet.Add(memberWallet);
                 }
 
-                // add member wallet vào db
+                //Create MembershipCard - MembershipCardType
+                var digit = Common.makeCode(10);
+                var checkCard = await _membershipCard.GetFirst(filter: o => o.MembershipCardCode == digit);
+                while (checkCard != null)
+                {
+                    digit = Common.makeCode(10);
+                    checkCard = await _membershipCard.GetFirst(filter: o => o.MembershipCardCode == digit);
+                }
+                MemberShipCardDto membershipCard = new MemberShipCardDto()
+                {
+                    Id = Guid.NewGuid(),
+                    MemberId = dto.MembershipId,
+                    BrandId = lowestLevel.BrandId,
+                    MembershipCardCode = digit,
+                    Active = true,
+                    CreatedTime = DateTime.Now,
+
+                };
+                MembershipCardType membershipCardType = new MembershipCardType()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Normal",
+                    AppendCode = Guid.NewGuid(),
+                    Active = true,
+                    MemberShipProgramId = dto.MemberProgramId
+                };
+                _membershipCardType.Add(membershipCardType);
+
+                membershipCard.MembershipCardTypeId = membershipCardType.Id;
+                var membershipCardItem = _mapper.Map<MembershipCard>(membershipCard);
+                _membershipCard.Add(membershipCardItem);
                 await _unitOfWork.SaveAsync();
                 return _mapper.Map<MembershipDto>(entity);
             }

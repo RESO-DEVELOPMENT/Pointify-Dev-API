@@ -25,10 +25,11 @@ namespace ApplicationCore.Services
         }
 
         protected override IGenericRepository<MembershipCard> _repository => _unitOfWork.MemberShipCardRepository;
+        IGenericRepository<MembershipCardType> _membershipCardType => _unitOfWork.MembershipCardTypeResponsitory;
 
 
 
-        public async Task<MemberShipCardDto> CreateMemberShipCard(MemberShipCardDto dto)
+        public async Task<MemberShipCardDto> CreateMemberShipCard(MemberShipCardDto dto, Guid MembershipProgramId)
         {
             try
             {
@@ -38,7 +39,7 @@ namespace ApplicationCore.Services
                 //dto.MembershipCardCode = Common.makeCode(10);
                 var digit = Common.makeCode(10);
                 var checkCard = await _repository.GetFirst(filter: o => o.MembershipCardCode == digit);
-                while(checkCard != null)
+                while (checkCard != null)
                 {
                     digit = Common.makeCode(10);
                     checkCard = await _repository.GetFirst(filter: o => o.MembershipCardCode == digit);
@@ -46,6 +47,17 @@ namespace ApplicationCore.Services
                 dto.MembershipCardCode = digit;
                 dto.Active = true;
                 dto.CreatedTime = DateTime.Now;
+                MembershipCardType membershipCardType = new MembershipCardType()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Normal",
+                    AppendCode =  Guid.NewGuid(),
+                    Active = true,
+                    MemberShipProgramId = MembershipProgramId
+                };
+                _membershipCardType.Add(membershipCardType);
+
+                dto.MembershipCardTypeId = membershipCardType.Id;
                 var entity = _mapper.Map<MembershipCard>(dto);
                 _repository.Add(entity);
                 await _unitOfWork.SaveAsync();
