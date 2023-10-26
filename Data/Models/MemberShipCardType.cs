@@ -13,7 +13,7 @@ namespace Infrastructure.Models
         public Guid Id { get; set; }
         public string Name { get; set; }
         public Guid? AppendCode { get; set; }
-        public Guid MemberShipProgramId { get; set; }
+        public Guid? MemberShipProgramId { get; set; }
         public bool Active { get; set; }
         public string CardImg { get; set; }
 

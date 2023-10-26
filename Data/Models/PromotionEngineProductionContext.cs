@@ -696,6 +696,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.MemberProgram)
                     .WithMany(p => p.Membership)
                     .HasForeignKey(d => d.MemberProgramId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("Membership_MembershipProgram_Id_fk");
             });
 
@@ -736,7 +737,6 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.MemberShipProgram)
                     .WithMany(p => p.MembershipCardType)
                     .HasForeignKey(d => d.MemberShipProgramId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_MemberShipCardType_MembershipProgram");
             });
 

@@ -385,7 +385,7 @@ namespace PromotionEngineAPI.Controllers
 
         [HttpPost]
         [Route("channel/check-promotion")]
-        public async Task<IActionResult> CheckPromotionChannel([FromBody] CustomerOrderInfo orderInfo, [FromQuery] Guid promotionId)
+        public async Task<IActionResult> CheckPromotionChannel([FromBody] CustomerOrderInfo orderInfo)
         {
             //Kiểm tra membership
             Membership membership = null;
@@ -419,8 +419,10 @@ namespace PromotionEngineAPI.Controllers
 
             Order responseModel = new Order();
             var list_remove_voucher = new List<CouponCode>();
+            Promotion promotionIds = null;
             foreach (var voucher in orderInfo.Vouchers)
             {
+                promotionIds = await _promotionService.GetFirst(filter: el => el.PromotionCode == voucher.PromotionCode);
                 if ((voucher.VoucherCode == null && voucher.PromotionCode == null) ||
                     (voucher.VoucherCode == "" && voucher.PromotionCode == ""))
                 {
@@ -441,7 +443,7 @@ namespace PromotionEngineAPI.Controllers
                 List<Promotion> promotions = null;
                 responseModel.CustomerOrderInfo = orderInfo;
                 orderInfo.Vouchers = new List<CouponCode>();
-                promotions = await _promotionService.GetAutoPromotions(orderInfo, promotionId);
+                promotions = await _promotionService.GetAutoPromotions(orderInfo, promotionIds.PromotionId);
 
                 var list_remove_promotion = new List<Promotion>();
                 foreach (var promotion in promotions)
@@ -501,18 +503,21 @@ namespace PromotionEngineAPI.Controllers
                 foreach (var promotion in promotions)
                 {
                     promotionItem = await _promotionService.GetFirst(filter: el => el.PromotionId == promotion.PromotionId);
-                    memberLevelMapp = await _memberLevelMappingService.GetFirst(
-                        filter: el => el.PromotionId == promotionItem.PromotionId);
-                    if (membership != null && memberLevelMapp != null)
+                    if (promotionItem.ActionType == (int)AppConstant.EnvVar.ActionType.BonusPoint)
                     {
-                        if (!membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
+                        memberLevelMapp = await _memberLevelMappingService.GetFirst(
+                        filter: el => el.PromotionId == promotionItem.PromotionId);
+                        if (membership != null && memberLevelMapp != null)
+                        {
+                            if (!membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
+                            {
+                                list_remove_promotion_customer.Add(promotion);
+                            }
+                        }
+                        else if (membership == null)
                         {
                             list_remove_promotion_customer.Add(promotion);
                         }
-                    }
-                    else if (membership == null)
-                    {
-                        list_remove_promotion_customer.Add(promotion);
                     }
                 }
 
@@ -660,7 +665,7 @@ namespace PromotionEngineAPI.Controllers
                     //Case: promotionType = 2: Only promotion
                     else if (orderInfo.Users.MembershipId != null && orderInfo.Vouchers.Count == 0)
                     {
-                        bool checkProductWithPromotion = await _promotionService.CheckProducWithPromotion(orderInfo, promotionId);
+                        bool checkProductWithPromotion = await _promotionService.CheckProducWithPromotion(orderInfo, promotionIds.PromotionId);
                         if (checkProductWithPromotion == false)
                         {
                             var orderResponseModel = new OrderResponseModel

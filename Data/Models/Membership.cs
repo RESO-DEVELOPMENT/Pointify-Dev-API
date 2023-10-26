@@ -20,7 +20,7 @@ namespace Infrastructure.Models
         public bool DelFlg { get; set; }
         public DateTime InsDate { get; set; }
         public DateTime UpdDate { get; set; }
-        public Guid? MemberProgramId { get; set; }
+        public Guid MemberProgramId { get; set; }
         public Guid? MemberLevelId { get; set; }
         public int? Gender { get; set; }
 
