@@ -18,6 +18,7 @@ namespace Infrastructure.Models
         public DateTime UpdDate { get; set; }
         public DateTime InsDate { get; set; }
         public int? IndexLevel { get; set; }
+        public string Benefits { get; set; }
 
         public virtual Brand Brand { get; set; }
         public virtual ICollection<MemberLevelMapping> MemberLevelMapping { get; set; }

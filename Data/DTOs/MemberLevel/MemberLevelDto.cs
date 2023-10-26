@@ -13,5 +13,6 @@ namespace Infrastructure.DTOs
         [StringLength(50)]
         public string Name { get; set; }
         public int? IndexLevel { get; set; }
+        public string Benefits { get; set; }
     }
 }
