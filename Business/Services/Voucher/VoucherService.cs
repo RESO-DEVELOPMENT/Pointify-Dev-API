@@ -89,30 +89,61 @@ namespace ApplicationCore.Services
                     else
                     {
                         IGenericRepository<Promotion> promoRepo = _unitOfWork.PromotionRepository;
-                        var promotion = await promoRepo.Get(filter: el =>
+                        if(order.Attributes.StoreInfo != null)
+                        {
+                            var promotion = await promoRepo.Get(filter: el =>
                         el.PromotionCode == voucherModel.PromotionCode
                         && el.Brand.BrandCode == order.Attributes.StoreInfo.BrandCode
                         && !el.DelFlg,
                             includeProperties:
-                    "PromotionTier.Action.ActionProductMapping.Product," +
-                    //"PromotionTier.Gift.GiftProductMapping.Product," +
-                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
-                    "PromotionTier.Action.ActionProductMapping.Product," +
-                    "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," +
-                    "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
-                    "PromotionStoreMapping.Store," +
-                    "PromotionTier.VoucherGroup," +
-                    "Brand," +
-                    "MemberLevelMapping.MemberLevel"); ;
-                        if (promotion.Count() > 1)
-                        {
-                            throw new ErrorObj(code: (int)AppConstant.ErrCode.Duplicate_VoucherCode, message: AppConstant.ErrMessage.Duplicate_VoucherCode, description: AppConstant.ErrMessage.Duplicate_VoucherCode);
+                        "PromotionTier.Action.ActionProductMapping.Product," +
+                        //"PromotionTier.Gift.GiftProductMapping.Product," +
+                        //"PromotionTier.Gift.GameCampaign.GameMaster," +
+                        "PromotionTier.Action.ActionProductMapping.Product," +
+                        "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," +
+                        "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
+                        "PromotionStoreMapping.Store," +
+                        "PromotionTier.VoucherGroup," +
+                        "Brand," +
+                        "MemberLevelMapping.MemberLevel"); ;
+                            if (promotion.Count() > 1)
+                            {
+                                throw new ErrorObj(code: (int)AppConstant.ErrCode.Duplicate_VoucherCode, message: AppConstant.ErrMessage.Duplicate_VoucherCode, description: AppConstant.ErrMessage.Duplicate_VoucherCode);
+                            }
+                            if (promotion.Count() == 0)
+                            {
+                                throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_VoucherCode, message: AppConstant.ErrMessage.Invalid_VoucherCode, description: AppConstant.ErrMessage.Invalid_VoucherCode);
+                            }
+                            promotions.Add(promotion.FirstOrDefault());
                         }
-                        if (promotion.Count() == 0)
+                        else
                         {
-                            throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_VoucherCode, message: AppConstant.ErrMessage.Invalid_VoucherCode, description: AppConstant.ErrMessage.Invalid_VoucherCode);
+                            var promotion = await promoRepo.Get(filter: el =>
+                        el.PromotionCode == voucherModel.PromotionCode
+                        && el.Brand.BrandCode == order.Attributes.ChannelInfo.BrandCode
+                        && !el.DelFlg,
+                            includeProperties:
+                        "PromotionTier.Action.ActionProductMapping.Product," +
+                        //"PromotionTier.Gift.GiftProductMapping.Product," +
+                        //"PromotionTier.Gift.GameCampaign.GameMaster," +
+                        "PromotionTier.Action.ActionProductMapping.Product," +
+                        "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," +
+                        "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
+                        "PromotionChannelMapping.Channel," +
+                        "PromotionTier.VoucherGroup," +
+                        "Brand," +
+                        "MemberLevelMapping.MemberLevel"); ;
+                            if (promotion.Count() > 1)
+                            {
+                                throw new ErrorObj(code: (int)AppConstant.ErrCode.Duplicate_VoucherCode, message: AppConstant.ErrMessage.Duplicate_VoucherCode, description: AppConstant.ErrMessage.Duplicate_VoucherCode);
+                            }
+                            if (promotion.Count() == 0)
+                            {
+                                throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_VoucherCode, message: AppConstant.ErrMessage.Invalid_VoucherCode, description: AppConstant.ErrMessage.Invalid_VoucherCode);
+                            }
+                            promotions.Add(promotion.FirstOrDefault());
                         }
-                        promotions.Add(promotion.FirstOrDefault());
+                        
                     }
 
                 }

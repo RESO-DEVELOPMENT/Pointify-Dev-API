@@ -563,8 +563,8 @@ namespace ApplicationCore.Services
                 }
             }
             _checkPromotionHandler.SetPromotions(_promotions);
-            _checkPromotionHandler.Handle(orderResponse); //checklai
-            _promotions = _checkPromotionHandler.GetPromotions();
+            _checkPromotionHandler.Handle(orderResponse);
+            _promotions = _checkPromotionHandler.GetPromotions(); 
             return orderResponse;
         }
         #endregion
@@ -1290,7 +1290,10 @@ namespace ApplicationCore.Services
         #endregion
         public async Task<List<Promotion>> GetAutoPromotions(CustomerOrderInfo orderInfo)
         {
-            var promotions = await _repository.Get(filter: el =>
+            IEnumerable<Promotion> promotions = null;
+            if (orderInfo.Attributes.StoreInfo != null)
+            {
+                promotions = await _repository.Get(filter: el =>
                     el.IsAuto
                     && el.Brand.BrandCode.Equals(orderInfo.Attributes.StoreInfo.BrandCode)
                     && el.StartDate <= orderInfo.BookingDate
@@ -1306,9 +1309,33 @@ namespace ApplicationCore.Services
                                 "PromotionTier.VoucherGroup," +
                             "PromotionStoreMapping.Store," +
                             "Brand," +
-                            "PromotionChannelMapping.Channel,"+
+                            "PromotionChannelMapping.Channel," +
                         "MemberLevelMapping.MemberLevel"
                     );
+            }
+            else
+            {
+                promotions = await _repository.Get(filter: el =>
+                    el.IsAuto
+                    && el.Brand.BrandCode.Equals(orderInfo.Attributes.ChannelInfo.BrandCode)
+                    && el.StartDate <= orderInfo.BookingDate
+                    && (el.EndDate != null ? (el.EndDate >= orderInfo.BookingDate) : true)
+                    && el.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH
+                    && !el.DelFlg,
+                        includeProperties:
+                                    "PromotionTier.Action.ActionProductMapping.Product," +
+                                    //"PromotionTier.Gift.GiftProductMapping.Product," +
+                                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
+                                    "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," + //checklai
+                                    "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
+                                "PromotionTier.VoucherGroup," +
+                            "PromotionStoreMapping.Store," +
+                            "Brand," +
+                            "PromotionChannelMapping.Channel," +
+                        "MemberLevelMapping.MemberLevel"
+                    );
+            }
+             
             return promotions.ToList();
         }
 
@@ -1322,7 +1349,10 @@ namespace ApplicationCore.Services
                 foreach (var item in productCode)
                 {
                     product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
-                    promotionCode = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(item.PromotionCodeApply));
+                }
+                foreach(var item in order.Vouchers)
+                {
+                    promotionCode = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(item.PromotionCode));
                 }
                 var checkProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
                 bool GetPointCheck = promotionCode.PromotionCode.StartsWith("GETPOINT");

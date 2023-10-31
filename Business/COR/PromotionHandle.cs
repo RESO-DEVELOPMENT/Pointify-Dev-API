@@ -250,12 +250,25 @@ namespace ApplicationCore.Chain
 
         private void HandleStore(Promotion promotion, Order order)
         {
-            if (promotion.PromotionStoreMapping.Where(w => w.Store.StoreCode.Equals
-                    (order.CustomerOrderInfo.Attributes.StoreInfo.StoreCode)).Count() == 0)
+            if(order.CustomerOrderInfo.Attributes.StoreInfo != null)
             {
-                throw new ErrorObj(code: (int) AppConstant.ErrCode.Invalid_Store,
-                    message: AppConstant.ErrMessage.Invalid_Store);
+                if (promotion.PromotionStoreMapping.Where(w => w.Store.StoreCode.Equals
+                    (order.CustomerOrderInfo.Attributes.StoreInfo.StoreCode)).Count() == 0)
+                {
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_Store,
+                        message: AppConstant.ErrMessage.Invalid_Store);
+                }
             }
+            else
+            {
+                if (promotion.PromotionChannelMapping.Where(w => w.Channel.ChannelCode.Equals
+                    (order.CustomerOrderInfo.Attributes.ChannelInfo.ChannelCode)).Count() == 0)
+                {
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_Channel,
+                        message: AppConstant.ErrMessage.Invalid_Channel);
+                }
+            }
+            
         }
 
         #endregion
@@ -290,12 +303,25 @@ namespace ApplicationCore.Chain
 
         private void HandleApplier(Promotion promotion, Order order)
         {
-            if (!Common.CompareBinary(int.Parse(order.CustomerOrderInfo.Attributes.StoreInfo.Applier),
-                    promotion.ApplyBy))
+            if(order.CustomerOrderInfo.Attributes.StoreInfo != null)
             {
-                throw new ErrorObj(code: (int) AppConstant.ErrCode.Invalid_SaleMode,
-                    message: "[Applier]" + AppConstant.ErrMessage.Invalid_SaleMode);
+                if (!Common.CompareBinary(int.Parse(order.CustomerOrderInfo.Attributes.StoreInfo.Applier),
+                    promotion.ApplyBy))
+                {
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_SaleMode,
+                        message: "[Applier]" + AppConstant.ErrMessage.Invalid_SaleMode);
+                }
             }
+            else
+            {
+                if (!Common.CompareBinary(int.Parse(order.CustomerOrderInfo.Attributes.ChannelInfo.Applier),
+                    promotion.ApplyBy))
+                {
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_SaleMode,
+                        message: "[Applier]" + AppConstant.ErrMessage.Invalid_SaleMode);
+                }
+            }
+            
         }
 
         #endregion

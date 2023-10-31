@@ -45,9 +45,8 @@ namespace PromotionEngineAPI.Controllers
         }
 
         [HttpPost]
-        [Route("store/check-promotion")]
-        public async Task<IActionResult> CheckPromotionInStore([FromBody] CustomerOrderInfo orderInfo,
-            [FromQuery] Guid promotionId)
+        [Route("check-promotion")]
+        public async Task<IActionResult> CheckPromotionInStore([FromBody] CustomerOrderInfo orderInfo)
         {
             //Lấy promotion bởi voucher code
             if (orderInfo.Users.MembershipId != null)
@@ -104,15 +103,31 @@ namespace PromotionEngineAPI.Controllers
                 orderInfo.Vouchers = new List<CouponCode>();
                 promotions = await _promotionService.GetAutoPromotions(orderInfo);
                 var list_remove_promotion = new List<Promotion>();
-                foreach (var promotion in promotions)
+                if(orderInfo.Attributes.StoreInfo != null)
                 {
-                    if (promotion.PromotionStoreMapping.All(e =>
-                            e.Store.StoreCode != orderInfo.Attributes.StoreInfo.StoreCode))
+                    foreach (var promotion in promotions)
                     {
-                                list_remove_promotion.Add(promotion);
-                                
+                        if (promotion.PromotionStoreMapping.All(e =>
+                                e.Store.StoreCode != orderInfo.Attributes.StoreInfo.StoreCode))
+                        {
+                            list_remove_promotion.Add(promotion);
+
+                        }
                     }
                 }
+                else
+                {
+                    foreach (var promotion in promotions)
+                    {
+                        if (promotion.PromotionChannelMapping.All(e =>
+                                e.Channel.ChannelCode != orderInfo.Attributes.ChannelInfo.ChannelCode))
+                        {
+                            list_remove_promotion.Add(promotion);
+
+                        }
+                    }
+                }
+                
 
                 if (list_remove_promotion.Count() != 0)
                 {
@@ -207,7 +222,9 @@ namespace PromotionEngineAPI.Controllers
                 };
                 return StatusCode(statusCode: (int) HttpStatusCode.BadRequest, orderResponse);
             }
-
+            // lọc effect lấy những cái có promotionType và prop
+            var effects = responseModel.Effects.Where(e => e.PromotionType != null && e.Prop != null).ToList();
+            responseModel.Effects = effects;
             orderResponse = new OrderResponseModel
             {
                 Code = (int) HttpStatusCode.OK,
@@ -218,345 +235,345 @@ namespace PromotionEngineAPI.Controllers
         }
         
         
-        [HttpPost]
-        [Route("channel/check-promotion")]
-        public async Task<IActionResult> CheckPromotionChannel([FromBody] CustomerOrderInfo orderInfo)
-        {
-            //Kiểm tra membership
-            Membership membership = null;
-            if (orderInfo.Users.MembershipId != null && orderInfo.Users.MembershipId != Guid.Empty)
-            {
-                membership = await _membershipService.GetMembershipById(orderInfo.Users.MembershipId);
-                if (membership == null)
-                {
-                    var orderResponseModel = new OrderResponseModel
-                    {
-                        Code = (int)AppConstant.ErrCode.Empty_CustomerInfo,
-                        Message = AppConstant.ErrMessage.Empty_CustomerInfo,
-                        Order = new Order
-                        {
-                            CustomerOrderInfo = orderInfo,
-                            FinalAmount = orderInfo.Amount,
-                            DiscountOrderDetail = 0,
-                            Discount = 0,
-                            BonusPoint = 0,
-                        }
-                    };
-                    return Ok(orderResponseModel);
-                }
+        //[HttpPost]
+        //[Route("channel/check-promotion")]
+        //public async Task<IActionResult> CheckPromotionChannel([FromBody] CustomerOrderInfo orderInfo)
+        //{
+        //    //Kiểm tra membership
+        //    Membership membership = null;
+        //    if (orderInfo.Users.MembershipId != null && orderInfo.Users.MembershipId != Guid.Empty)
+        //    {
+        //        membership = await _membershipService.GetMembershipById(orderInfo.Users.MembershipId);
+        //        if (membership == null)
+        //        {
+        //            var orderResponseModel = new OrderResponseModel
+        //            {
+        //                Code = (int)AppConstant.ErrCode.Empty_CustomerInfo,
+        //                Message = AppConstant.ErrMessage.Empty_CustomerInfo,
+        //                Order = new Order
+        //                {
+        //                    CustomerOrderInfo = orderInfo,
+        //                    FinalAmount = orderInfo.Amount,
+        //                    DiscountOrderDetail = 0,
+        //                    Discount = 0,
+        //                    BonusPoint = 0,
+        //                }
+        //            };
+        //            return Ok(orderResponseModel);
+        //        }
 
-                orderInfo.Users.UserEmail = membership.Email;
-                orderInfo.Users.UserName = membership.Fullname;
-                orderInfo.Users.UserGender = membership.Gender ?? 3;
-                orderInfo.Users.UserPhoneNo = membership.PhoneNumber;
-                orderInfo.Users.UserLevel = membership.MemberLevel.Name;
-            }
+        //        orderInfo.Users.UserEmail = membership.Email;
+        //        orderInfo.Users.UserName = membership.Fullname;
+        //        orderInfo.Users.UserGender = membership.Gender ?? 3;
+        //        orderInfo.Users.UserPhoneNo = membership.PhoneNumber;
+        //        orderInfo.Users.UserLevel = membership.MemberLevel.Name;
+        //    }
 
-            Order responseModel = new Order();
-            var list_remove_voucher = new List<CouponCode>();
-            Promotion promotionIds = null;
-            foreach (var voucher in orderInfo.Vouchers)
-            {
-                promotionIds = await _promotionService.GetFirst(filter: el => el.PromotionCode == voucher.PromotionCode);
-                if ((voucher.VoucherCode == null && voucher.PromotionCode == null) ||
-                    (voucher.VoucherCode == "" && voucher.PromotionCode == ""))
-                {
-                    list_remove_voucher.Add(voucher);
-                }
-            }
+        //    Order responseModel = new Order();
+        //    var list_remove_voucher = new List<CouponCode>();
+        //    Promotion promotionIds = null;
+        //    foreach (var voucher in orderInfo.Vouchers)
+        //    {
+        //        promotionIds = await _promotionService.GetFirst(filter: el => el.PromotionCode == voucher.PromotionCode);
+        //        if ((voucher.VoucherCode == null && voucher.PromotionCode == null) ||
+        //            (voucher.VoucherCode == "" && voucher.PromotionCode == ""))
+        //        {
+        //            list_remove_voucher.Add(voucher);
+        //        }
+        //    }
 
-            foreach (var voucher in list_remove_voucher)
-            {
-                orderInfo.Vouchers.Remove(voucher);
-            }
+        //    foreach (var voucher in list_remove_voucher)
+        //    {
+        //        orderInfo.Vouchers.Remove(voucher);
+        //    }
 
-            var vouchers = orderInfo.Vouchers;
-            OrderResponseModel orderResponse;
-            //Kiểm tra promotion
-            try
-            {
-                List<Promotion> promotions = null;
-                responseModel.CustomerOrderInfo = orderInfo;
-                orderInfo.Vouchers = new List<CouponCode>();
-                promotions = await _promotionService.GetAutoPromotions(orderInfo);
+        //    var vouchers = orderInfo.Vouchers;
+        //    OrderResponseModel orderResponse;
+        //    //Kiểm tra promotion
+        //    try
+        //    {
+        //        List<Promotion> promotions = null;
+        //        responseModel.CustomerOrderInfo = orderInfo;
+        //        orderInfo.Vouchers = new List<CouponCode>();
+        //        promotions = await _promotionService.GetAutoPromotions(orderInfo);
 
-                var list_remove_promotion = new List<Promotion>();
-                foreach (var promotion in promotions)
-                {
-                    if (promotion.PromotionChannelMapping.All(e =>
-                            e.Channel.ChannelCode != orderInfo.Attributes.ChannelInfo.ChannelCode))
-                    {
-                        if (!promotion.PromotionChannelMapping.Any())
-                        {
-                            foreach (var promotionAuto in promotions)
-                            {
-                                list_remove_promotion.Add(promotionAuto);
-                            }
-                        }
-                        else
-                        {
-                            foreach (var store in promotion.PromotionChannelMapping)
-                            {
-                                list_remove_promotion.Add(promotion);
-                            }
-                        }
-                    }
+        //        var list_remove_promotion = new List<Promotion>();
+        //        foreach (var promotion in promotions)
+        //        {
+        //            if (promotion.PromotionChannelMapping.All(e =>
+        //                    e.Channel.ChannelCode != orderInfo.Attributes.ChannelInfo.ChannelCode))
+        //            {
+        //                if (!promotion.PromotionChannelMapping.Any())
+        //                {
+        //                    foreach (var promotionAuto in promotions)
+        //                    {
+        //                        list_remove_promotion.Add(promotionAuto);
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    foreach (var store in promotion.PromotionChannelMapping)
+        //                    {
+        //                        list_remove_promotion.Add(promotion);
+        //                    }
+        //                }
+        //            }
 
-                }
+        //        }
 
-                if (list_remove_promotion.Count() != 0)
-                {
-                    foreach (var promotion in list_remove_promotion)
-                    {
-                        promotions.Remove(promotion);
-                    }
-                }
+        //        if (list_remove_promotion.Count() != 0)
+        //        {
+        //            foreach (var promotion in list_remove_promotion)
+        //            {
+        //                promotions.Remove(promotion);
+        //            }
+        //        }
 
-                orderInfo.Vouchers = vouchers;
-                if (!promotions.Any() && !orderInfo.Vouchers.Any())
-                {
-                    orderResponse = new OrderResponseModel
-                    {
-                        Code = (int)HttpStatusCode.OK,
-                        Message = AppConstant.EnvVar.Success_Message,
-                        Order = new Order
-                        {
-                            CustomerOrderInfo = orderInfo,
-                            FinalAmount = orderInfo.Amount,
-                            DiscountOrderDetail = 0,
-                            Discount = 0,
-                            BonusPoint = 0,
-                        }
-                    };
-                    return Ok(orderResponse);
-                }
+        //        orderInfo.Vouchers = vouchers;
+        //        if (!promotions.Any() && !orderInfo.Vouchers.Any())
+        //        {
+        //            orderResponse = new OrderResponseModel
+        //            {
+        //                Code = (int)HttpStatusCode.OK,
+        //                Message = AppConstant.EnvVar.Success_Message,
+        //                Order = new Order
+        //                {
+        //                    CustomerOrderInfo = orderInfo,
+        //                    FinalAmount = orderInfo.Amount,
+        //                    DiscountOrderDetail = 0,
+        //                    Discount = 0,
+        //                    BonusPoint = 0,
+        //                }
+        //            };
+        //            return Ok(orderResponse);
+        //        }
 
-                //Kiểm tra promotion có điều kiện áp dụng cho thứ hạng thành viên???
-                Promotion promotionItem = null;
-                MemberLevelMapping memberLevelMapp = null;
-                List<Promotion> list_remove_promotion_customer = new List<Promotion>();
-                foreach (var promotion in promotions)
-                {
-                    promotionItem = await _promotionService.GetFirst(filter: el => el.PromotionId == promotion.PromotionId);
-                    if (promotionItem.ActionType == (int)AppConstant.EnvVar.ActionType.BonusPoint)
-                    {
-                        memberLevelMapp = await _memberLevelMappingService.GetFirst(
-                        filter: el => el.PromotionId == promotionItem.PromotionId);
-                        if (membership != null && memberLevelMapp != null)
-                        {
-                            if (!membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
-                            {
-                                list_remove_promotion_customer.Add(promotion);
-                            }
-                        }
-                        else if (membership == null)
-                        {
-                            list_remove_promotion_customer.Add(promotion);
-                        }
-                    }
-                }
+        //        //Kiểm tra promotion có điều kiện áp dụng cho thứ hạng thành viên???
+        //        Promotion promotionItem = null;
+        //        MemberLevelMapping memberLevelMapp = null;
+        //        List<Promotion> list_remove_promotion_customer = new List<Promotion>();
+        //        foreach (var promotion in promotions)
+        //        {
+        //            promotionItem = await _promotionService.GetFirst(filter: el => el.PromotionId == promotion.PromotionId);
+        //            if (promotionItem.ActionType == (int)AppConstant.EnvVar.ActionType.BonusPoint)
+        //            {
+        //                memberLevelMapp = await _memberLevelMappingService.GetFirst(
+        //                filter: el => el.PromotionId == promotionItem.PromotionId);
+        //                if (membership != null && memberLevelMapp != null)
+        //                {
+        //                    if (!membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
+        //                    {
+        //                        list_remove_promotion_customer.Add(promotion);
+        //                    }
+        //                }
+        //                else if (membership == null)
+        //                {
+        //                    list_remove_promotion_customer.Add(promotion);
+        //                }
+        //            }
+        //        }
 
-                if (list_remove_promotion_customer.Count > 0)
-                {
-                    foreach (var removeItem in list_remove_promotion_customer)
-                    {
-                        promotions.Remove(removeItem);
-                    }
-                }
+        //        if (list_remove_promotion_customer.Count > 0)
+        //        {
+        //            foreach (var removeItem in list_remove_promotion_customer)
+        //            {
+        //                promotions.Remove(removeItem);
+        //            }
+        //        }
 
-                if (promotions.Any() && vouchers.Any())
-                {
-                    // apply auto + voucher or promoCode
-                    //_promotionService.SetPromotions(promotions);
-                    var voucherPromotion = await _voucherService.CheckVoucher(orderInfo);
-                    if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count >= 1)
-                    {
-                        promotions.Add(voucherPromotion.First());
-                    }
+        //        if (promotions.Any() && vouchers.Any())
+        //        {
+        //            // apply auto + voucher or promoCode
+        //            //_promotionService.SetPromotions(promotions);
+        //            var voucherPromotion = await _voucherService.CheckVoucher(orderInfo);
+        //            if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count >= 1)
+        //            {
+        //                promotions.Add(voucherPromotion.First());
+        //            }
 
-                    if (promotions != null && promotions.Count() > 0)
-                    {
-                        responseModel.CustomerOrderInfo = orderInfo;
-                        _promotionService.SetPromotions(promotions);
-                    }
-                    //Check promotion
-                    responseModel = await _promotionService.HandlePromotion(responseModel);
+        //            if (promotions != null && promotions.Count() > 0)
+        //            {
+        //                responseModel.CustomerOrderInfo = orderInfo;
+        //                _promotionService.SetPromotions(promotions);
+        //            }
+        //            //Check promotion
+        //            responseModel = await _promotionService.HandlePromotion(responseModel);
 
-                    //Check product có trong điều kiện của promotion?
-                    //Trường hợp product ko có trong điều kiện của promotion??
-                    bool checkProduct = await _promotionService.CheckProduct(orderInfo);
-                    if (checkProduct == false)
-                    {
-                        var orderResponseModel = new OrderResponseModel
-                        {
-                            Code = (int)AppConstant.ErrCode.Invaild_Product,
-                            Message = AppConstant.ErrMessage.Invaild_Product,
-                            Order = new Order
-                            {
-                                CustomerOrderInfo = orderInfo,
-                                FinalAmount = orderInfo.Amount,
-                                DiscountOrderDetail = 0,
-                                Discount = 0,
-                                BonusPoint = 0,
-                            }
-                        };
-                        return Ok(orderResponseModel);
-                    }
+        //            //Check product có trong điều kiện của promotion?
+        //            //Trường hợp product ko có trong điều kiện của promotion??
+        //            bool checkProduct = await _promotionService.CheckProduct(orderInfo);
+        //            if (checkProduct == false)
+        //            {
+        //                var orderResponseModel = new OrderResponseModel
+        //                {
+        //                    Code = (int)AppConstant.ErrCode.Invaild_Product,
+        //                    Message = AppConstant.ErrMessage.Invaild_Product,
+        //                    Order = new Order
+        //                    {
+        //                        CustomerOrderInfo = orderInfo,
+        //                        FinalAmount = orderInfo.Amount,
+        //                        DiscountOrderDetail = 0,
+        //                        Discount = 0,
+        //                        BonusPoint = 0,
+        //                    }
+        //                };
+        //                return Ok(orderResponseModel);
+        //            }
 
-                }
-                else
-                {
-                    // check membership trong order có không ?
-                    if (memberLevelMapp != null && orderInfo.Users.MembershipId != null && orderInfo.Users.MembershipId != Guid.Empty)
-                    {
-                        if (membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
-                        {
-                            if (promotions != null && promotions.Count() > 0)
-                            {
-                                //only auto apply promotion
-                                _promotionService.SetPromotions(promotions);
+        //        }
+        //        else
+        //        {
+        //            // check membership trong order có không ?
+        //            if (memberLevelMapp != null && orderInfo.Users.MembershipId != null && orderInfo.Users.MembershipId != Guid.Empty)
+        //            {
+        //                if (membership.MemberLevelId.Equals(memberLevelMapp.MemberLevelId))
+        //                {
+        //                    if (promotions != null && promotions.Count() > 0)
+        //                    {
+        //                        //only auto apply promotion
+        //                        _promotionService.SetPromotions(promotions);
 
-                                //Check promotion
-                                responseModel = await _promotionService.HandlePromotion(responseModel);
-                                promotions = _promotionService.GetPromotions();
+        //                        //Check promotion
+        //                        responseModel = await _promotionService.HandlePromotion(responseModel);
+        //                        promotions = _promotionService.GetPromotions();
 
-                                //Check product có trong điều kiện của promotion?
-                                bool checkProduct = await _promotionService.CheckProduct(orderInfo);
-                                if (checkProduct == false)
-                                {
-                                    var orderResponseModel = new OrderResponseModel
-                                    {
-                                        Code = (int)AppConstant.ErrCode.Invaild_Product,
-                                        Message = AppConstant.ErrMessage.Invaild_Product,
-                                        Order = new Order
-                                        {
-                                            CustomerOrderInfo = orderInfo,
-                                            FinalAmount = orderInfo.Amount,
-                                            DiscountOrderDetail = 0,
-                                            Discount = 0,
-                                            BonusPoint = 0,
-                                        }
-                                    };
-                                    return Ok(orderResponseModel);
-                                }
-                            }
-                            else if (vouchers.FirstOrDefault().PromotionCode != "" && vouchers.Count() > 0)
-                            {
-                                // only check voucher promotion or promoCode
-                                promotions = await _voucherService.CheckVoucher(orderInfo);
-                                if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count == 1)
-                                {
-                                    promotions.Add(_promotionService.GetPromotions().First());
-                                }
+        //                        //Check product có trong điều kiện của promotion?
+        //                        bool checkProduct = await _promotionService.CheckProduct(orderInfo);
+        //                        if (checkProduct == false)
+        //                        {
+        //                            var orderResponseModel = new OrderResponseModel
+        //                            {
+        //                                Code = (int)AppConstant.ErrCode.Invaild_Product,
+        //                                Message = AppConstant.ErrMessage.Invaild_Product,
+        //                                Order = new Order
+        //                                {
+        //                                    CustomerOrderInfo = orderInfo,
+        //                                    FinalAmount = orderInfo.Amount,
+        //                                    DiscountOrderDetail = 0,
+        //                                    Discount = 0,
+        //                                    BonusPoint = 0,
+        //                                }
+        //                            };
+        //                            return Ok(orderResponseModel);
+        //                        }
+        //                    }
+        //                    else if (vouchers.FirstOrDefault().PromotionCode != "" && vouchers.Count() > 0)
+        //                    {
+        //                        // only check voucher promotion or promoCode
+        //                        promotions = await _voucherService.CheckVoucher(orderInfo);
+        //                        if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count == 1)
+        //                        {
+        //                            promotions.Add(_promotionService.GetPromotions().First());
+        //                        }
 
-                                if (promotions != null && promotions.Count() > 0)
-                                {
-                                    responseModel.CustomerOrderInfo = orderInfo;
-                                    _promotionService.SetPromotions(promotions);
-                                    //Check promotion
-                                    responseModel = await _promotionService.HandlePromotion(responseModel);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            var orderResponseModel = new OrderResponseModel
-                            {
-                                Code = (int)AppConstant.ErrCode.Invalid_Promotion_Customer,
-                                Message = AppConstant.ErrMessage.Invalid_Promotion_Customer,
-                                Order = new Order
-                                {
-                                    CustomerOrderInfo = orderInfo,
-                                    FinalAmount = orderInfo.Amount,
-                                    DiscountOrderDetail = 0,
-                                    Discount = 0,
-                                    BonusPoint = 0,
-                                }
-                            };
-                            return Ok(orderResponseModel);
-                        }
-                    }
-                    else if (orderInfo.Users.MembershipId == null && !promotionItem.PromotionCode.StartsWith("GETPOINT"))
-                    {
-                        bool checkProduct = await _promotionService.CheckProduct(orderInfo);
-                        if (checkProduct == false)
-                        {
-                            var orderResponseModel = new OrderResponseModel
-                            {
-                                Code = (int)AppConstant.ErrCode.Invaild_Product,
-                                Message = AppConstant.ErrMessage.Invaild_Product,
-                                Order = new Order
-                                {
-                                    CustomerOrderInfo = orderInfo,
-                                    FinalAmount = orderInfo.Amount,
-                                    DiscountOrderDetail = 0,
-                                    Discount = 0,
-                                    BonusPoint = 0,
-                                }
-                            };
-                            return Ok(orderResponseModel);
-                        }
-                    }
-                    //Case: promotionType = 2: Only promotion
-                    else if (orderInfo.Users.MembershipId != null && orderInfo.Vouchers.Count == 0)
-                    {
-                        bool checkProductWithPromotion = await _promotionService.CheckProducWithPromotion(orderInfo, promotionIds.PromotionId);
-                        if (checkProductWithPromotion == false)
-                        {
-                            var orderResponseModel = new OrderResponseModel
-                            {
-                                Code = (int)AppConstant.ErrCode.Invaild_Product,
-                                Message = AppConstant.ErrMessage.Invaild_Product,
-                                Order = new Order
-                                {
-                                    CustomerOrderInfo = orderInfo,
-                                    FinalAmount = orderInfo.Amount,
-                                    DiscountOrderDetail = 0,
-                                    Discount = 0,
-                                    BonusPoint = 0,
-                                }
-                            };
-                            return Ok(orderResponseModel);
-                        }
-                    }
-                    else
-                    {
-                        var orderResponseModel = new OrderResponseModel
-                        {
-                            Code = (int)AppConstant.ErrCode.Invalid_Membership,
-                            Message = AppConstant.ErrMessage.Invalid_Membership,
-                            Order = new Order
-                            {
-                                CustomerOrderInfo = orderInfo,
-                                FinalAmount = orderInfo.Amount,
-                                DiscountOrderDetail = 0,
-                                Discount = 0,
-                                BonusPoint = 0,
-                            }
-                        };
-                        return Ok(orderResponseModel);
-                    }
-                }
-            }
-            catch (ErrorObj e)
-            {
-                orderResponse = new OrderResponseModel
-                {
-                    Code = AppConstant.Err_Prefix + e.Code,
-                    Message = e.Message,
-                    Order = responseModel
-                };
-                return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, orderResponse);
-            }
+        //                        if (promotions != null && promotions.Count() > 0)
+        //                        {
+        //                            responseModel.CustomerOrderInfo = orderInfo;
+        //                            _promotionService.SetPromotions(promotions);
+        //                            //Check promotion
+        //                            responseModel = await _promotionService.HandlePromotion(responseModel);
+        //                        }
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    var orderResponseModel = new OrderResponseModel
+        //                    {
+        //                        Code = (int)AppConstant.ErrCode.Invalid_Promotion_Customer,
+        //                        Message = AppConstant.ErrMessage.Invalid_Promotion_Customer,
+        //                        Order = new Order
+        //                        {
+        //                            CustomerOrderInfo = orderInfo,
+        //                            FinalAmount = orderInfo.Amount,
+        //                            DiscountOrderDetail = 0,
+        //                            Discount = 0,
+        //                            BonusPoint = 0,
+        //                        }
+        //                    };
+        //                    return Ok(orderResponseModel);
+        //                }
+        //            }
+        //            else if (orderInfo.Users.MembershipId == null && !promotionItem.PromotionCode.StartsWith("GETPOINT"))
+        //            {
+        //                bool checkProduct = await _promotionService.CheckProduct(orderInfo);
+        //                if (checkProduct == false)
+        //                {
+        //                    var orderResponseModel = new OrderResponseModel
+        //                    {
+        //                        Code = (int)AppConstant.ErrCode.Invaild_Product,
+        //                        Message = AppConstant.ErrMessage.Invaild_Product,
+        //                        Order = new Order
+        //                        {
+        //                            CustomerOrderInfo = orderInfo,
+        //                            FinalAmount = orderInfo.Amount,
+        //                            DiscountOrderDetail = 0,
+        //                            Discount = 0,
+        //                            BonusPoint = 0,
+        //                        }
+        //                    };
+        //                    return Ok(orderResponseModel);
+        //                }
+        //            }
+        //            //Case: promotionType = 2: Only promotion
+        //            else if (orderInfo.Users.MembershipId != null && orderInfo.Vouchers.Count == 0)
+        //            {
+        //                bool checkProductWithPromotion = await _promotionService.CheckProducWithPromotion(orderInfo, promotionIds.PromotionId);
+        //                if (checkProductWithPromotion == false)
+        //                {
+        //                    var orderResponseModel = new OrderResponseModel
+        //                    {
+        //                        Code = (int)AppConstant.ErrCode.Invaild_Product,
+        //                        Message = AppConstant.ErrMessage.Invaild_Product,
+        //                        Order = new Order
+        //                        {
+        //                            CustomerOrderInfo = orderInfo,
+        //                            FinalAmount = orderInfo.Amount,
+        //                            DiscountOrderDetail = 0,
+        //                            Discount = 0,
+        //                            BonusPoint = 0,
+        //                        }
+        //                    };
+        //                    return Ok(orderResponseModel);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                var orderResponseModel = new OrderResponseModel
+        //                {
+        //                    Code = (int)AppConstant.ErrCode.Invalid_Membership,
+        //                    Message = AppConstant.ErrMessage.Invalid_Membership,
+        //                    Order = new Order
+        //                    {
+        //                        CustomerOrderInfo = orderInfo,
+        //                        FinalAmount = orderInfo.Amount,
+        //                        DiscountOrderDetail = 0,
+        //                        Discount = 0,
+        //                        BonusPoint = 0,
+        //                    }
+        //                };
+        //                return Ok(orderResponseModel);
+        //            }
+        //        }
+        //    }
+        //    catch (ErrorObj e)
+        //    {
+        //        orderResponse = new OrderResponseModel
+        //        {
+        //            Code = AppConstant.Err_Prefix + e.Code,
+        //            Message = e.Message,
+        //            Order = responseModel
+        //        };
+        //        return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, orderResponse);
+        //    }
 
-            orderResponse = new OrderResponseModel
-            {
-                Code = (int)HttpStatusCode.OK,
-                Message = AppConstant.EnvVar.Success_Message,
-                Order = responseModel
-            };
-            return Ok(orderResponse);
-        }
+        //    orderResponse = new OrderResponseModel
+        //    {
+        //        Code = (int)HttpStatusCode.OK,
+        //        Message = AppConstant.EnvVar.Success_Message,
+        //        Order = responseModel
+        //    };
+        //    return Ok(orderResponse);
+        //}
 
         private void Setorder(Order order)
         {

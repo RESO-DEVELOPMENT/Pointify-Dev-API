@@ -237,6 +237,7 @@ namespace Infrastructure.Helper
             Invaild_Product = 155,
             Invalid_Promotion_Customer = 156,
             Invalid_Membership = 157,
+            Invalid_Channel = 158,
             Internal_Server_Error = 500
         }
 
@@ -271,6 +272,7 @@ namespace Infrastructure.Helper
             public const string Quantity_Product = "Sản phẩm yêu cầu thấp hơn quy định.";
             public const string NotMatchCondition = "Đơn hàng không thỏa mãn các điều kiện của khuyến mãi.";
             public const string Invalid_Store = "Đơn hàng không áp dụng tại cửa hàng này.";
+            public const string Invalid_Channel = "Đơn hàng không áp dụng tại channel này.";
             public const string Invalid_MemberLevel = "Đơn hàng không áp dụng cho loại khách hàng này.";
             public const string Invalid_Promotion_Customer = "Khuyến mãi không áp dụng cho loại thành viên này!";
             public const string Invalid_Membership = "Thành viên không tồn tại!";
