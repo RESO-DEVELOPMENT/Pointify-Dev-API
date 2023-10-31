@@ -322,13 +322,12 @@ namespace ApplicationCore.Chain
                 //order.CustomerOrderInfo.Customer.CustomerLevel = "Level 2";
                 //if(promotion.ForMembership != 2)
                 //{
-                if (promotion.MemberLevelMapping
-                        .Where(w => w.MemberLevel.Name.Equals(order.CustomerOrderInfo.Users.UserLevel)).Count() == 0)
+                if (promotion.MemberLevelMapping.Where(w => w.MemberLevel.Name.Equals(order.CustomerOrderInfo.Users.UserLevel)).Count() == 0)
                 {
-                    throw new ErrorObj(code: (int) AppConstant.ErrCode.Invalid_MemberLevel,
-                        message: AppConstant.ErrMessage.Invalid_MemberLevel);
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_MemberLevel, message: AppConstant.ErrMessage.Invalid_MemberLevel);
                 }
                 //}
+
             }
         }
 

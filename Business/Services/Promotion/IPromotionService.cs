@@ -19,7 +19,7 @@ namespace ApplicationCore.Services
         Task<PromotionStatusDto> CountPromotionStatus(Guid brandId);
         Task<DistributionStat> DistributionStatistic(Guid promotionId, Guid brandId);
         void SetPromotions(List<Promotion> promotions);
-        Task<List<Promotion>> GetAutoPromotions(CustomerOrderInfo orderInfo, Guid promotionId);
+        Task<List<Promotion>> GetAutoPromotions(CustomerOrderInfo orderInfo);
         List<Promotion> GetPromotions();
         Task<bool> ExistPromoCode(string promoCode, Guid brandId);
         Task<bool> DeletePromotion(Guid promotionId);

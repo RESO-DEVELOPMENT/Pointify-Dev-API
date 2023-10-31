@@ -563,7 +563,7 @@ namespace ApplicationCore.Services
                 }
             }
             _checkPromotionHandler.SetPromotions(_promotions);
-            //_checkPromotionHandler.Handle(orderResponse); //checklai
+            _checkPromotionHandler.Handle(orderResponse); //checklai
             _promotions = _checkPromotionHandler.GetPromotions();
             return orderResponse;
         }
@@ -1288,11 +1288,10 @@ namespace ApplicationCore.Services
 
 
         #endregion
-        public async Task<List<Promotion>> GetAutoPromotions(CustomerOrderInfo orderInfo, Guid promotionId)
+        public async Task<List<Promotion>> GetAutoPromotions(CustomerOrderInfo orderInfo)
         {
             var promotions = await _repository.Get(filter: el =>
                     el.IsAuto
-                    && el.PromotionId == promotionId
                     && el.Brand.BrandCode.Equals(orderInfo.Attributes.StoreInfo.BrandCode)
                     && el.StartDate <= orderInfo.BookingDate
                     && (el.EndDate != null ? (el.EndDate >= orderInfo.BookingDate) : true)

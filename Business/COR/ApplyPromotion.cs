@@ -331,7 +331,7 @@ namespace ApplicationCore.Chain
                 {
                     effect.Prop = new
                     {
-                        code = promotion.PromotionCode + promotionTier.TierIndex,
+                        code = promotion.PromotionCode,
                         value = discount
                     };
                 }
