@@ -137,7 +137,106 @@ namespace ApplicationCore.Services
 
 
         }
-        #region Lấy voucher cho channel
+
+        #region Check voucher cho Channel
+        public async Task<List<Promotion>> CheckVoucherForChannel(CustomerOrderInfoChannel order)
+        {
+            try
+            {
+                var vouchers = order.Vouchers;
+                if (vouchers.Select(el => new { el.VoucherCode, el.PromotionCode }).Distinct().Count() < vouchers.Select(el => new { el.VoucherCode, el.PromotionCode }).Count())
+                {
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Duplicate_VoucherCode, message: AppConstant.ErrMessage.Duplicate_VoucherCode, description: AppConstant.ErrMessage.Duplicate_VoucherCode);
+                }
+                var promotions = new List<Promotion>();
+                foreach (var voucherModel in vouchers)
+                {
+                    if (!string.IsNullOrEmpty(voucherModel.VoucherCode))
+                    {
+                        var voucher = await _repository.Get(filter: el =>
+                        el.VoucherCode.Equals(voucherModel.VoucherCode)
+                        && el.Promotion.PromotionTier.Any(a => (a.Promotion.PromotionCode + a.TierIndex).Equals(voucherModel.PromotionCode))
+                        && el.Promotion.Brand.BrandCode.Equals(order.Attributes.ChannelInfo.BrandCode),
+                    includeProperties:
+                    "Promotion.PromotionTier.Action.ActionProductMapping.Product," +
+                    //"Promotion.PromotionTier.Gift.GiftProductMapping.Product," +
+                    //"Promotion.PromotionTier.Gift.GameCampaign.GameMaster," +
+                    "Promotion.PromotionTier.Action.ActionProductMapping.Product," +
+                    "Promotion.PromotionTier.ConditionRule.ConditionGroup.OrderCondition," +
+                    "Promotion.PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
+                    "Promotion.PromotionStoreMapping.Store," +
+                    "Promotion.PromotionTier.VoucherGroup," +
+                    "Promotion.Brand," +
+                    "Promotion.MemberLevelMapping.MemberLevel");
+                        voucher = voucher.Where(f => Regex.IsMatch(f.VoucherCode, "^" + voucherModel.VoucherCode + "$"));
+
+                        if (voucher.Count() > 1)
+                        {
+                            throw new ErrorObj(code: (int)AppConstant.ErrCode.Duplicate_VoucherCode, message: AppConstant.ErrMessage.Duplicate_VoucherCode, description: AppConstant.ErrMessage.Duplicate_VoucherCode);
+                        }
+                        if (voucher.Count() == 0)
+                        {
+                            throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_VoucherCode, message: AppConstant.ErrMessage.Invalid_VoucherCode, description: AppConstant.ErrMessage.Invalid_VoucherCode);
+                        }
+                        if (voucher.First().IsUsed)
+                        {
+                            throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_VoucherCode, message: AppConstant.ErrMessage.Used_VoucherCode, description: AppConstant.ErrMessage.Used_VoucherCode);
+                        }
+                        var promotion = voucher.FirstOrDefault().Promotion;
+                        promotion.PromotionTier = promotion.PromotionTier.Where(w => w.PromotionTierId == voucher.First().PromotionTierId).ToList();
+                        promotions.Add(promotion);
+                    }
+                    else
+                    {
+                        IGenericRepository<Promotion> promoRepo = _unitOfWork.PromotionRepository;
+                        var promotion = await promoRepo.Get(filter: el =>
+                        el.PromotionCode == voucherModel.PromotionCode
+                        && el.Brand.BrandCode == order.Attributes.ChannelInfo.BrandCode
+                        && !el.DelFlg,
+                            includeProperties:
+                    "PromotionTier.Action.ActionProductMapping.Product," +
+                    //"PromotionTier.Gift.GiftProductMapping.Product," +
+                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
+                    "PromotionTier.Action.ActionProductMapping.Product," +
+                    "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," +
+                    "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
+                    "PromotionStoreMapping.Store," +
+                    "PromotionTier.VoucherGroup," +
+                    "Brand," +
+                    "MemberLevelMapping.MemberLevel"); ;
+                        if (promotion.Count() > 1)
+                        {
+                            throw new ErrorObj(code: (int)AppConstant.ErrCode.Duplicate_VoucherCode, message: AppConstant.ErrMessage.Duplicate_VoucherCode, description: AppConstant.ErrMessage.Duplicate_VoucherCode);
+                        }
+                        if (promotion.Count() == 0)
+                        {
+                            throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_VoucherCode, message: AppConstant.ErrMessage.Invalid_VoucherCode, description: AppConstant.ErrMessage.Invalid_VoucherCode);
+                        }
+                        promotions.Add(promotion.FirstOrDefault());
+                    }
+
+                }
+                if (promotions.Select(s => s.PromotionId).Distinct().Count() < promotions.Select(s => s.PromotionId).Count())
+                {
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Duplicate_Promotion, message: AppConstant.ErrMessage.Duplicate_Promotion);
+                }
+                return promotions;
+            }
+            catch (ErrorObj e1)
+            {
+                Debug.WriteLine("\n\nError at CheckVoucher: \n" + e1.Message);
+
+                throw e1;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("\n\nError at CheckVoucher: \n" + e.Message);
+
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+            }
+
+
+        }
         public async Task<List<Voucher>> GetVouchersForChannel(PromotionChannelMapping voucherChannel, VoucherGroup voucherGroup, VoucherChannelParam channelParam)
         {
 

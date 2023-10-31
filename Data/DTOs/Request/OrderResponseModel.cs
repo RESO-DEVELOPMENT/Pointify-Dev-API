@@ -9,6 +9,8 @@ namespace ApplicationCore.Request
         public object Code { get; set; }
         public string Message { get; set; }
         public Order Order { get; set; }
+
+        public OrderChannel OrderChannel { get; set; }
     }
 
     public class Order
@@ -28,6 +30,22 @@ namespace ApplicationCore.Request
         public decimal? BonusPoint { get; set; }
     }
 
+    public class OrderChannel
+    {
+        public OrderChannel()
+        {
+            Gift = new List<Object>();
+        }
+
+        public List<Effect> Effects { get; set; }
+        public CustomerOrderInfoChannel CustomerOrderInfoChannel { get; set; }
+        public List<object> Gift { get; set; }
+        public decimal? TotalAmount { get; set; }
+        public decimal? Discount { get; set; }
+        public decimal? DiscountOrderDetail { get; set; }
+        public decimal? FinalAmount { get; set; }
+        public decimal? BonusPoint { get; set; }
+    }
     public class Effect
     {
         public Guid PromotionId { get; set; }
@@ -62,12 +80,38 @@ namespace ApplicationCore.Request
         public decimal ShippingFee { get; set; }
         public Users Users { get; set; }
     }
+    public class CustomerOrderInfoChannel
+    {
+        public CustomerOrderInfoChannel()
+        {
+            CartItems = new List<Item>();
+            Users = new Users();
+        }
 
+        public string ApiKey { get; set; }
+        public string Id { get; set; }
+        public DateTime BookingDate { get; set; }
+
+        public OrderAttributeChannel Attributes { get; set; }
+        public List<Item> CartItems { get; set; }
+
+        public List<CouponCode> Vouchers { get; set; }
+        public decimal Amount { get; set; }
+        public decimal ShippingFee { get; set; }
+        public Users Users { get; set; }
+    }
+    //Store
     public class OrderAttribute
     {
         public int SalesMode { get; set; }
         public int PaymentMethod { get; set; }
         public StoreInfo StoreInfo { get; set; }
+    }
+    //Channel
+    public class OrderAttributeChannel
+    {
+        public int SalesMode { get; set; }
+        public int PaymentMethod { get; set; }
         public ChannelInfo ChannelInfo { get; set; }
     }
 
@@ -112,7 +156,6 @@ namespace ApplicationCore.Request
         public decimal DiscountFromOrder { get; set; }
         public decimal Total { get; set; }
         [StringLength(1000)] public string UrlImg { get; set; }
-        public string PromotionCodeApply { get; set; }
     }
 
     public class Users

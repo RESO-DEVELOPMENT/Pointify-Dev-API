@@ -11,6 +11,7 @@ namespace ApplicationCore.Services
     public interface IVoucherService : IBaseService<Voucher, VoucherDto>
     {
         public Task<List<Promotion>> CheckVoucher(CustomerOrderInfo order);
+        public Task<List<Promotion>> CheckVoucherForChannel(CustomerOrderInfoChannel order);
 
         public Task<List<Voucher>> GetVouchersForChannel(PromotionChannelMapping voucherChannel, VoucherGroup voucherGroup, VoucherChannelParam channelParam);
 

@@ -39,7 +39,7 @@ namespace PromotionEngineAPI.Controllers
         {
             var result = await _service.GetAsync(pageIndex: param.page, pageSize: param.size, filter: el => !el.DelFlg 
             && el.MemberProgram.BrandId.Equals(apiKey)
-             , includeProperties: "MemberLevel,MemberProgram,MemberWallet");
+             , includeProperties: "MemberLevel,MemberProgram,MemberWallet,MembershipCard");
             if (result == null)
             {
                 return NotFound();
@@ -57,19 +57,19 @@ namespace PromotionEngineAPI.Controllers
         }
 
         // GET: api/Memberships/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetMembership([FromRoute] Guid id)
-        {
-            var result = await _service.GetMembershipById(id);
-            if (result == null)
-            {
-                return NotFound();
-            }
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetMembership([FromRoute] Guid id)
+        //{
+        //    var result = await _service.GetMembershipById(id);
+        //    if (result == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
         // GET: api/Memberships/5
-        [HttpGet("apiKey/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetMembershipByApiKey([FromRoute] Guid id,[FromQuery] Guid apiKey)
         {
             var result = await _service.GetMembershipByIdKey(id, apiKey);

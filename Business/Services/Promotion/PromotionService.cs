@@ -567,6 +567,31 @@ namespace ApplicationCore.Services
             _promotions = _checkPromotionHandler.GetPromotions();
             return orderResponse;
         }
+        public async Task<OrderChannel> HandlePromotionForChannel(OrderChannel orderResponse)
+        {
+            foreach (var promotion in _promotions)
+            {
+                //Check promotion is active
+                if (promotion.Status != (int)AppConstant.EnvVar.PromotionStatus.PUBLISH)
+                {
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.InActive_Promotion, message: AppConstant.ErrMessage.InActive_Promotion, description: AppConstant.ErrMessage.InActive_Promotion);
+                }
+                //Check promotion is time 
+                if (promotion.StartDate >= orderResponse.CustomerOrderInfoChannel.BookingDate)
+                {
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_Early, message: AppConstant.ErrMessage.Invalid_Time, description: AppConstant.ErrMessage.Invalid_Early);
+                }
+                //Check promotion is expired
+                if (promotion.EndDate <= orderResponse.CustomerOrderInfoChannel.BookingDate)
+                {
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Expire_Promotion, message: AppConstant.ErrMessage.Expire_Promotion, description: AppConstant.ErrMessage.Expire_Promotion);
+                }
+            }
+            _checkPromotionHandler.SetPromotions(_promotions);
+            //_checkPromotionHandler.Handle(orderResponse); //checklai
+            _promotions = _checkPromotionHandler.GetPromotions();
+            return orderResponse;
+        }
         #endregion
         #region update promotion
         public async Task<PromotionDto> UpdatePromotion(PromotionDto dto)
@@ -1313,26 +1338,57 @@ namespace ApplicationCore.Services
             return promotions.ToList();
         }
 
+        public async Task<List<Promotion>> GetAutoPromotionsForChannel(CustomerOrderInfoChannel orderInfo, Guid promotionId)
+        {
+            var promotions = await _repository.Get(filter: el =>
+                    el.IsAuto
+                    && el.PromotionId == promotionId
+                    && el.Brand.BrandCode.Equals(orderInfo.Attributes.ChannelInfo.BrandCode)
+                    && el.StartDate <= orderInfo.BookingDate
+                    && (el.EndDate != null ? (el.EndDate >= orderInfo.BookingDate) : true)
+                    && el.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH
+                    && !el.DelFlg,
+                        includeProperties:
+                                    "PromotionTier.Action.ActionProductMapping.Product," +
+                                    //"PromotionTier.Gift.GiftProductMapping.Product," +
+                                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
+                                    "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," + //checklai
+                                    "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
+                                "PromotionTier.VoucherGroup," +
+                            "PromotionStoreMapping.Store," +
+                            "Brand," +
+                            "PromotionChannelMapping.Channel," +
+                        "MemberLevelMapping.MemberLevel"
+                    );
+            return promotions.ToList();
+        }
+
         public async Task<bool> CheckProduct(CustomerOrderInfo order)
         {
             try
             {
                 var productCode = order.CartItems.ToList();
+                var promotion = order.Vouchers.ToList();
+                Promotion promotionCodeForVoucher = null;
+                foreach(var code in promotion)
+                {
+
+                    promotionCodeForVoucher = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(code.PromotionCode));
+                }
+                
                 Product product = null;
-                Promotion promotionCode = null;
                 foreach (var item in productCode)
                 {
                     product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
-                    promotionCode = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(item.PromotionCodeApply));
                 }
                 var checkProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
-                bool GetPointCheck = promotionCode.PromotionCode.StartsWith("GETPOINT");
+                bool GetPointCheck = promotionCodeForVoucher.PromotionCode.StartsWith("GETPOINT");
                 if (checkProductMapping != null)
                 {
                     var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
                     var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
                     var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
-                    if (promotionCode.PromotionId.Equals(tier.PromotionId))
+                    if (promotionCodeForVoucher.PromotionId.Equals(tier.PromotionId))
                     {
                         return true;
                     }
@@ -1342,12 +1398,71 @@ namespace ApplicationCore.Services
                 {
                     return true;
                 }
-                if (promotionCode != null)
+                if (promotionCodeForVoucher != null)
                 {
-                    var promotionTier = await _promotionTier.GetFirst(filter: el => el.PromotionId.Equals(promotionCode.PromotionId));
+                    var promotionTier = await _promotionTier.GetFirst(filter: el => el.PromotionId.Equals(promotionCodeForVoucher.PromotionId));
                     var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionRuleId.Equals(promotionTier.ConditionRuleId));
                     var productionCondition = await _productCondition.GetFirst(filter: el => el.ConditionGroupId.Equals(conditionGroup.ConditionGroupId));
                     if (productionCondition == null) return true;
+                }
+                return false;
+            }
+            catch (ErrorObj e1)
+            {
+                Debug.WriteLine("\n\nError at CheckProduct: \n" + e1.Message);
+
+                throw e1;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("\n\nError at CheckProduct: \n" + e.Message);
+
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+            }
+
+        }
+
+        public async Task<bool> CheckProductForChannel(CustomerOrderInfoChannel order)
+        {
+            try
+            {
+                var productCode = order.CartItems.ToList();
+                var promotion = order.Vouchers.ToList();
+                Promotion promotionCodeForVoucher = null;
+                foreach (var code in promotion)
+                {
+
+                    promotionCodeForVoucher = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(code.PromotionCode));
+                }
+
+                Product product = null;
+                foreach (var item in productCode)
+                {
+                    product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
+                }
+                var checkProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
+                bool GetPointCheck = promotionCodeForVoucher.PromotionCode.StartsWith("GETPOINT");
+                if (checkProductMapping != null)
+                {
+                    var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
+                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
+                    var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
+                    if (promotionCodeForVoucher.PromotionId.Equals(tier.PromotionId))
+                    {
+                        return true;
+                    }
+
+                }
+                if (GetPointCheck == true)
+                {
+                    return true;
+                }
+                if (promotionCodeForVoucher != null)
+                {
+                    var promotionTier = await _promotionTier.GetFirst(filter: el => el.PromotionId.Equals(promotionCodeForVoucher.PromotionId));
+                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionRuleId.Equals(promotionTier.ConditionRuleId));
+                    var productionCondition = await _productCondition.GetFirst(filter: el => el.ConditionGroupId.Equals(conditionGroup.ConditionGroupId));
+                    if (productionCondition == null) return false;
                 }
                 return false;
             }

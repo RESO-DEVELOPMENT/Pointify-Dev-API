@@ -46,8 +46,7 @@ namespace PromotionEngineAPI.Controllers
 
         [HttpPost]
         [Route("store/check-promotion")]
-        public async Task<IActionResult> CheckPromotionInStore([FromBody] CustomerOrderInfo orderInfo,
-            [FromQuery] Guid promotionId)
+        public async Task<IActionResult> CheckPromotionInStore([FromBody] CustomerOrderInfo orderInfo)
         {
             //Lấy promotion bởi voucher code
             Membership membership = null;
@@ -81,14 +80,52 @@ namespace PromotionEngineAPI.Controllers
 
             Order responseModel = new Order();
             var list_remove_voucher = new List<CouponCode>();
+            Promotion promotionId = null;
+            if (orderInfo.Vouchers.Count == 0)
+            {
+                var orderResponseModel = new OrderResponseModel
+                {
+                    Code = (int)AppConstant.ErrCode.Invalid_Promotion,
+                    Message = AppConstant.ErrMessage.Invalid_Promotion,
+                    Order = new Order
+                    {
+                        CustomerOrderInfo = orderInfo,
+                        FinalAmount = orderInfo.Amount,
+                        DiscountOrderDetail = 0,
+                        Discount = 0,
+                        BonusPoint = 0,
+                    }
+                };
+                return Ok(orderResponseModel);
+            }
             foreach (var voucher in orderInfo.Vouchers)
             {
+                promotionId = await _promotionService.GetFirst(filter: el => el.PromotionCode.Equals(voucher.PromotionCode));
+                if (promotionId == null)
+                {
+                    var orderResponseModel = new OrderResponseModel
+                    {
+                        Code = (int)AppConstant.ErrCode.Invalid_Promotion,
+                        Message = AppConstant.ErrMessage.Invalid_Promotion,
+                        Order = new Order
+                        {
+                            CustomerOrderInfo = orderInfo,
+                            FinalAmount = orderInfo.Amount,
+                            DiscountOrderDetail = 0,
+                            Discount = 0,
+                            BonusPoint = 0,
+                        }
+                    };
+                    return Ok(orderResponseModel);
+                }
                 if ((voucher.VoucherCode == null && voucher.PromotionCode == null) ||
                     (voucher.VoucherCode == "" && voucher.PromotionCode == ""))
                 {
                     list_remove_voucher.Add(voucher);
                 }
             }
+
+
 
             foreach (var voucher in list_remove_voucher)
             {
@@ -103,7 +140,7 @@ namespace PromotionEngineAPI.Controllers
                 List<Promotion> promotions = null;
                 responseModel.CustomerOrderInfo = orderInfo;
                 orderInfo.Vouchers = new List<CouponCode>();
-                promotions = await _promotionService.GetAutoPromotions(orderInfo, promotionId);
+                promotions = await _promotionService.GetAutoPromotions(orderInfo, promotionId.PromotionId);
 
                 var list_remove_promotion = new List<Promotion>();
                 foreach (var promotion in promotions)
@@ -322,28 +359,6 @@ namespace PromotionEngineAPI.Controllers
                             return Ok(orderResponseModel);
                         }
                     }
-                    //Case: promotionType = 2: Only promotion
-                    else if (orderInfo.Users.MembershipId != null && orderInfo.Vouchers.Count == 0)
-                    {
-                        bool checkProductWithPromotion = await _promotionService.CheckProducWithPromotion(orderInfo, promotionId);
-                        if (checkProductWithPromotion == false)
-                        {
-                            var orderResponseModel = new OrderResponseModel
-                            {
-                                Code = (int)AppConstant.ErrCode.Invaild_Product,
-                                Message = AppConstant.ErrMessage.Invaild_Product,
-                                Order = new Order
-                                {
-                                    CustomerOrderInfo = orderInfo,
-                                    FinalAmount = orderInfo.Amount,
-                                    DiscountOrderDetail = 0,
-                                    Discount = 0,
-                                    BonusPoint = 0,
-                                }
-                            };
-                            return Ok(orderResponseModel);
-                        }
-                    }
                     else
                     {
                         var orderResponseModel = new OrderResponseModel
@@ -385,7 +400,7 @@ namespace PromotionEngineAPI.Controllers
 
         [HttpPost]
         [Route("channel/check-promotion")]
-        public async Task<IActionResult> CheckPromotionChannel([FromBody] CustomerOrderInfo orderInfo)
+        public async Task<IActionResult> CheckPromotionChannel([FromBody] CustomerOrderInfoChannel orderInfo)
         {
             //Kiểm tra membership
             Membership membership = null;
@@ -398,9 +413,9 @@ namespace PromotionEngineAPI.Controllers
                     {
                         Code = (int)AppConstant.ErrCode.Empty_CustomerInfo,
                         Message = AppConstant.ErrMessage.Empty_CustomerInfo,
-                        Order = new Order
+                        OrderChannel = new OrderChannel
                         {
-                            CustomerOrderInfo = orderInfo,
+                            CustomerOrderInfoChannel = orderInfo,
                             FinalAmount = orderInfo.Amount,
                             DiscountOrderDetail = 0,
                             Discount = 0,
@@ -417,12 +432,47 @@ namespace PromotionEngineAPI.Controllers
                 orderInfo.Users.UserLevel = membership.MemberLevel.Name;
             }
 
-            Order responseModel = new Order();
+            OrderChannel responseModel = new OrderChannel();
             var list_remove_voucher = new List<CouponCode>();
             Promotion promotionIds = null;
+            if (orderInfo.Vouchers.Count == 0)
+            {
+                var orderResponseModel = new OrderResponseModel
+                {
+                    Code = (int)AppConstant.ErrCode.Invalid_Promotion,
+                    Message = AppConstant.ErrMessage.Invalid_Promotion,
+                    OrderChannel = new OrderChannel
+                    {
+                        CustomerOrderInfoChannel = orderInfo,
+                        FinalAmount = orderInfo.Amount,
+                        DiscountOrderDetail = 0,
+                        Discount = 0,
+                        BonusPoint = 0,
+                    }
+                };
+                return Ok(orderResponseModel);
+            }
             foreach (var voucher in orderInfo.Vouchers)
             {
                 promotionIds = await _promotionService.GetFirst(filter: el => el.PromotionCode == voucher.PromotionCode);
+                if (promotionIds == null)
+                {
+                    var orderResponseModel = new OrderResponseModel
+                    {
+                        Code = (int)AppConstant.ErrCode.Invalid_Promotion,
+                        Message = AppConstant.ErrMessage.Invalid_Promotion,
+                        OrderChannel = new OrderChannel
+                        {
+                            CustomerOrderInfoChannel = orderInfo,
+                            FinalAmount = orderInfo.Amount,
+                            DiscountOrderDetail = 0,
+                            Discount = 0,
+                            BonusPoint = 0,
+                        }
+                    };
+                    return Ok(orderResponseModel);
+                }
+
                 if ((voucher.VoucherCode == null && voucher.PromotionCode == null) ||
                     (voucher.VoucherCode == "" && voucher.PromotionCode == ""))
                 {
@@ -441,9 +491,9 @@ namespace PromotionEngineAPI.Controllers
             try
             {
                 List<Promotion> promotions = null;
-                responseModel.CustomerOrderInfo = orderInfo;
+                responseModel.CustomerOrderInfoChannel = orderInfo;
                 orderInfo.Vouchers = new List<CouponCode>();
-                promotions = await _promotionService.GetAutoPromotions(orderInfo, promotionIds.PromotionId);
+                promotions = await _promotionService.GetAutoPromotionsForChannel(orderInfo, promotionIds.PromotionId);
 
                 var list_remove_promotion = new List<Promotion>();
                 foreach (var promotion in promotions)
@@ -484,9 +534,9 @@ namespace PromotionEngineAPI.Controllers
                     {
                         Code = (int)HttpStatusCode.OK,
                         Message = AppConstant.EnvVar.Success_Message,
-                        Order = new Order
+                        OrderChannel = new OrderChannel
                         {
-                            CustomerOrderInfo = orderInfo,
+                            CustomerOrderInfoChannel = orderInfo,
                             FinalAmount = orderInfo.Amount,
                             DiscountOrderDetail = 0,
                             Discount = 0,
@@ -514,10 +564,10 @@ namespace PromotionEngineAPI.Controllers
                                 list_remove_promotion_customer.Add(promotion);
                             }
                         }
-                        else if (membership == null)
-                        {
-                            list_remove_promotion_customer.Add(promotion);
-                        }
+                        //else if (membership == null)
+                        //{
+                        //    list_remove_promotion_customer.Add(promotion);
+                        //}
                     }
                 }
 
@@ -533,7 +583,7 @@ namespace PromotionEngineAPI.Controllers
                 {
                     // apply auto + voucher or promoCode
                     //_promotionService.SetPromotions(promotions);
-                    var voucherPromotion = await _voucherService.CheckVoucher(orderInfo);
+                    var voucherPromotion = await _voucherService.CheckVoucherForChannel(orderInfo);
                     if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count >= 1)
                     {
                         promotions.Add(voucherPromotion.First());
@@ -541,24 +591,24 @@ namespace PromotionEngineAPI.Controllers
 
                     if (promotions != null && promotions.Count() > 0)
                     {
-                        responseModel.CustomerOrderInfo = orderInfo;
+                        responseModel.CustomerOrderInfoChannel = orderInfo;
                         _promotionService.SetPromotions(promotions);
                     }
                     //Check promotion
-                    responseModel = await _promotionService.HandlePromotion(responseModel);
+                    responseModel = await _promotionService.HandlePromotionForChannel(responseModel);
 
                     //Check product có trong điều kiện của promotion?
                     //Trường hợp product ko có trong điều kiện của promotion??
-                    bool checkProduct = await _promotionService.CheckProduct(orderInfo);
+                    bool checkProduct = await _promotionService.CheckProductForChannel(orderInfo);
                     if (checkProduct == false)
                     {
                         var orderResponseModel = new OrderResponseModel
                         {
                             Code = (int)AppConstant.ErrCode.Invaild_Product,
                             Message = AppConstant.ErrMessage.Invaild_Product,
-                            Order = new Order
+                            OrderChannel = new OrderChannel
                             {
-                                CustomerOrderInfo = orderInfo,
+                                CustomerOrderInfoChannel = orderInfo,
                                 FinalAmount = orderInfo.Amount,
                                 DiscountOrderDetail = 0,
                                 Discount = 0,
@@ -582,20 +632,20 @@ namespace PromotionEngineAPI.Controllers
                                 _promotionService.SetPromotions(promotions);
 
                                 //Check promotion
-                                responseModel = await _promotionService.HandlePromotion(responseModel);
+                                responseModel = await _promotionService.HandlePromotionForChannel(responseModel);
                                 promotions = _promotionService.GetPromotions();
 
                                 //Check product có trong điều kiện của promotion?
-                                bool checkProduct = await _promotionService.CheckProduct(orderInfo);
+                                bool checkProduct = await _promotionService.CheckProductForChannel(orderInfo);
                                 if (checkProduct == false)
                                 {
                                     var orderResponseModel = new OrderResponseModel
                                     {
                                         Code = (int)AppConstant.ErrCode.Invaild_Product,
                                         Message = AppConstant.ErrMessage.Invaild_Product,
-                                        Order = new Order
+                                        OrderChannel = new OrderChannel
                                         {
-                                            CustomerOrderInfo = orderInfo,
+                                            CustomerOrderInfoChannel = orderInfo,
                                             FinalAmount = orderInfo.Amount,
                                             DiscountOrderDetail = 0,
                                             Discount = 0,
@@ -608,7 +658,7 @@ namespace PromotionEngineAPI.Controllers
                             else if (vouchers.FirstOrDefault().PromotionCode != "" && vouchers.Count() > 0)
                             {
                                 // only check voucher promotion or promoCode
-                                promotions = await _voucherService.CheckVoucher(orderInfo);
+                                promotions = await _voucherService.CheckVoucherForChannel(orderInfo);
                                 if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count == 1)
                                 {
                                     promotions.Add(_promotionService.GetPromotions().First());
@@ -616,10 +666,10 @@ namespace PromotionEngineAPI.Controllers
 
                                 if (promotions != null && promotions.Count() > 0)
                                 {
-                                    responseModel.CustomerOrderInfo = orderInfo;
+                                    responseModel.CustomerOrderInfoChannel = orderInfo;
                                     _promotionService.SetPromotions(promotions);
                                     //Check promotion
-                                    responseModel = await _promotionService.HandlePromotion(responseModel);
+                                    responseModel = await _promotionService.HandlePromotionForChannel(responseModel);
                                 }
                             }
                         }
@@ -629,9 +679,9 @@ namespace PromotionEngineAPI.Controllers
                             {
                                 Code = (int)AppConstant.ErrCode.Invalid_Promotion_Customer,
                                 Message = AppConstant.ErrMessage.Invalid_Promotion_Customer,
-                                Order = new Order
+                                OrderChannel = new OrderChannel
                                 {
-                                    CustomerOrderInfo = orderInfo,
+                                    CustomerOrderInfoChannel = orderInfo,
                                     FinalAmount = orderInfo.Amount,
                                     DiscountOrderDetail = 0,
                                     Discount = 0,
@@ -643,38 +693,16 @@ namespace PromotionEngineAPI.Controllers
                     }
                     else if (orderInfo.Users.MembershipId == null && !promotionItem.PromotionCode.StartsWith("GETPOINT"))
                     {
-                        bool checkProduct = await _promotionService.CheckProduct(orderInfo);
+                        bool checkProduct = await _promotionService.CheckProductForChannel(orderInfo);
                         if (checkProduct == false)
                         {
                             var orderResponseModel = new OrderResponseModel
                             {
                                 Code = (int)AppConstant.ErrCode.Invaild_Product,
                                 Message = AppConstant.ErrMessage.Invaild_Product,
-                                Order = new Order
+                                OrderChannel = new OrderChannel
                                 {
-                                    CustomerOrderInfo = orderInfo,
-                                    FinalAmount = orderInfo.Amount,
-                                    DiscountOrderDetail = 0,
-                                    Discount = 0,
-                                    BonusPoint = 0,
-                                }
-                            };
-                            return Ok(orderResponseModel);
-                        }
-                    }
-                    //Case: promotionType = 2: Only promotion
-                    else if (orderInfo.Users.MembershipId != null && orderInfo.Vouchers.Count == 0)
-                    {
-                        bool checkProductWithPromotion = await _promotionService.CheckProducWithPromotion(orderInfo, promotionIds.PromotionId);
-                        if (checkProductWithPromotion == false)
-                        {
-                            var orderResponseModel = new OrderResponseModel
-                            {
-                                Code = (int)AppConstant.ErrCode.Invaild_Product,
-                                Message = AppConstant.ErrMessage.Invaild_Product,
-                                Order = new Order
-                                {
-                                    CustomerOrderInfo = orderInfo,
+                                    CustomerOrderInfoChannel = orderInfo,
                                     FinalAmount = orderInfo.Amount,
                                     DiscountOrderDetail = 0,
                                     Discount = 0,
@@ -690,9 +718,9 @@ namespace PromotionEngineAPI.Controllers
                         {
                             Code = (int)AppConstant.ErrCode.Invalid_Membership,
                             Message = AppConstant.ErrMessage.Invalid_Membership,
-                            Order = new Order
+                            OrderChannel = new OrderChannel
                             {
-                                CustomerOrderInfo = orderInfo,
+                                CustomerOrderInfoChannel = orderInfo,
                                 FinalAmount = orderInfo.Amount,
                                 DiscountOrderDetail = 0,
                                 Discount = 0,
@@ -709,7 +737,7 @@ namespace PromotionEngineAPI.Controllers
                 {
                     Code = AppConstant.Err_Prefix + e.Code,
                     Message = e.Message,
-                    Order = responseModel
+                    OrderChannel = responseModel
                 };
                 return StatusCode(statusCode: (int)HttpStatusCode.BadRequest, orderResponse);
             }
@@ -718,7 +746,7 @@ namespace PromotionEngineAPI.Controllers
             {
                 Code = (int)HttpStatusCode.OK,
                 Message = AppConstant.EnvVar.Success_Message,
-                Order = responseModel
+                OrderChannel = responseModel
             };
             return Ok(orderResponse);
         }

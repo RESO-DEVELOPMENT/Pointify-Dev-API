@@ -126,7 +126,7 @@ namespace ApplicationCore.Services
                         !o.DelFlg
                         && o.MembershipId.Equals(id)
                         && o.MemberProgram.BrandId.Equals(apiKey),
-                    includeProperties: "MemberLevel,MemberProgram,MemberWallet");
+                    includeProperties: "MemberLevel,MemberProgram,MemberWallet,MemberWallet.WalletType,MembershipCard");
                 return result;
             }
             catch (ErrorObj e)
@@ -150,7 +150,7 @@ namespace ApplicationCore.Services
                 var result = await _repository.GetFirst(filter: o =>
                         !o.DelFlg
                         && o.MembershipId.Equals(id),
-                    includeProperties: "MemberLevel,MemberProgram,MemberWallet");
+                    includeProperties: "MemberLevel,MemberProgram,MemberWallet,MemberWallet.WalletType,MembershipCard");
                 return result;
             }
             catch (ErrorObj e)

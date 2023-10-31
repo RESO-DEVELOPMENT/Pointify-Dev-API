@@ -405,7 +405,6 @@ namespace ApplicationCore.Chain
                                 effectType = AppConstant.EffectMessage.SetDiscount;
                                 discount = (decimal) action.DiscountAmount * quantityDiscount;
                                 SetDiscountProduct(product, action, discount);
-                                product.PromotionCodeApply = promotion.PromotionCode;
                                 break;
                             case (int) AppConstant.EnvVar.ActionType.Percentage_Product:
                                 effectType = AppConstant.EffectMessage.SetDiscount;

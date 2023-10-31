@@ -13,6 +13,7 @@ namespace ApplicationCore.Services
         Task<List<PromotionTierResponseParam>> GetPromotionTierDetail(Guid promotionId);
         Task<PromotionTierParam> CreatePromotionTier(PromotionTierParam promotionTierParam);
         Task<Order> HandlePromotion(Order orderResponse);
+        Task<OrderChannel> HandlePromotionForChannel(OrderChannel orderResponse);
         Task<bool> DeletePromotionTier(DeleteTierRequestParam deleteTierRequestParam);
         Task<PromotionTierUpdateParam> UpdatePromotionTier(PromotionTierUpdateParam updateParam);
         Task<PromotionDto> UpdatePromotion(PromotionDto dto);
@@ -20,12 +21,14 @@ namespace ApplicationCore.Services
         Task<DistributionStat> DistributionStatistic(Guid promotionId, Guid brandId);
         void SetPromotions(List<Promotion> promotions);
         Task<List<Promotion>> GetAutoPromotions(CustomerOrderInfo orderInfo, Guid promotionId);
+        Task<List<Promotion>> GetAutoPromotionsForChannel(CustomerOrderInfoChannel orderInfo, Guid promotionId);
         List<Promotion> GetPromotions();
         Task<bool> ExistPromoCode(string promoCode, Guid brandId);
         Task<bool> DeletePromotion(Guid promotionId);
         public Task<PromotionDto> CreatePromotion(PromotionDto dto);
         public Task<Promotion> GetPromotionByPromotionId(Guid promotionId);
         public Task<bool> CheckProduct(CustomerOrderInfo order);
+        public Task<bool> CheckProductForChannel(CustomerOrderInfoChannel order);
         public Task<bool> CheckProducWithPromotion(CustomerOrderInfo customerOrderInfo, Guid promotionId);
 
     }
