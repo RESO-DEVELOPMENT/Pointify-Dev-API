@@ -74,6 +74,7 @@ namespace PromotionEngineAPI.Controllers
         }
 
         [HttpGet]
+
         public async Task<IActionResult> GetTransaction(
           [FromQuery] PagingRequestParam param,
           [FromQuery] Guid PromotionId)
@@ -89,5 +90,19 @@ namespace PromotionEngineAPI.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("membershipId")]
+        public async Task<IActionResult> GetTransactionListByMembership([FromQuery] Guid membershipId)
+        {
+            try
+            {
+                var result = await _service.GetListTransactionByMember(membershipId);
+                return Ok(result);
+            }
+            catch (ErrorObj e)
+            {
+                return StatusCode(statusCode: e.Code, e);
+            }
+        }
     }
 }

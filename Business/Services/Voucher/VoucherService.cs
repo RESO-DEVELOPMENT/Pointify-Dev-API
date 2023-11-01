@@ -9,6 +9,7 @@ using Infrastructure.Models;
 using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
 using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Mvc;
 using MimeKit;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto.Tls;
@@ -17,6 +18,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -38,6 +40,9 @@ namespace ApplicationCore.Services
         protected override IGenericRepository<Voucher> _repository => _unitOfWork.VoucherRepository;
         protected IGenericRepository<VoucherGroup> _voucherGroupRepos => _unitOfWork.VoucherGroupRepository;
         protected IGenericRepository<Transaction> _transRepos => _unitOfWork.TransactionRepository;
+        protected IGenericRepository<Promotion> _promotion => _unitOfWork.PromotionRepository;
+        protected IGenericRepository<PromotionTier> _promotionTier => _unitOfWork.PromotionTierRepository;
+        protected IGenericRepository<MemberLevelMapping> _memberLevelMapping => _unitOfWork.MemberLevelMappingRepository;
 
         public async Task<List<Promotion>> CheckVoucher(CustomerOrderInfo order)
         {
@@ -630,6 +635,60 @@ namespace ApplicationCore.Services
                 throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
                     description: AppConstant.ErrMessage.Internal_Server_Error);
             }
+        }
+        public async Task<string> ApplyVoucher(string VoucherCode, Guid MembershipId)
+        {
+            var result = await _repository.GetFirst(filter: el => el.VoucherCode == VoucherCode);
+            if (result == null) return "Thất bại!!!";
+            result.MembershipId = MembershipId;
+            result.UsedDate = DateTime.Now;
+            var entity = _mapper.Map<Voucher>(result);
+            _repository.Update(entity);
+            var check = await _unitOfWork.SaveAsync();
+            if (check != 0) return "Thành công!!!";
+            return "Thất bại!!!";
+
+        }
+
+        public async Task<List<Voucher>> GetVoucherList(Guid MembershipId)
+        {
+            List<Promotion> listPromotion = new List<Promotion>();
+            List<VoucherGroup> voucherGroup = new List<VoucherGroup>();
+            List<Voucher> voucher = new List<Voucher>();
+            Promotion promotionItem = null;
+            
+            Membership membership = await _membershipService.GetFirst(filter: el => el.MembershipId == MembershipId);
+            var mapping = await _memberLevelMapping.Get(filter: el => el.MemberLevelId.Equals(membership.MemberLevelId));
+            foreach(var map in mapping)
+            {
+                var listPromotions = await _promotion.Get(filter: o => o.PromotionId.Equals(map.PromotionId)
+                                                       && o.StartDate <= DateTime.Now
+                                                       && o.EndDate >= DateTime.Now
+                                                       && o.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH
+                                                       && !o.DelFlg);
+                listPromotion.AddRange(listPromotions);
+            }
+            
+             
+            
+            foreach( var item in listPromotion)
+            {
+                var promtionTier = await _promotionTier.GetFirst(filter: o => o.PromotionId == item.PromotionId);
+                var vouchers = await _voucherGroupRepos.Get(filter: el => el.VoucherGroupId.Equals(promtionTier.VoucherGroupId)
+                                                                               && el.Quantity > el.RedempedQuantity
+                                                                               && el.Quantity > el.UsedQuantity
+                                                                               && !el.DelFlg);
+                voucherGroup.AddRange(vouchers);
+            }
+
+            foreach(var voucherItem in voucherGroup)
+            {
+                var voucherItems = await _repository.Get(filter: el => el.VoucherGroupId == voucherItem.VoucherGroupId
+                                                            && el.MembershipId == null);
+                voucher.AddRange(voucherItems);
+            }
+            return voucher;
+
         }
     }
 }

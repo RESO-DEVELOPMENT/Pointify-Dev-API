@@ -14,5 +14,6 @@ namespace ApplicationCore.Services
         public Task<Order> PlaceOrder(Guid brandId, Order order, Guid deviceId);
         public Task<Order> PlaceOrderForChannel(Order order, string channelCode);
         public Task<GenericRespones<PromoTrans>> GetPromoTrans(Guid promotionId, PagingRequestParam param);
+        public Task<List<Transaction>> GetListTransactionByMember(Guid membershipId);
     }
 }

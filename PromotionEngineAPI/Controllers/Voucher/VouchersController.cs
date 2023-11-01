@@ -333,6 +333,33 @@ namespace PromotionEngineAPI.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("applyVoucher")]
+        public async Task<IActionResult> ApplyVoucher([FromQuery]string VoucherCode, [FromQuery]Guid membershipId)
+        {
+            try
+            {
+                var result = await _service.ApplyVoucher(VoucherCode, membershipId);
+                return Ok(result);
+            } catch(ErrorObj e)
+            {
+                return StatusCode(statusCode: e.Code, e);
+            }
+        }
 
+        [HttpGet]
+        [Route("membership")]
+        public async Task<IActionResult> GetVoucherList([FromQuery] Guid membershipId)
+        {
+            try
+            {
+                var result = await _service.GetVoucherList(membershipId);
+                return Ok(result);
+            }
+            catch (ErrorObj e)
+            {
+                return StatusCode(statusCode: e.Code, e);
+            }
+        }
     }
 }

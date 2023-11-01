@@ -37,4 +37,6 @@ namespace Infrastructure.DTOs
         public Models.Voucher VoucherInfo { get; set; } = new Models.Voucher();
         public dynamic Order { get; set; }
     }
+
+    
 }
