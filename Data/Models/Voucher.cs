@@ -31,7 +31,6 @@ namespace Infrastructure.Models
 
         public virtual Channel Channel { get; set; }
         public virtual GameCampaign GameCampaign { get; set; }
-        public virtual Membership Membership { get; set; }
         public virtual Promotion Promotion { get; set; }
         public virtual Store Store { get; set; }
         public virtual VoucherGroup VoucherGroup { get; set; }

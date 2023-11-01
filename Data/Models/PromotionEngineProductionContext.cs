@@ -1174,11 +1174,6 @@ namespace Infrastructure.Models
                     .HasForeignKey(d => d.GameCampaignId)
                     .HasConstraintName("FK_Voucher_GameCampaign");
 
-                entity.HasOne(d => d.Membership)
-                    .WithMany(p => p.Voucher)
-                    .HasForeignKey(d => d.MembershipId)
-                    .HasConstraintName("FK_Voucher_Membership");
-
                 entity.HasOne(d => d.Promotion)
                     .WithMany(p => p.Voucher)
                     .HasForeignKey(d => d.PromotionId)

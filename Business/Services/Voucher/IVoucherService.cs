@@ -31,6 +31,9 @@ namespace ApplicationCore.Services
         public Task<dynamic> GetPromotionCodeByVoucherCode(string voucherCode);
 
         public Task<VoucherDto> CreateVoucher(VoucherDto dto, Guid VoucherGroupId);
+
+        public Task<string> ApplyVoucher(string VoucherCode, Guid MembershipId);
+        public Task<List<Voucher>> GetVoucherList(Guid MembershipId);
     }
 
 }

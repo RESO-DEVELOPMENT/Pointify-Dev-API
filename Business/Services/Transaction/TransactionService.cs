@@ -36,6 +36,8 @@ namespace ApplicationCore.Services
         }
 
         protected override IGenericRepository<Transaction> _repository => _unitOfWork.TransactionRepository;
+        public IGenericRepository<MemberWallet> _memberWallet => _unitOfWork.MemberWalletRepository;
+        public IGenericRepository<Transaction> _transaction => _unitOfWork.TransactionRepository;
 
         public async Task<Order> PlaceOrder(Guid brandId, Order order, Guid deviceId)
         {
@@ -293,6 +295,20 @@ namespace ApplicationCore.Services
             GenericRespones<PromoTrans> result = new GenericRespones<PromoTrans>(items: listTrans, size: param.size,
                 page: param.page, total: totalItem, totalpage: (int) Math.Ceiling(totalItem / (double) param.size));
             return result;
+        }
+
+        public async Task<List<Transaction>> GetListTransactionByMember(Guid membershipId)
+        {
+            var memberWallets = await _memberWallet.Get(filter: el => el.MemberId.Equals(membershipId));
+            List<Transaction> trans = new List<Transaction>();
+
+            foreach (var wallet in memberWallets)
+            {
+                var transactions = await _transaction.Get(filter: el => el.MemberWalletId.Equals(wallet.Id));
+                trans.AddRange(transactions);
+            }
+
+            return trans;
         }
     }
 }
