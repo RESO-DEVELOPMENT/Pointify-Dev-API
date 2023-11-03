@@ -90,52 +90,67 @@ namespace ApplicationCore.Services
 
                                 await _memberActionService.CreateMemberAction(request);
                             }
+                            else if (effect.EffectType.Contains(AppConstant.EffectMessage.SetDiscount))
+                            {
+                                if (order.CustomerOrderInfo.Users.MembershipId != null && order.CustomerOrderInfo.Users.MembershipId != Guid.Empty)
+                                {
+                                    MemberActionRequest request = new MemberActionRequest(brandId,
+                                    order.CustomerOrderInfo.Attributes.StoreInfo.StoreCode,
+                                    order.CustomerOrderInfo.Users.MembershipId, order.FinalAmount ?? 0,
+                                    AppConstant.EffectMessage.Payment,
+                                    $"[{order.CustomerOrderInfo.Id}] Thanh toán đơn hàng trị giá {order.FinalAmount}");
+
+                                    await _memberActionService.CreateMemberAction(request);
+                                }
+                            }
+                        }
+
+                        var typeDiscount = "";
+                        foreach (var effect in order.Effects)
+                        {
+                            
+                            if (effect.EffectType.Contains(AppConstant.EffectMessage.SetDiscount) ||
+                            effect.EffectType.Contains(AppConstant.EffectMessage.AddGift) ||
+                            effect.EffectType.Contains(AppConstant.EffectMessage.GetPoint))
+                            {
+                                typeDiscount = effect.EffectType;
+                            }
                         }
 
                         foreach (var promotionSetDiscount in promotionSetDiscounts)
                         {
-                            var type = "";
-                            foreach (var effect in order.Effects)
+                            if (promotionSetDiscount.IsAuto)
                             {
-                                if (effect.EffectType.Contains(AppConstant.EffectMessage.SetDiscount) ||
-                                effect.EffectType.Contains(AppConstant.EffectMessage.AddGift) ||
-                                effect.EffectType.Contains(AppConstant.EffectMessage.GetPoint))
-                                {
-                                    type = effect.EffectType;
-                                }
-                            }
-                                if (promotionSetDiscount.IsAuto)
-                                {
-                                    AddTransactionWithPromo(type, order, brandId, promotionSetDiscount.PromotionId);
-                                }
-
-                                if (!promotionSetDiscount.HasVoucher && !promotionSetDiscount.IsAuto)
-                                {
-                                    AddTransactionWithPromo(type, order, brandId, promotionSetDiscount.PromotionId);
-                                }
+                                AddTransactionWithPromo(typeDiscount, order, brandId, promotionSetDiscount.PromotionId);
                             }
 
-                            if (await _unitOfWork.SaveAsync() > 0)
+                            if (!promotionSetDiscount.HasVoucher && !promotionSetDiscount.IsAuto)
                             {
-                                return order;
+                                AddTransactionWithPromo(typeDiscount, order, brandId, promotionSetDiscount.PromotionId);
                             }
                         }
+
+                        if (await _unitOfWork.SaveAsync() > 0)
+                        {
+                            return order;
+                        }
+                    }
                     else
-                        { AddTransaction(order: order, brandId: brandId, transactionId); }
-                    }
-                    else 
-                    {
-                        throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError,
-                            message: AppConstant.ErrMessage.Order_Fail, description: AppConstant.ErrMessage.Order_Fail);
-                    }
-                        
+                    { AddTransaction(order: order, brandId: brandId, transactionId); }
                 }
-                else 
+                else
                 {
-                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
-                        message: AppConstant.ErrMessage.Not_Found_Resource);
+                    throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError,
+                        message: AppConstant.ErrMessage.Order_Fail, description: AppConstant.ErrMessage.Order_Fail);
                 }
-                return order;
+
+            }
+            else
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
+                    message: AppConstant.ErrMessage.Not_Found_Resource);
+            }
+            return order;
         }
 
         public async Task<Order> PlaceOrderForChannel(Order order, string channelCode)
@@ -173,20 +188,20 @@ namespace ApplicationCore.Services
                 {
                     var type = effect.EffectType;
                     var promotion = await _promotionService.GetByIdAsync(effect.PromotionId);
-                    if (promotion == null || promotion.Status != (int) AppConstant.EnvVar.PromotionStatus.PUBLISH)
+                    if (promotion == null || promotion.Status != (int)AppConstant.EnvVar.PromotionStatus.PUBLISH)
                     {
                         //neu voucher dang apply vao order ma brand manager xoa promotion hoac change promotion status
-                        throw new ErrorObj(code: (int) AppConstant.ErrCode.Expire_Promotion,
+                        throw new ErrorObj(code: (int)AppConstant.ErrCode.Expire_Promotion,
                             message: AppConstant.ErrMessage.Expire_Promotion,
                             description: AppConstant.ErrMessage.Expire_Promotion);
                     }
 
                     promotionSetDiscounts.Add(_mapper.Map<Promotion>(promotion));
-                    var transaction = AddTransactionWithPromo(type,order: order, brandId: brand.BrandId, effect.PromotionId);
+                    var transaction = AddTransactionWithPromo(type, order: order, brandId: brand.BrandId, effect.PromotionId);
                     if (transaction != null)
                     {
                         int updatedRecord = await CheckVoucherOther(order, transaction.Id,
-                            (Guid) effect.PromotionTierId, channel, store);
+                            (Guid)effect.PromotionTierId, channel, store);
                     }
                 }
             }
@@ -217,14 +232,14 @@ namespace ApplicationCore.Services
         {
             var now = Common.GetCurrentDatetime();
             Order newOrder = order;
-            newOrder.Effects = null;
+            //newOrder.Effects = null;
             var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(newOrder);
             Transaction transaction = new Transaction
             {
                 BrandId = brandId,
                 InsDate = now,
                 UpdDate = now,
-                Id = tranactionId != null ? (Guid) tranactionId : Guid.NewGuid(),
+                Id = tranactionId != null ? (Guid)tranactionId : Guid.NewGuid(),
                 VoucherId = voucherId,
                 TransactionJson = jsonString,
                 PromotionId = promotionId,
@@ -293,7 +308,7 @@ namespace ApplicationCore.Services
 
 
             GenericRespones<PromoTrans> result = new GenericRespones<PromoTrans>(items: listTrans, size: param.size,
-                page: param.page, total: totalItem, totalpage: (int) Math.Ceiling(totalItem / (double) param.size));
+                page: param.page, total: totalItem, totalpage: (int)Math.Ceiling(totalItem / (double)param.size));
             return result;
         }
 
