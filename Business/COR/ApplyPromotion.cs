@@ -290,6 +290,11 @@ namespace ApplicationCore.Chain
                     if (action.BonusPointRate != null)
                     {
                         var bonusRate = (decimal) action.BonusPointRate;
+                        order.TotalAmount = 0;
+                        foreach (var item in order.CustomerOrderInfo.CartItems)
+                        {
+                            order.TotalAmount += item.SubTotal;
+                        }
                         order.BonusPoint = order.TotalAmount * bonusRate;
                     }
                     else
@@ -369,7 +374,8 @@ namespace ApplicationCore.Chain
             {
                 //var finalAmount = el.SubTotal - discount;
                 //el.Total = finalAmount;
-                el.Total = el.SubTotal;
+                
+                el.Total = el.SubTotal - (el.SubTotal * discountPercent);
 
                 //el.DiscountFromOrder += Math.Round((finalAmount - el.DiscountFromOrder) * discountPercent, 2);
                 //el.Discount = discount;
@@ -520,6 +526,11 @@ namespace ApplicationCore.Chain
             //} else
             //{
             order.Discount = discount;
+            order.TotalAmount = 0;
+            foreach (var item in order.CustomerOrderInfo.CartItems)
+            {
+                order.TotalAmount += item.SubTotal;
+            }
             order.FinalAmount =
                 Math.Ceiling((decimal) (order.TotalAmount - order.Discount - order.DiscountOrderDetail));
             //}

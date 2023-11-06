@@ -49,9 +49,11 @@ namespace ApplicationCore.Chain
                         HandleStore(promotion, order);
                         HandleSalesMode(promotion, order);
                         HandlePayment(promotion, order);
-                        HandleGender(promotion, order);
-                        HandleMemberLevel(promotion, order);
-
+                        if(order.CustomerOrderInfo.Users != null)
+                        {
+                            HandleGender(promotion, order);
+                            HandleMemberLevel(promotion, order);
+                        }  
                         if (invalidPromotions == 0)
                         {
                             acceptPromotions.Add(promotion);
@@ -94,8 +96,11 @@ namespace ApplicationCore.Chain
                             HandleStore(promotion, order);
                             HandleSalesMode(promotion, order);
                             HandlePayment(promotion, order);
-                            HandleGender(promotion, order);
-                            HandleMemberLevel(promotion, order);
+                            if(order.CustomerOrderInfo.Users != null)
+                            {
+                                HandleGender(promotion, order);
+                                HandleMemberLevel(promotion, order);
+                            }
 
                             if (invalidPromotions == 0)
                             {
@@ -120,40 +125,51 @@ namespace ApplicationCore.Chain
                             HandleSalesMode(promotion, order);
                             HandleApplier(promotion, order);
                             HandlePayment(promotion, order);
+                            if(order.CustomerOrderInfo.Users != null)
                             HandleGender(promotion, order);
                             if (promotion.ForMembership == 2)
                             {
-                                // promotion apply for Guest
-                                if (!string.IsNullOrEmpty(order.CustomerOrderInfo.Users.UserLevel))
+                                if(order.CustomerOrderInfo.Users != null)
                                 {
-                                    // nếu là Member => throw error
-                                    throw new ErrorObj(code: (int) AppConstant.ErrCode.Invalid_MemberLevel,
-                                        message: AppConstant.ErrMessage.Invalid_MemberLevel);
-                                }
+                                    // promotion apply for Guest
+                                    if (!string.IsNullOrEmpty(order.CustomerOrderInfo.Users.UserLevel))
+                                    {
+                                        // nếu là Member => throw error
+                                        throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_MemberLevel,
+                                            message: AppConstant.ErrMessage.Invalid_MemberLevel);
+                                    }
+                                }    
                             }
                             else if (promotion.ForMembership == 1)
                             {
-                                // promotion apply for Member
-                                if (!string.IsNullOrEmpty(order.CustomerOrderInfo.Users.UserLevel))
+                                if (order.CustomerOrderInfo.Users != null)
                                 {
-                                    // nếu là Member => check Member
-                                    HandleMemberLevel(promotion, order);
-                                }
-                                else
-                                {
-                                    // nếu là Guest => throw error
-                                    throw new ErrorObj(code: (int) AppConstant.ErrCode.Invalid_MemberLevel,
-                                        message: AppConstant.ErrMessage.Invalid_MemberLevel);
+                                    // promotion apply for Member
+                                    if (!string.IsNullOrEmpty(order.CustomerOrderInfo.Users.UserLevel))
+                                    {
+                                        // nếu là Member => check Member
+                                        HandleMemberLevel(promotion, order);
+                                    }
+                                    else
+                                    {
+                                        // nếu là Guest => throw error
+                                        throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_MemberLevel,
+                                            message: AppConstant.ErrMessage.Invalid_MemberLevel);
+                                    }
                                 }
                             }
                             else if (promotion.ForMembership == 0)
                             {
-                                // promotion apply for both
-                                if (!string.IsNullOrEmpty(order.CustomerOrderInfo.Users.UserLevel))
+                                if(order.CustomerOrderInfo.Users != null)
                                 {
-                                    // nếu là Member => check Member
-                                    HandleMemberLevel(promotion, order);
-                                } // nếu là Guest => bỏ qua check
+                                    if (!string.IsNullOrEmpty(order.CustomerOrderInfo.Users.UserLevel))
+                                    {
+                                        // nếu là Member => check Member
+                                        HandleMemberLevel(promotion, order);
+                                    } // nếu là Guest => bỏ qua check
+                                }
+                                // promotion apply for both
+                                
                             }
 
                             if (invalidPromotions == 0)
