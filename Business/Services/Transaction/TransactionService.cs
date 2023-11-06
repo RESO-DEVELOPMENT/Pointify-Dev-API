@@ -92,16 +92,19 @@ namespace ApplicationCore.Services
                             }
                             else if (effect.EffectType.Contains(AppConstant.EffectMessage.SetDiscount))
                             {
-                                if (order.CustomerOrderInfo.Users.MembershipId != null && order.CustomerOrderInfo.Users.MembershipId != Guid.Empty)
+                                if(order.CustomerOrderInfo.Users != null)
                                 {
-                                    MemberActionRequest request = new MemberActionRequest(brandId,
-                                    order.CustomerOrderInfo.Attributes.StoreInfo.StoreCode,
-                                    order.CustomerOrderInfo.Users.MembershipId, order.FinalAmount ?? 0,
-                                    AppConstant.EffectMessage.Payment,
-                                    $"[{order.CustomerOrderInfo.Id}] Thanh toán đơn hàng trị giá {order.FinalAmount}");
+                                    if (order.CustomerOrderInfo.Users.MembershipId != null && order.CustomerOrderInfo.Users.MembershipId != Guid.Empty)
+                                    {
+                                        MemberActionRequest request = new MemberActionRequest(brandId,
+                                        order.CustomerOrderInfo.Attributes.StoreInfo.StoreCode,
+                                        order.CustomerOrderInfo.Users.MembershipId, order.FinalAmount ?? 0,
+                                        AppConstant.EffectMessage.Payment,
+                                        $"[{order.CustomerOrderInfo.Id}] Thanh toán đơn hàng trị giá {order.FinalAmount}");
 
-                                    await _memberActionService.CreateMemberAction(request);
-                                }
+                                        await _memberActionService.CreateMemberAction(request);
+                                    }
+                                } 
                             }
                         }
 
