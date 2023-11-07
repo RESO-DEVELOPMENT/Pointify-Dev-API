@@ -337,7 +337,7 @@ namespace ApplicationCore.Chain
                     effect.Prop = new
                     {
                         code = promotion.PromotionCode,
-                        value = discount
+                        value = promotion.PromotionCode.StartsWith("GETPOINT")? (decimal)promotionTier.Action.BonusPointRate : discount
                     };
                 }
                 else
@@ -345,7 +345,10 @@ namespace ApplicationCore.Chain
                     effect.EffectType = effectType;
                     effect.Prop = new
                     {
-                        value = discount
+                        code = promotion.PromotionCode,
+                        // nếu ko có promotion hoặc voucher thì value của nó cũng chính
+                        // là bonus point rate
+                        value = promotionTier.Action.BonusPointRate
                     };
                 }
             }
@@ -503,7 +506,7 @@ namespace ApplicationCore.Chain
             {
                 product.Discount = (product.SubTotal - product.Discount) < action.MinPriceAfter
                     ? (decimal) (product.SubTotal - action.MinPriceAfter)
-                    : product.Discount * product.Quantity;
+                    : product.Discount;
             }
             else if (action.ActionType == (int) AppConstant.EnvVar.ActionType.Percentage_Product)
             {
