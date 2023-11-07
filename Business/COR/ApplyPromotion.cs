@@ -337,7 +337,7 @@ namespace ApplicationCore.Chain
                     effect.Prop = new
                     {
                         code = promotion.PromotionCode,
-                        value = promotion.PromotionCode.StartsWith("GETPOINT")? (decimal)promotionTier.Action.BonusPointRate : discount
+                        value = promotion.PromotionCode.StartsWith("GETPOINT")? order.BonusPoint : discount
                     };
                 }
                 else
@@ -348,7 +348,7 @@ namespace ApplicationCore.Chain
                         code = promotion.PromotionCode,
                         // nếu ko có promotion hoặc voucher thì value của nó cũng chính
                         // là bonus point rate
-                        value = promotionTier.Action.BonusPointRate
+                        value = order.BonusPoint
                     };
                 }
             }
