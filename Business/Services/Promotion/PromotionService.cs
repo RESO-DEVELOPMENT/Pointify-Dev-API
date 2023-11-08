@@ -4,11 +4,15 @@ using ApplicationCore.Request;
 using ApplicationCore.Utils;
 using AutoMapper;
 using Infrastructure.DTOs;
+using Infrastructure.DTOs.Promotion;
+using Infrastructure.DTOs.Request;
 using Infrastructure.Helper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using ShaNetHoliday.Syntax.Composition;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,17 +29,23 @@ namespace ApplicationCore.Services
     public class PromotionService : BaseService<Promotion, PromotionDto>, IPromotionService
     {
         private readonly ICheckPromotionHandler _checkPromotionHandler;
-        private readonly ITimeframeHandle _timeframeHandle;
+        private readonly IBrandService _brandService;
+        private readonly IStoreService _storeService;
+        private readonly IMemberActionService _memberActionService;
         private List<Promotion> _promotions;
 
         public PromotionService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ICheckPromotionHandler promotionHandle,
-            ITimeframeHandle timeframeHandle) : base(unitOfWork, mapper)
+            IBrandService brandService,
+            IStoreService storeService,
+            IMemberActionService memberActionService) : base(unitOfWork, mapper)
         {
             _checkPromotionHandler = promotionHandle;
-            _timeframeHandle = timeframeHandle;
+            _brandService = brandService;
+            _storeService = storeService;
+            _memberActionService = memberActionService;
         }
         protected override IGenericRepository<Promotion> _repository => _unitOfWork.PromotionRepository;
         public IGenericRepository<Product> _product => _unitOfWork.ProductRepository;
@@ -564,7 +574,7 @@ namespace ApplicationCore.Services
             }
             _checkPromotionHandler.SetPromotions(_promotions);
             _checkPromotionHandler.Handle(orderResponse);
-            _promotions = _checkPromotionHandler.GetPromotions(); 
+            _promotions = _checkPromotionHandler.GetPromotions();
             return orderResponse;
         }
         #endregion
@@ -1335,7 +1345,7 @@ namespace ApplicationCore.Services
                         "MemberLevelMapping.MemberLevel"
                     );
             }
-             
+
             return promotions.ToList();
         }
 
@@ -1350,7 +1360,7 @@ namespace ApplicationCore.Services
                 {
                     product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
                 }
-                foreach(var item in order.Vouchers)
+                foreach (var item in order.Vouchers)
                 {
                     promotionCode = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(item.PromotionCode));
                 }
@@ -1657,5 +1667,113 @@ namespace ApplicationCore.Services
         }
         #endregion
 
+        #region check out Promotion
+        public async Task<List<Guid>> CheckoutPromotion(CheckOutPromotion req)
+        {
+            var store = await _storeService.GetByIdAsync(req.StoreId);
+            Transaction transaction = new Transaction();
+            List<Guid> listTransactionId = new List<Guid>();
+            if (store == null)
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.Not_Found_Resource);
+            }
+            var brand = await _brandService.GetByIdAsync((Guid)store.BrandId);
+            if (brand == null)
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.Not_Found_Resource);
+            }
+            if (req != null)
+            {
+                if (req.listEffect != null)
+                {
+                    foreach(var item in req.listEffect)
+                    {
+                        if (item.effectType.Equals(AppConstant.EffectMessage.SetDiscount))
+                        {
+                            var type = item.effectType;
+                            transaction = await AddTransactionAsync(req, item.PromotionId, type);
+                            Membership user = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.MembershipId.Equals(req.UserId));
+                            if(user != null) {
+                                MemberActionRequest request = new MemberActionRequest(brand.BrandId,
+                                       store.StoreCode,
+                                       user.MembershipId, req.FinalAmount,
+                                       AppConstant.EffectMessage.Payment,
+                                       $"[{store.StoreCode}] Thanh toán đơn hàng trị giá {req.FinalAmount}");
+
+                                var dto = await _memberActionService.CreateMemberAction(request);
+                                if (dto != null)
+                                {
+                                    transaction.MemberWalletId = dto.MemberWalletId;
+                                    transaction.MemberActionId = dto.Id;
+                                    _unitOfWork.TransactionRepository.Update(transaction);
+                                    await _unitOfWork.SaveAsync();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var type = item.effectType;
+                            Membership user = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.MembershipId.Equals(req.UserId));
+                            if(user == null)
+                            {
+                                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.Not_Found_Resource);
+                            }
+                            MemberActionRequest request = new MemberActionRequest(brand.BrandId,
+                                    store.StoreCode,
+                                    (Guid)req.UserId, req.BonusPoint,
+                                    type,
+                                    $"[{store.StoreCode}] Thanh toán đơn hàng và tích {req.BonusPoint} điểm cho {user.Fullname} ");
+                            var dto = await _memberActionService.CreateMemberAction(request);
+                            
+                            transaction = await AddTransactionAsync(req, item.PromotionId, type);
+                            if(dto != null)
+                            {
+                                transaction.MemberWalletId = dto.MemberWalletId;
+                                transaction.MemberActionId = dto.Id;
+                                _unitOfWork.TransactionRepository.Update(transaction);
+                                await _unitOfWork.SaveAsync();
+                            }
+                        }
+                        listTransactionId.Add(transaction.Id);
+                    }
+                    return listTransactionId;
+                }
+            }
+            return null;
+        }
+        private async Task<Transaction> AddTransactionAsync(CheckOutPromotion req, Guid? promotionId, string effectType)
+        {
+            List<Transaction> transactions = new List<Transaction>();
+            var store = await _storeService.GetByIdAsync(req.StoreId);
+            if (store == null)
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.Not_Found_Resource);
+            }
+            var brand = await _brandService.GetByIdAsync((Guid)store.BrandId);
+            var voucher = await _unitOfWork.VoucherRepository.GetFirst(filter: el => el.VoucherCode.Equals(req.VoucherCode));
+            if (brand == null)
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.Not_Found_Resource);
+            }
+            Promotion promotion = await _repository.GetFirst(filter: el => el.PromotionId.Equals(promotionId));
+            Transaction transaction = new Transaction()
+            {
+                Id = Guid.NewGuid(),
+                TransactionJson = JsonConvert.SerializeObject(req),
+                BrandId = brand.BrandId,
+                InsDate = DateTime.Now,
+                UpdDate = DateTime.Now,
+                VoucherId = voucher?.VoucherId,
+                PromotionId = promotionId,
+                Amount = promotion.PromotionCode.StartsWith("GETPOINT") ? req.BonusPoint : req.FinalAmount,
+                IsIncrease = promotion.PromotionCode.StartsWith("GETPOINT") ? true : false,
+                Currency = promotion.PromotionCode.StartsWith("GETPOINT") ? "Point" : "VND",
+                Type = effectType
+            };
+            _unitOfWork.TransactionRepository.Add(transaction);
+            await _unitOfWork.SaveAsync();
+            return transaction;
+        }
+        #endregion
     }
 }

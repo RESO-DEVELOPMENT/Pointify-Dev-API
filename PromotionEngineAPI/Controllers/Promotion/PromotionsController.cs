@@ -1,6 +1,7 @@
 ﻿using ApplicationCore.Request;
 using ApplicationCore.Services;
 using Infrastructure.DTOs;
+using Infrastructure.DTOs.Promotion;
 using Infrastructure.Helper;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -257,6 +258,19 @@ namespace PromotionEngineAPI.Controllers
                 Order = responseModel
             };
             return Ok(orderResponse);
+        }
+        [HttpPost("check-out-promotion")]
+        public async Task<IActionResult> CheckOutPromotion([FromBody] CheckOutPromotion req)
+        {
+            try
+            {
+                var result = await _promotionService.CheckoutPromotion(req);
+                return Ok(result);
+            }
+            catch (ErrorObj e)
+            {
+                return StatusCode(statusCode: e.Code, e);
+            }
         }
         
         

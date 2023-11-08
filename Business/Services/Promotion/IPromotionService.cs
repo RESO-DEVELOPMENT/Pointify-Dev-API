@@ -1,6 +1,7 @@
 ﻿
 using ApplicationCore.Request;
 using Infrastructure.DTOs;
+using Infrastructure.DTOs.Promotion;
 using Infrastructure.Models;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,6 @@ namespace ApplicationCore.Services
         public Task<Promotion> GetPromotionByPromotionId(Guid promotionId);
         public Task<bool> CheckProduct(CustomerOrderInfo order);
         public Task<bool> CheckProducWithPromotion(CustomerOrderInfo customerOrderInfo, Guid promotionId);
-
+        Task<List<Guid>> CheckoutPromotion(CheckOutPromotion req);
     }
 }
