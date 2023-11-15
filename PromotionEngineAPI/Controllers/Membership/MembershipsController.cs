@@ -25,7 +25,7 @@ namespace PromotionEngineAPI.Controllers
         public async Task<IActionResult> GetMembership([FromQuery] PagingRequestParam param)
         {
             var result = await _service.GetAsync(pageIndex: param.page, pageSize: param.size, filter: el => !el.DelFlg
-             ,includeProperties: "MemberLevel,MemberProgram,MemberWallet");
+             ,includeProperties: "MemberLevel,MemberProgram,MemberWallet,MembershipCard");
             if (result == null)
             {
                 return NotFound();
@@ -39,7 +39,7 @@ namespace PromotionEngineAPI.Controllers
         {
             var result = await _service.GetAsync(pageIndex: param.page, pageSize: param.size, filter: el => !el.DelFlg 
             && el.MemberProgram.BrandId.Equals(apiKey)
-             , includeProperties: "MemberLevel,MemberProgram,MemberWallet");
+             , includeProperties: "MemberLevel,MemberProgram,MemberWallet,MembershipCard");
             if (result == null)
             {
                 return NotFound();
