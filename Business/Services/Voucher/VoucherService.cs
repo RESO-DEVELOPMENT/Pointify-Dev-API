@@ -667,17 +667,26 @@ namespace ApplicationCore.Services
                     description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
-        public async Task<string> ApplyVoucher(string VoucherCode, Guid MembershipId)
+        
+        public async Task<string> ApplyVoucher(Guid VoucherGroupId, Guid MembershipId)
         {
-            var result = await _repository.GetFirst(filter: el => el.VoucherCode == VoucherCode);
-            if (result == null) return "Thất bại!!!";
-            result.MembershipId = MembershipId;
-            result.UsedDate = DateTime.Now;
-            var entity = _mapper.Map<Voucher>(result);
+            Voucher voucherApply = null;
+            var listVoucher = await _repository.Get(filter: el => el.VoucherGroupId == VoucherGroupId);
+            foreach (var voucher in listVoucher)
+            {
+                if (voucher.MembershipId == null) 
+                {
+                    voucherApply = await _repository.GetFirst(filter: el => el.VoucherCode.Equals(voucher.VoucherCode));
+                }
+            }
+            voucherApply.MembershipId = MembershipId;
+            voucherApply.UsedDate = DateTime.Now;
+            voucherApply.RedempedDate = DateTime.Now;
+            var entity = _mapper.Map<Voucher>(voucherApply);
             _repository.Update(entity);
             var check = await _unitOfWork.SaveAsync();
             if (check != 0) return "Thành công!!!";
-            return "Thất bại!!!";
+            return "Hết voucher phù hợp!!!";
 
         }
 
