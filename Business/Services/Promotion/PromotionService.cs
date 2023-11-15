@@ -1670,7 +1670,7 @@ namespace ApplicationCore.Services
         #region check out Promotion
         public async Task<List<Guid>> CheckoutPromotion(CheckOutPromotion req)
         {
-            var store = await _storeService.GetByIdAsync(req.StoreId);
+            var store = await _unitOfWork.StoreRepository.GetFirst(filter: el => el.StoreCode.Equals(req.StoreCode));
             Transaction transaction = new Transaction();
             List<Guid> listTransactionId = new List<Guid>();
             if (store == null)
@@ -1744,10 +1744,10 @@ namespace ApplicationCore.Services
         private async Task<Transaction> AddTransactionAsync(CheckOutPromotion req, Guid? promotionId, string effectType)
         {
             List<Transaction> transactions = new List<Transaction>();
-            var store = await _storeService.GetByIdAsync(req.StoreId);
+            var store = await _unitOfWork.StoreRepository.GetFirst(filter: el => el.StoreCode.Equals(req.StoreCode));
             if (store == null)
             {
-                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.Not_Found_Resource);
+                throw new ErrorObj(code: (int)HttpStatusCode.UnprocessableEntity, message: AppConstant.ErrMessage.Not_Found_Resource);
             }
             var brand = await _brandService.GetByIdAsync((Guid)store.BrandId);
             var voucher = await _unitOfWork.VoucherRepository.GetFirst(filter: el => el.VoucherCode.Equals(req.VoucherCode));
@@ -1759,7 +1759,7 @@ namespace ApplicationCore.Services
             Transaction transaction = new Transaction()
             {
                 Id = Guid.NewGuid(),
-                TransactionJson = JsonConvert.SerializeObject(req),
+                TransactionJson = req.InvoiceId,
                 BrandId = brand.BrandId,
                 InsDate = DateTime.Now,
                 UpdDate = DateTime.Now,
