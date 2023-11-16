@@ -200,7 +200,7 @@ namespace ApplicationCore.Services
                 {
                     voucher.IsRedemped = true;
                     var now = DateTime.Now;
-                    voucher.RedempedDate = now;
+                    voucher.RedempedDate = TimeUtils.GetCurrentSEATime();
                     voucher.UpdDate = now;
                     voucher.ChannelId = voucherChannel.ChannelId;
                     _repository.Update(voucher);
@@ -222,7 +222,7 @@ namespace ApplicationCore.Services
                     && el.IsRedemped == AppConstant.EnvVar.Voucher.UNREDEEM, includeProperties: "VoucherGroup.Promotion");
                     var voucher = vouchers.ToList().First();
                     voucher.IsRedemped = AppConstant.EnvVar.Voucher.REDEEMPED;
-                    voucher.RedempedDate = DateTime.Now;
+                    voucher.RedempedDate = TimeUtils.GetCurrentSEATime();
                     _repository.Update(voucher);
 
                     var entity = voucher.VoucherGroup;
@@ -320,7 +320,7 @@ namespace ApplicationCore.Services
                             _voucherGroupRepos.Update(voucherGroup);
 
                             voucher.IsRedemped = AppConstant.EnvVar.Voucher.USED;
-                            voucher.RedempedDate = now;
+                            voucher.RedempedDate = TimeUtils.GetCurrentSEATime();
                             voucher.IsUsed = AppConstant.EnvVar.Voucher.USED;
                             voucher.UsedDate = now;
                             voucher.UpdDate = now;
@@ -532,7 +532,7 @@ namespace ApplicationCore.Services
 
             // Update ngày lấy
             DateTime now = Common.GetCurrentDatetime();
-            voucher.RedempedDate = now;
+            voucher.RedempedDate = TimeUtils.GetCurrentSEATime();
             voucher.IsRedemped = true;
             voucher.UpdDate = now;
             //Update voucher group
@@ -680,8 +680,9 @@ namespace ApplicationCore.Services
                 }
             }
             voucherApply.MembershipId = MembershipId;
-            voucherApply.UsedDate = DateTime.Now;
-            voucherApply.RedempedDate = DateTime.Now;
+            voucherApply.UsedDate = TimeUtils.GetCurrentSEATime();
+            voucherApply.RedempedDate = TimeUtils.GetCurrentSEATime();
+            voucherApply.IsRedemped = AppConstant.EnvVar.Voucher.REDEEMPED;
             var entity = _mapper.Map<Voucher>(voucherApply);
             _repository.Update(entity);
             var check = await _unitOfWork.SaveAsync();
