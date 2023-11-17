@@ -60,7 +60,7 @@ namespace ApplicationCore.Services
                     {
                         var voucher = await _repository.Get(filter: el =>
                         el.VoucherCode.Equals(voucherModel.VoucherCode)
-                        && el.Promotion.PromotionTier.Any(a => (a.Promotion.PromotionCode + a.TierIndex).Equals(voucherModel.PromotionCode))
+                        && el.Promotion.PromotionTier.Any(a => (a.Promotion.PromotionCode).Equals(voucherModel.PromotionCode))
                         && el.Promotion.Brand.BrandCode.Equals(order.Attributes.StoreInfo.BrandCode),
                     includeProperties:
                     "Promotion.PromotionTier.Action.ActionProductMapping.Product," +
