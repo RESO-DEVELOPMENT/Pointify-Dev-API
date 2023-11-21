@@ -725,7 +725,7 @@ namespace ApplicationCore.Services
             foreach(var voucherItem in voucherGroup)
             {
                 var voucherItems = await _repository.Get(filter: el => el.VoucherGroupId == voucherItem.VoucherGroupId
-                                                            && el.MembershipId == null);
+                                                            && el.MembershipId == MembershipId);
                 voucher.AddRange(voucherItems);
             }
             return voucher;
