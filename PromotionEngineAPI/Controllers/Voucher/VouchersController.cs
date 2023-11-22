@@ -335,11 +335,11 @@ namespace PromotionEngineAPI.Controllers
 
         [HttpPost]
         [Route("applyVoucher")]
-        public async Task<IActionResult> ApplyVoucher([FromQuery]Guid VoucherGroupId, [FromQuery]Guid membershipId)
+        public async Task<IActionResult> ApplyVoucher([FromQuery]Guid VoucherGroupId, [FromQuery]Guid membershipId, [FromQuery] int quantity)
         {
             try
             {
-                var result = await _service.ApplyVoucher(VoucherGroupId, membershipId);
+                var result = await _service.ApplyVoucher(VoucherGroupId, membershipId, quantity);
                 return Ok(result);
             } catch(ErrorObj e)
             {

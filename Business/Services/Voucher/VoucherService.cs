@@ -668,25 +668,32 @@ namespace ApplicationCore.Services
             }
         }
         
-        public async Task<string> ApplyVoucher(Guid VoucherGroupId, Guid MembershipId)
+        public async Task<string> ApplyVoucher(Guid VoucherGroupId, Guid MembershipId, int quantity)
         {
-            Voucher voucherApply = null;
+            List<Voucher> voucherApply = new List<Voucher>();
             var listVoucher = await _repository.Get(filter: el => el.VoucherGroupId == VoucherGroupId);
             foreach (var voucher in listVoucher)
             {
                 if (voucher.MembershipId == null) 
                 {
-                    voucherApply = await _repository.GetFirst(filter: el => el.VoucherCode.Equals(voucher.VoucherCode));
+                    var voucherApplys = await _unitOfWork.VoucherRepository.Get(pageIndex: 1, pageSize: quantity,
+                        filter: el => el.VoucherCode.Equals(voucher.VoucherCode));
+                    voucherApply.AddRange(voucherApplys);
                 }
             }
-            voucherApply.MembershipId = MembershipId;
-            voucherApply.UsedDate = TimeUtils.GetCurrentSEATime();
-            voucherApply.RedempedDate = TimeUtils.GetCurrentSEATime();
-            voucherApply.IsRedemped = AppConstant.EnvVar.Voucher.REDEEMPED;
-            var entity = _mapper.Map<Voucher>(voucherApply);
-            _repository.Update(entity);
-            var check = await _unitOfWork.SaveAsync();
-            if (check != 0) return "Thành công!!!";
+            int count = 0;
+            for(int i = 0; i < quantity; i++)
+            {
+                voucherApply[i].MembershipId = MembershipId;
+                voucherApply[i].RedempedDate = TimeUtils.GetCurrentSEATime();
+                voucherApply[i].IsRedemped = AppConstant.EnvVar.Voucher.REDEEMPED;
+                voucherApply[i].UpdDate = TimeUtils.GetCurrentSEATime();
+                var entity = _mapper.Map<Voucher>(voucherApply[i]);
+                _repository.Update(entity);
+                await _unitOfWork.SaveAsync();
+                count++;
+            }
+            if (count != 0) return $"Thành công!!! {count} cái và fail {quantity - count}";
             return "Hết voucher phù hợp!!!";
 
         }

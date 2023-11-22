@@ -32,7 +32,7 @@ namespace ApplicationCore.Services
 
         public Task<VoucherDto> CreateVoucher(VoucherDto dto, Guid VoucherGroupId);
 
-        public Task<string> ApplyVoucher(Guid VoucherGroupId, Guid MembershipId);
+        public Task<string> ApplyVoucher(Guid VoucherGroupId, Guid MembershipId, int quantity);
         public Task<List<Voucher>> GetVoucherList(Guid MembershipId);
     }
 
