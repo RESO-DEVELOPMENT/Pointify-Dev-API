@@ -523,5 +523,17 @@ namespace Infrastructure.Helper
             public const string DEBT_PAYMENT = "DEBT";
 
         }
+        public struct IndexLevel
+        {
+            public const int INDEXLEVEL_BRONZE = 0;
+            public const int INDEXLEVEL_SILVER = 1;
+            public const int INDEXLEVEL_GOLD = 2;
+        }
+        public struct MaxPointLevel
+        {
+            public const int MAXPOINTLEVEL_BRONZE = 10000;
+            public const int MAXPOINTLEVEL_SILVER = 30000;
+            public const int MAXPOINTLEVEL_GOLD = 60000;
+        }
     }
 }

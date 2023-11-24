@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ApplicationCore.Utils;
 using AutoMapper;
 using Infrastructure.DTOs;
+using Infrastructure.DTOs.Membership;
 using Infrastructure.Helper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
@@ -135,7 +136,7 @@ namespace ApplicationCore.Services
             }
         }
         //Done
-        public async Task<Membership> GetMembershipById(Guid? id)
+        public async Task<MembershipResponse> GetMembershipById(Guid? id)
         {
             //check id
             if (id.Equals(Guid.Empty) || id == null)
@@ -147,16 +148,49 @@ namespace ApplicationCore.Services
 
             try
             {
-                var result = await _repository.GetFirst(filter: o =>
+                var membership = await _repository.GetFirst(filter: o =>
                         !o.DelFlg
                         && o.MembershipId.Equals(id),
                     includeProperties: "MemberLevel,MemberProgram,MemberWallet,MembershipCard");
+                var result = _mapper.Map<MembershipResponse>(membership);
+                result.NextLevelName = await GetNextLevelName(membership.MemberLevelId, membership.MemberProgramId);
                 return result;
             }
             catch (ErrorObj e)
             {
                 throw e;
             }
+        }
+        public async Task<Membership> GetMembershipByIdd(Guid? id)
+        {
+            //check id
+            if (id.Equals(Guid.Empty) || id == null)
+            {
+                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest,
+                    message: AppConstant.ErrMessage.ApiKey_Not_Exist,
+                    description: AppConstant.ErrMessage.ApiKey_Not_Exist);
+            }
+
+            try
+            {
+                var membership = await _repository.GetFirst(filter: o =>
+                        !o.DelFlg
+                        && o.MembershipId.Equals(id),
+                    includeProperties: "MemberLevel,MemberProgram,MemberWallet,MembershipCard");
+                return membership;
+            }
+            catch (ErrorObj e)
+            {
+                throw e;
+            }
+        }
+        private async Task<string> GetNextLevelName(Guid? levelId, Guid? programId)
+        {
+            var level = await _level.GetFirst(filter: o => !o.DelFlg && o.MemberLevelId.Equals(levelId));
+            var program = await _program.GetFirst(filter: o => (bool)!o.DelFlg && o.Id.Equals(programId));
+            var nextLevel = await _level.GetFirst(filter: o => !o.DelFlg && o.IndexLevel == level.IndexLevel + 1
+                                                                          && o.BrandId.Equals(program.BrandId));
+            return nextLevel.Name;
         }
 
         //done

@@ -691,7 +691,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.MemberLevel)
                     .WithMany(p => p.Membership)
                     .HasForeignKey(d => d.MemberLevelId)
-                    .HasConstraintName("Membership_MemberLevel_MemberLevelId_fk");
+                    .HasConstraintName("FK_Membership_MemberLevel");
 
                 entity.HasOne(d => d.MemberProgram)
                     .WithMany(p => p.Membership)

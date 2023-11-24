@@ -684,11 +684,6 @@ namespace Infrastructure.Models
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.HasOne(d => d.MemberLevel)
-                    .WithMany(p => p.Membership)
-                    .HasForeignKey(d => d.MemberLevelId)
-                    .HasConstraintName("Membership_MemberLevel_MemberLevelId_fk");
-
                 entity.HasOne(d => d.MemberProgram)
                     .WithMany(p => p.Membership)
                     .HasForeignKey(d => d.MemberProgramId)

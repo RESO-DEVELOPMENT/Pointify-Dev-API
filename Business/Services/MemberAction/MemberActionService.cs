@@ -84,7 +84,7 @@ namespace ApplicationCore.Services
                     break;
                 }
             }
-
+            Guid guid = Guid.Empty;
             if (memberAction.Status == AppConstant.MemberActionStatus.Success)
             {
                 Transaction transaction = new Transaction()
@@ -101,7 +101,7 @@ namespace ApplicationCore.Services
                     Type = request.MemberActionType,
                     IsIncrease = (request.MemberActionType == "GET_POINT" || request.MemberActionType == "TOP_UP")? true : false,
                 };
-
+                guid = transaction.Id;
                 _transaction.Add(transaction);
                 var isSuccess = await _unitOfWork.SaveAsync();
                 if (isSuccess < 1)
@@ -114,7 +114,9 @@ namespace ApplicationCore.Services
             _memberWallet.Update(wallet);
             _repository.Update(memberAction);
             var isSuccessful = await _unitOfWork.SaveAsync();
-            return isSuccessful > 0 ? _mapper.Map<MemberActionDto>(memberAction) : null;
+            var response = _mapper.Map<MemberActionDto>(memberAction);
+            response.TransactionId = guid;
+            return isSuccessful > 0 ? response : null;
         }
     }
 }

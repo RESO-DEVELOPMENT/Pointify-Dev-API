@@ -11,6 +11,7 @@ namespace Infrastructure.DTOs.MemberAction
         public bool? DelFlag { get; set; }
         public Guid? MemberWalletId { get; set; }
         public Guid? MemberActionTypeId { get; set; }
+        public Guid TransactionId { get; set; }
     }
 
     public class MemberActionModel

@@ -3,6 +3,7 @@ using AutoMapper;
 using Infrastructure.DTOs;
 using Infrastructure.DTOs.MemberAction;
 using Infrastructure.DTOs.MemberActionType;
+using Infrastructure.DTOs.Membership;
 using Infrastructure.DTOs.MembershipLevel;
 using Infrastructure.DTOs.MembershipProgram;
 using Infrastructure.DTOs.WalletType;
@@ -32,6 +33,8 @@ namespace Infrastructure.AutoMapper
             //Membership
             CreateMap<Membership, MembershipDto>();
             CreateMap<MembershipDto, Membership>();
+            CreateMap<Membership, MembershipResponse>();
+            CreateMap<MembershipResponse, Membership>();
             //MembershipAction
             CreateMap<Gift, GiftDto>();
             CreateMap<GiftDto, Gift>();

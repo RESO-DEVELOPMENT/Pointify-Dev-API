@@ -1,6 +1,7 @@
 ﻿using ApplicationCore.Request;
 using ApplicationCore.Services;
 using Infrastructure.DTOs;
+using Infrastructure.DTOs.Membership;
 using Infrastructure.DTOs.Promotion;
 using Infrastructure.Helper;
 using Infrastructure.Models;
@@ -54,7 +55,9 @@ namespace PromotionEngineAPI.Controllers
                 //Lấy promotion bởi voucher code
                 if (orderInfo.Users.MembershipId != null || orderInfo.Users.MembershipId != Guid.Empty)
                 {
-                    Membership membership = await _membershipService.GetMembershipById(orderInfo.Users.MembershipId);
+                    Membership membership = await _membershipService.GetMembershipByIdd(orderInfo.Users.MembershipId);
+                    //map membershipres với membership
+
                     if (membership == null)
                     {
                         var orderResponseModel = new OrderResponseModel

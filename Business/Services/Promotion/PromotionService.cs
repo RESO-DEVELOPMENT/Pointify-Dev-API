@@ -1782,27 +1782,33 @@ namespace ApplicationCore.Services
         {
             List<MemberWallet> memberWallets =(List<MemberWallet>) await _unitOfWork.MemberWalletRepository
                 .Get(filter: el => el.MemberId.Equals(membership.MembershipId));
+            WalletType walletType = await _unitOfWork.WalletTypeRepository.GetFirst(filter: el => el.Currency.Equals("BEAN"));
             foreach(var item in memberWallets)
             {
-                if (item.WalletTypeId.Equals("e93b2a28-85e8-4f3d-90ff-afc2fc683c1b"))
+                if (item.WalletTypeId.Equals(walletType.Id))
                 {
                     //check điểm
-                    if(item.BalanceHistory >= 10000)
+
+                    if(item.BalanceHistory >= MaxPointLevel.MAXPOINTLEVEL_BRONZE)
                     {
                         //up level
                         //silver
-                        membership.MemberLevelId = new Guid("6ab64f8b-7a02-40b2-b2b7-13311fbd9244");
+                        MemberLevel memberLevel = await _unitOfWork.MemberLevelRepository
+                        .GetFirst(filter: el => el.IndexLevel.Equals(IndexLevel.INDEXLEVEL_SILVER));
+                        membership.MemberLevelId = memberLevel.MemberLevelId;
                         membership.UpdDate = TimeUtils.GetCurrentSEATime();
-                        _unitOfWork.MembershipRepository.Update(membership);
+                        _unitOfWork.MembershipRepository.UpdateForeignKey(membership);
                         int check = await _unitOfWork.SaveAsync();
                         return check > 0;
-                    }else if(item.BalanceHistory >= 30000)
+                    }else if(item.BalanceHistory >= MaxPointLevel.MAXPOINTLEVEL_SILVER)
                     {
                         //up level
                         //gold
-                        membership.MemberLevelId = new Guid("6d4c63d8-da4d-4839-ae25-f53369bebc91");
+                        MemberLevel memberLevel = await _unitOfWork.MemberLevelRepository
+                        .GetFirst(filter: el => el.IndexLevel.Equals(IndexLevel.INDEXLEVEL_GOLD));
+                        membership.MemberLevelId = memberLevel.MemberLevelId;
                         membership.UpdDate = TimeUtils.GetCurrentSEATime();
-                        _unitOfWork.MembershipRepository.Update(membership);
+                        _unitOfWork.MembershipRepository.UpdateForeignKey(membership);
                         int check = await _unitOfWork.SaveAsync();
                         return check > 0;
                     }

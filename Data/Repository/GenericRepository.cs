@@ -3,6 +3,7 @@ using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -26,7 +27,6 @@ namespace Infrastructure.Repository
 
             _dbSet.Add(entity);
         }
-
         public void Update(TEntity entity)
         {
             _dbSet.Attach(entity);
@@ -35,7 +35,6 @@ namespace Infrastructure.Repository
             var entry = _context.Entry(entity);
             Type type = typeof(TEntity);
             PropertyInfo[] properties = type.GetProperties();
-
             foreach (PropertyInfo property in properties)
             {
 
@@ -49,7 +48,24 @@ namespace Infrastructure.Repository
                     {
                         entry.Reference(property.Name).IsModified = false;
                     }
+                }
+            }
+        }
+        public void UpdateForeignKey(TEntity entity)
+        {
+            _dbSet.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
 
+            var entry = _context.Entry(entity);
+
+            foreach (var property in entry.OriginalValues.Properties)
+            {
+                // Kiểm tra xem property có phải là khóa ngoại không
+                ForeignKeyAttribute foreignKeyAttribute = (ForeignKeyAttribute)property.PropertyInfo.GetCustomAttribute(typeof(ForeignKeyAttribute), false);
+
+                if (property == null && foreignKeyAttribute == null)
+                {
+                    entry.Property(property.PropertyInfo.Name).IsModified = false;
                 }
             }
         }
