@@ -1769,6 +1769,7 @@ namespace ApplicationCore.Services
                                 _unitOfWork.TransactionRepository.Update(transaction);
                                 await _unitOfWork.SaveAsync();
                             }
+                            await CheckPointUpLevel(user1);
                         }
                         listTransactionId.Add(transaction.Id);
                     }
@@ -1776,6 +1777,42 @@ namespace ApplicationCore.Services
                 }
             }
             return null;
+        }
+        private async Task<bool> CheckPointUpLevel(Membership membership)
+        {
+            List<MemberWallet> memberWallets =(List<MemberWallet>) await _unitOfWork.MemberWalletRepository
+                .Get(filter: el => el.MemberId.Equals(membership.MembershipId));
+            foreach(var item in memberWallets)
+            {
+                if (item.WalletTypeId.Equals("e93b2a28-85e8-4f3d-90ff-afc2fc683c1b"))
+                {
+                    //check điểm
+                    if(item.BalanceHistory >= 10000)
+                    {
+                        //up level
+                        //silver
+                        membership.MemberLevelId = new Guid("6ab64f8b-7a02-40b2-b2b7-13311fbd9244");
+                        membership.UpdDate = TimeUtils.GetCurrentSEATime();
+                        _unitOfWork.MembershipRepository.Update(membership);
+                        int check = await _unitOfWork.SaveAsync();
+                        return check > 0;
+                    }else if(item.BalanceHistory >= 30000)
+                    {
+                        //up level
+                        //gold
+                        membership.MemberLevelId = new Guid("6d4c63d8-da4d-4839-ae25-f53369bebc91");
+                        membership.UpdDate = TimeUtils.GetCurrentSEATime();
+                        _unitOfWork.MembershipRepository.Update(membership);
+                        int check = await _unitOfWork.SaveAsync();
+                        return check > 0;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            return false;
         }
         private async Task<bool> UpdateVourcher(Guid voucherId, Guid transactionId)
         {
