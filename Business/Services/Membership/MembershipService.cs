@@ -154,7 +154,9 @@ namespace ApplicationCore.Services
                 var membership = await _repository.GetFirst(filter: o =>
                         !o.DelFlg
                         && o.MembershipId.Equals(id),
-                        includeProperties: "MemberLevel,MembershipCard.MembershipCardType,MemberWallet.WalletType");
+                        includeProperties: "MemberLevel," 
+                                            + "MembershipCard.MembershipCardType,"
+                                            + "MemberWallet.WalletType");
                 var result = _mapper.Map<MembershipResponse>(membership);
                 //map với MemberLevelResponse
                 result.MemberLevel = _mapper.Map<MemberLevelResponse>(membership.MemberLevel);
