@@ -153,43 +153,16 @@ namespace ApplicationCore.Services
                 
                 var membership = await _repository.GetFirst(filter: o =>
                         !o.DelFlg
-                        && o.MembershipId.Equals(id));
+                        && o.MembershipId.Equals(id),
+                        includeProperties: "MemberLevel,MembershipCard.MembershipCardType,MemberWallet.WalletType");
                 var result = _mapper.Map<MembershipResponse>(membership);
-                
-                //tìm memberLevel của membership
-                MemberLevel level = await _unitOfWork.MemberLevelRepository.GetFirst(filter: o =>
-                                   !o.DelFlg
-                                                      && o.MemberLevelId.Equals(membership.MemberLevelId));
-                result.MemberLevel = _mapper.Map<MemberLevelResponse>(level);
-                result.MemberLevel.NextLevelName = await GetNextLevelName(level.MemberLevelId, membership.MemberProgramId);
-                //tìm memberWallet của membership
-                var listWallet = await _unitOfWork.MemberWalletRepository.Get(filter: o =>
-                                   !o.DelFlag && o.MemberId.Equals(membership.MembershipId));
-                //add memberWallet vào memberLevel
-                result.MemberLevel.MemberWallet = _mapper.Map<ICollection<MemberWalletResponse>>(listWallet);
-                //tìm membershipCard của membership
-                var listMembershipCard = await _unitOfWork.MemberShipCardRepository.Get(filter: o =>
-                                                  o.Active && o.MemberId.Equals(membership.MembershipId));
-                //add membershipCard vào memberLevel
-                result.MemberLevel.MembershipCard = _mapper.Map<ICollection<CardResponse>>(listMembershipCard);
-                // add walletType vào memberWallet
-                foreach (var wallet in listWallet)
-                {
-                    var walletType = await _unitOfWork.WalletTypeRepository.GetFirst(filter: o =>
-                                           !o.DelFlag && o.Id.Equals(wallet.WalletTypeId));
-                    WalletTypeResponse walletTypeResponse = _mapper.Map<WalletTypeResponse>(walletType);
-                    // add walletTypeResponse vào memberWalletResponse
-                    result.MemberLevel.MemberWallet.Where(o => o.Id.Equals(wallet.Id)).FirstOrDefault().WalletType = walletTypeResponse;
-                }
-                // add membershipCardType vào membershipCard
-                foreach (var card in listMembershipCard)
-                {
-                    var cardType = await _unitOfWork.MembershipCardTypeResponsitory.GetFirst(filter: o =>
-                                                              o.Active && o.Id.Equals(card.MembershipCardTypeId));
-                    CardType cardTypeResponse = _mapper.Map<CardType>(cardType);
-                    // add cardTypeResponse vào cardResponse
-                    result.MemberLevel.MembershipCard.Where(o => o.Id.Equals(card.Id)).FirstOrDefault().MembershipCardType = cardTypeResponse;
-                }
+                //map với MemberLevelResponse
+                result.MemberLevel = _mapper.Map<MemberLevelResponse>(membership.MemberLevel);
+                result.MemberLevel.NextLevelName = await GetNextLevelName(result.MemberLevel.MemberLevelId, membership.MemberProgramId);
+                //map với MembershipCardResponse
+                result.MemberLevel.MembershipCard = _mapper.Map<ICollection<CardResponse>>(membership.MembershipCard);
+                //map với MemberWalletResponse
+                result.MemberLevel.MemberWallet = _mapper.Map<ICollection<MemberWalletResponse>>(membership.MemberWallet);
                 return result;
             }
             catch (ErrorObj e)
