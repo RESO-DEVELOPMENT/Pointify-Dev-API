@@ -215,6 +215,14 @@ namespace PromotionEngineAPI.Controllers
                             Order = responseModel
                         };
                         return Ok(orderResponse);
+                    } else if (voucherPromotion.Count() > 1){
+                        orderResponse = new OrderResponseModel
+                        {
+                            Code = AppConstant.Err_Prefix + (int)AppConstant.ErrCode.Duplicate_VoucherCode,
+                            Message = $"{orderInfo.Vouchers[0].PromotionCode} - " + AppConstant.ErrMessage.Duplicate_VoucherCode,
+                            Order = responseModel
+                        };
+                        return Ok(orderResponse);
                     }
                 }
                 else
