@@ -168,7 +168,6 @@ namespace Infrastructure.Repository
                 _context.Entry(entity).Property("DelFlg").CurrentValue = value;
                 _context.Entry(entity).Property("UpdDate").CurrentValue = DateTime.Now;
             }
-
         }
 
         public void HideUsername(string username, string value)
@@ -191,7 +190,6 @@ namespace Infrastructure.Repository
                 _context.Entry(entity).Property("DelFlg").CurrentValue = value;
                 _context.Entry(entity).Property("UpdDate").CurrentValue = DateTime.Now;
             }
-
         }
     }
 }

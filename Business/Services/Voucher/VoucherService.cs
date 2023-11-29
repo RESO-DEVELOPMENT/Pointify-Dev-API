@@ -117,7 +117,8 @@ namespace ApplicationCore.Services
                             }
                             if (promotion.Count() == 0)
                             {
-                                throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_VoucherCode, message: AppConstant.ErrMessage.Invalid_VoucherCode, description: AppConstant.ErrMessage.Invalid_VoucherCode);
+                                //throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_VoucherCode, message: AppConstant.ErrMessage.Invalid_VoucherCode, description: AppConstant.ErrMessage.Invalid_VoucherCode);
+                                break;
                             }
                             promotions.Add(promotion.FirstOrDefault());
                         }

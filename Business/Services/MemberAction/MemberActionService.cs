@@ -7,6 +7,7 @@ using Infrastructure.Helper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
+using static Infrastructure.Helper.AppConstant;
 
 namespace ApplicationCore.Services
 {
@@ -39,7 +40,7 @@ namespace ApplicationCore.Services
             {
                 Id = Guid.NewGuid(),
                 Description = request.Description,
-                Status = AppConstant.MemberActionStatus.Prossecing,
+                Status = MemberActionStatus.Prossecing,
                 ActionValue = 0,
                 MemberWalletId = wallet.Id,
                 MemberActionTypeId = actionType.Id,
@@ -50,42 +51,42 @@ namespace ApplicationCore.Services
             await _unitOfWork.SaveAsync();
             switch (request.MemberActionType)
             {
-                case "GET_POINT":
+                case TrasactionType.GET_POINT:
                 {
                     wallet.Balance += request.Amount;
                     wallet.BalanceHistory += request.Amount;
                     memberAction.ActionValue = request.Amount;
-                    memberAction.Status = AppConstant.MemberActionStatus.Success;
-                    memberAction.Description = "[Thành công] " + request.Description;
+                    memberAction.Status = MemberActionStatus.Success;
+                    memberAction.Description = $"[{MemberActionStatus.Success}] " + request.Description;
                     break;
                 }
-                case "TOP_UP":
+                case TrasactionType.TOP_UP:
                 {
                     wallet.Balance += request.Amount;
                     wallet.BalanceHistory += request.Amount;
                     memberAction.ActionValue = request.Amount;
-                    memberAction.Status = AppConstant.MemberActionStatus.Success;
-                    memberAction.Description = "[Thành công] " + request.Description;
+                    memberAction.Status = MemberActionStatus.Success;
+                    memberAction.Description = $"[{MemberActionStatus.Success}] " + request.Description;
                     break;
                 }
-                case "PAYMENT":
+                case TrasactionType.PAYMENT:
                 {
                     if (wallet.Balance < request.Amount)
                     {
-                        memberAction.Status = AppConstant.MemberActionStatus.Fail;
-                        memberAction.Description = "[Thất bại] Số dư tài khoản không đủ";
+                        memberAction.Status = MemberActionStatus.Fail;
+                        memberAction.Description = $"[{MemberActionStatus.Fail}] Số dư tài khoản không đủ";
                         break;
                     }
 
                     wallet.Balance -= request.Amount;
                     memberAction.ActionValue = request.Amount;
-                    memberAction.Status = AppConstant.MemberActionStatus.Success;
-                    memberAction.Description = "[Thành công] " + request.Description;
+                    memberAction.Status = MemberActionStatus.Success;
+                    memberAction.Description = $"[{MemberActionStatus.Success}] " + request.Description;
                     break;
                 }
             }
             Guid guid = Guid.Empty;
-            if (memberAction.Status == AppConstant.MemberActionStatus.Success)
+            if (memberAction.Status == MemberActionStatus.Success)
             {
                 Transaction transaction = new Transaction()
                 {
@@ -99,15 +100,16 @@ namespace ApplicationCore.Services
                     Amount = memberAction.ActionValue,
                     Currency = wallet.WalletType.Currency,
                     Type = request.MemberActionType,
-                    IsIncrease = (request.MemberActionType == "GET_POINT" || request.MemberActionType == "TOP_UP")? true : false,
+                    IsIncrease = (request.MemberActionType == TrasactionType.GET_POINT 
+                    || request.MemberActionType == TrasactionType.TOP_UP) ? true : false,
                 };
                 guid = transaction.Id;
                 _transaction.Add(transaction);
                 var isSuccess = await _unitOfWork.SaveAsync();
                 if (isSuccess < 1)
                 {
-                    memberAction.Status = AppConstant.MemberActionStatus.Fail;
-                    memberAction.Description = "[Thất bại] Giao dịch thất bại";
+                    memberAction.Status = MemberActionStatus.Fail;
+                    memberAction.Description = $"[{MemberActionStatus.Fail}] Giao dịch thất bại";
                 }
             }
             memberAction.UpdDate = DateTime.Now;

@@ -118,7 +118,6 @@ namespace PromotionEngineAPI.Controllers
                                     e.Store.StoreCode != orderInfo.Attributes.StoreInfo.StoreCode))
                             {
                                 list_remove_promotion.Add(promotion);
-
                             }
                         }
                     }
@@ -170,7 +169,7 @@ namespace PromotionEngineAPI.Controllers
                     if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count >= 1)
                     {
                         //promotions.Add(_promotionService.GetPromotions().First());
-                        promotions.Add(voucherPromotion.First());
+                        if(voucherPromotion.Count() != 0)promotions.Add(voucherPromotion.First());
                     }
                     if(orderInfo.Users == null)
                     {
@@ -204,6 +203,19 @@ namespace PromotionEngineAPI.Controllers
                         responseModel.CustomerOrderInfo.Amount = amount.Total;
                     }
                     responseModel.TotalAmount = responseModel.CustomerOrderInfo.Amount;
+                    //---------------------------------
+                    var effectss = responseModel.Effects.Where(e => e.PromotionType != null && e.Prop != null).ToList();
+                    responseModel.Effects = effectss;
+                    if(voucherPromotion.Count() == 0)
+                    {
+                        orderResponse = new OrderResponseModel
+                        {
+                            Code = AppConstant.Err_Prefix + (int)AppConstant.ErrCode.Invalid_VoucherCode,
+                            Message = $"{orderInfo.Vouchers[0].PromotionCode} - " + AppConstant.ErrMessage.Invalid_VoucherCode,
+                            Order = responseModel
+                        };
+                        return Ok(orderResponse);
+                    }
                 }
                 else
                 {
@@ -260,6 +272,7 @@ namespace PromotionEngineAPI.Controllers
                 Message = AppConstant.EnvVar.Success_Message,
                 Order = responseModel
             };
+            
             return Ok(orderResponse);
         }
         [HttpPost("check-out-promotion")]
