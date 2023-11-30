@@ -7,6 +7,7 @@ using Infrastructure.Helper;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ShaNetHoliday.Syntax;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -197,16 +198,29 @@ namespace PromotionEngineAPI.Controllers
                     }
 
                     //Check promotion
-                    responseModel = await _promotionService.HandlePromotion(responseModel);  
+                    responseModel = await _promotionService.HandlePromotion(responseModel);
+                    decimal sum = 0;
                     foreach (var amount in responseModel.CustomerOrderInfo.CartItems)
                     {
-                        responseModel.CustomerOrderInfo.Amount = amount.Total;
+                        sum += amount.Total;
                     }
+                    responseModel.CustomerOrderInfo.Amount = (decimal)(sum + responseModel.DiscountOrderDetail);
                     responseModel.TotalAmount = responseModel.CustomerOrderInfo.Amount;
                     //---------------------------------
                     var effectss = responseModel.Effects.Where(e => e.PromotionType != null && e.Prop != null).ToList();
                     responseModel.Effects = effectss;
-                    if(voucherPromotion.Count() == 0)
+                    foreach (var item in responseModel.Effects)
+                    {
+                        if (!item.EffectType.Equals("GET_POINT"))
+                        {
+                            item.Prop = new
+                            {
+                                code = orderInfo.Vouchers[0].PromotionCode,
+                                value = responseModel.DiscountOrderDetail
+                            };
+                        }
+                    }
+                    if (voucherPromotion.Count() == 0)
                     {
                         orderResponse = new OrderResponseModel
                         {
@@ -241,6 +255,17 @@ namespace PromotionEngineAPI.Controllers
                         responseModel.TotalAmount = responseModel.CustomerOrderInfo.Amount;
                         //---------------------------------
                         promotions = _promotionService.GetPromotions();
+                        foreach (var item in responseModel.Effects)
+                        {
+                            if (!item.EffectType.Equals("GET_POINT"))
+                            {
+                                item.Prop = new
+                                {
+                                    code = orderInfo.Vouchers[0].PromotionCode,
+                                    value = responseModel.DiscountOrderDetail
+                                };
+                            }
+                        }
                     }
                     else if (vouchers.FirstOrDefault().PromotionCode != "" && vouchers.Count() > 0)
                     {
