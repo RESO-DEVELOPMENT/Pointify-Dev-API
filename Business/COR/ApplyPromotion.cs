@@ -334,10 +334,11 @@ namespace ApplicationCore.Chain
             {
                 if (order.CustomerOrderInfo.Vouchers.Count > 0)
                 {
+                    int count = order.CustomerOrderInfo.CartItems.Count();
                     effect.Prop = new
                     {
                         code = promotion.PromotionCode,
-                        value = promotion.PromotionCode.StartsWith("GETPOINT")? order.BonusPoint : discount
+                        value = promotion.PromotionCode.StartsWith("GETPOINT")? order.BonusPoint : discount * count
                     };
                 }
                 else
