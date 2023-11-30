@@ -535,7 +535,7 @@ namespace ApplicationCore.Chain
                 order.TotalAmount += item.SubTotal;
             }
             order.FinalAmount =
-                Math.Ceiling((decimal) (order.TotalAmount - order.Discount - order.DiscountOrderDetail));
+                Math.Ceiling((decimal) (order.TotalAmount - order.Discount - order.DiscountOrderDetail)) + order.CustomerOrderInfo.ShippingFee;
             //}
         }
 

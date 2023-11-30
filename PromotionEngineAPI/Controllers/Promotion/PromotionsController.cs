@@ -205,7 +205,7 @@ namespace PromotionEngineAPI.Controllers
                         sum += amount.Total;
                     }
                     responseModel.CustomerOrderInfo.Amount = (decimal)(sum + responseModel.DiscountOrderDetail);
-                    responseModel.TotalAmount = responseModel.CustomerOrderInfo.Amount;
+                    responseModel.TotalAmount = responseModel.CustomerOrderInfo.Amount + orderInfo.ShippingFee;
                     //---------------------------------
                     var effectss = responseModel.Effects.Where(e => e.PromotionType != null && e.Prop != null).ToList();
                     responseModel.Effects = effectss;
@@ -220,6 +220,7 @@ namespace PromotionEngineAPI.Controllers
                             };
                         }
                     }
+                    
                     if (voucherPromotion.Count() == 0)
                     {
                         orderResponse = new OrderResponseModel
