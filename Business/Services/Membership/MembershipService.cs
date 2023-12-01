@@ -71,11 +71,11 @@ namespace ApplicationCore.Services
                 }
 
                 //Create MembershipCard - MembershipCardType
-                var digit = Common.makeCode(10);
+                var digit = "C" + Common.makeCode(10);
                 var checkCard = await _membershipCard.GetFirst(filter: o => o.MembershipCardCode == digit);
                 while (checkCard != null)
                 {
-                    digit = Common.makeCode(10);
+                    digit = "C" + Common.makeCode(10);
                     checkCard = await _membershipCard.GetFirst(filter: o => o.MembershipCardCode == digit);
                 }
                 MemberShipCardDto membershipCard = new MemberShipCardDto()

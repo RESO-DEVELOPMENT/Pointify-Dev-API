@@ -204,8 +204,16 @@ namespace PromotionEngineAPI.Controllers
                     {
                         sum += amount.Total;
                     }
-                    responseModel.CustomerOrderInfo.Amount = (decimal)(sum + responseModel.DiscountOrderDetail);
-                    responseModel.TotalAmount = responseModel.CustomerOrderInfo.Amount + orderInfo.ShippingFee;
+                    if(responseModel.Discount == 0)
+                    {
+                        responseModel.CustomerOrderInfo.Amount = (decimal)(sum + responseModel.DiscountOrderDetail);
+                        responseModel.TotalAmount = responseModel.CustomerOrderInfo.Amount + orderInfo.ShippingFee;
+                    }
+                     else
+                    {
+                        responseModel.CustomerOrderInfo.Amount = (decimal)(sum + responseModel.Discount);
+                        responseModel.TotalAmount = responseModel.CustomerOrderInfo.Amount + orderInfo.ShippingFee;
+                    }
                     //---------------------------------
                     var effectss = responseModel.Effects.Where(e => e.PromotionType != null && e.Prop != null).ToList();
                     responseModel.Effects = effectss;
@@ -216,7 +224,7 @@ namespace PromotionEngineAPI.Controllers
                             item.Prop = new
                             {
                                 code = orderInfo.Vouchers[0].PromotionCode,
-                                value = responseModel.DiscountOrderDetail
+                                value = responseModel.Discount == 0 ? responseModel.DiscountOrderDetail : responseModel.Discount
                             };
                         }
                     }

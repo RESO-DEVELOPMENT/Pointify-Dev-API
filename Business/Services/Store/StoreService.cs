@@ -154,12 +154,11 @@ namespace ApplicationCore.Services
         {
             if (codeType == 1)
             {
-                var membership = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.PhoneNumber.Equals(code) && !el.DelFlg);
+                var membership = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.PhoneNumber.Equals(code) && !el.DelFlg,
+                    includeProperties: "MemberLevel,MemberWallet");
                 if (membership == null) return null;
                 else
                 {
-                    var membershipLevel = await _unitOfWork.MemberLevelRepository.GetFirst(filter: el => el.MemberLevelId.Equals(membership.MemberLevelId) && !el.DelFlg);
-                    var memberWallet = await _unitOfWork.MemberWalletRepository.Get(filter: el => el.MemberId.Equals(membership.MembershipId) && !el.DelFlag);
                     ScanMembershipResponse res = new ScanMembershipResponse()
                     {
                         MembershipId = membership.MembershipId,
@@ -167,35 +166,31 @@ namespace ApplicationCore.Services
                         Email = membership.Email,
                         FullName = membership.Fullname,
                         Gender = membership.Gender,
-                        MemberLevelName = membershipLevel.Name,
-                        Point = memberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Ví Điểm").Balance,
-                        Balance = memberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Ví Tiền").Balance
+                        MemberLevelName = membership.MemberLevel.Name,
+                        Point = membership.MemberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Điểm").Balance,
+                        Balance = membership.MemberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Số dư").Balance
                     };
                     return res;
                 }
             }
             else if (codeType == 2)
             {
-                var membershipcard = await _unitOfWork.MemberShipCardRepository.GetFirst(filter: el => el.MembershipCardCode.Equals(code) && el.Active);
-                if (membershipcard == null) return null;
-                else
+                var membershipCard = await _unitOfWork.MemberShipCardRepository
+                    .GetFirst(filter: el => el.MembershipCardCode.Equals(code) && el.Active
+                    ,includeProperties:"Member.MemberLevel,Member.MemberWallet");
+                if (membershipCard == null) return null;
+                ScanMembershipResponse res = new ScanMembershipResponse()
                 {
-                    var membership = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.MembershipId.Equals(membershipcard.MemberId) && !el.DelFlg);
-                    var membershipLevel = await _unitOfWork.MemberLevelRepository.GetFirst(filter: el => el.MemberLevelId.Equals(membership.MemberLevelId) && !el.DelFlg);
-                    var memberWallet = await _unitOfWork.MemberWalletRepository.Get(filter: el => el.MemberId.Equals(membership.MembershipId) && !el.DelFlag);
-                    ScanMembershipResponse res = new ScanMembershipResponse()
-                    {
-                        MembershipId = membership.MembershipId,
-                        PhoneNumber = membership.PhoneNumber,
-                        Email = membership.Email,
-                        FullName = membership.Fullname,
-                        Gender = membership.Gender,
-                        MemberLevelName = membershipLevel.Name,
-                        Point = memberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Ví Điểm").Balance,
-                        Balance = memberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Ví Tiền").Balance
-                    };
-                    return res;
-                }
+                    MembershipId = membershipCard.Member.MembershipId,
+                    PhoneNumber = membershipCard.Member.PhoneNumber,
+                    Email = membershipCard.Member.Email,
+                    FullName = membershipCard.Member.Fullname,
+                    Gender = membershipCard.Member.Gender,
+                    MemberLevelName = membershipCard.Member.MemberLevel.Name,
+                    Point = membershipCard.Member.MemberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Điểm").Balance,
+                    Balance = membershipCard.Member.MemberWallet.FirstOrDefault(memberWallet => memberWallet.Name == "Số dư").Balance
+                };
+                return res;
             }
             else
             {

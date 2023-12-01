@@ -37,7 +37,7 @@ namespace Infrastructure.DTOs.MemberLevel
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public string cardImage { get; set; }
+        public string CardImg { get; set; }
     }
     public class VoucherWalletReponse
     {

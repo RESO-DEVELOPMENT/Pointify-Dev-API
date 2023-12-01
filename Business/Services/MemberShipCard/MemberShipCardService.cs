@@ -37,11 +37,11 @@ namespace ApplicationCore.Services
                 if (check == null) { return null; }
                 dto.Id = Guid.NewGuid();
                 //dto.MembershipCardCode = Common.makeCode(10);
-                var digit = Common.makeCode(10);
+                var digit = "C" + Common.makeCode(10);
                 var checkCard = await _repository.GetFirst(filter: o => o.MembershipCardCode == digit);
                 while (checkCard != null)
                 {
-                    digit = Common.makeCode(10);
+                    digit = "C" + Common.makeCode(10);
                     checkCard = await _repository.GetFirst(filter: o => o.MembershipCardCode == digit);
                 }
                 dto.MembershipCardCode = digit;
