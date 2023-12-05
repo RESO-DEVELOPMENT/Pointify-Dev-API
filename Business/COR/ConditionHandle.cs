@@ -103,6 +103,12 @@ namespace ApplicationCore.Chain
                 }
                 else
                 {
+                    //nếu voucher có promotionCode là getPoint thì effectType là getPoint
+                    if (promotion.PromotionCode.StartsWith("GETPOINT"))
+                    {
+                        effectType = AppConstant.EffectMessage.GetPoint;
+                    }
+                    else
                     effectType = AppConstant.EffectMessage.AcceptCoupon;
                 }
                 Effect effect = new Effect

@@ -317,19 +317,24 @@ namespace ApplicationCore.Chain
             {
                 order.Effects = new List<Effect>();
             }
-
-            Effect effect = new Effect
+            Effect effect = null;
+            if (!order.Effects.Any(e => e.EffectType.Equals(effectType)))
             {
-                PromotionId = promotion.PromotionId,
-                PromotionTierId = promotionTier.PromotionTierId,
-                ConditionRuleName = promotionTier.ConditionRule.RuleName,
-                TierIndex = promotionTier.TierIndex,
-                PromotionName = promotion.PromotionName,
-                EffectType = effectType,
-                ImgUrl = promotion.ImgUrl,
-                Description = promotion.Description,
-                PromotionType = promotion.PromotionType
-            };
+                effect = new Effect
+                {
+                    PromotionId = promotion.PromotionId,
+                    PromotionTierId = promotionTier.PromotionTierId,
+                    ConditionRuleName = promotionTier.ConditionRule.RuleName,
+                    TierIndex = promotionTier.TierIndex,
+                    PromotionName = promotion.PromotionName,
+                    EffectType = effectType,
+                    ImgUrl = promotion.ImgUrl,
+                    Description = promotion.Description,
+                    PromotionType = promotion.PromotionType
+                };
+            }else
+            effect = order.Effects.FirstOrDefault(e => e.EffectType.Equals(effectType));
+            
             if (promotionTier.Action != null)
             {
                 if (order.CustomerOrderInfo.Vouchers.Count > 0)
@@ -361,7 +366,7 @@ namespace ApplicationCore.Chain
                 }
             }
 
-            order.Effects.Add(effect);
+            if (!order.Effects.Any(e => e.EffectType.Equals(effectType))) order.Effects.Add(effect);
             if (!order.Effects.Any())
             {
                 order.Effects = null;

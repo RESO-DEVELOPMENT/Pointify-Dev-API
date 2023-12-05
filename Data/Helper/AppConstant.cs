@@ -343,10 +343,10 @@ namespace Infrastructure.Helper
         public class EffectMessage
         {
             //Khi tier thỏa hết điều kiện
-            public const string AcceptCoupon = "acceptCoupon";
+            public const string AcceptCoupon = "setDiscount";
 
             //Auto apply promotion
-            public const string AutoPromotion = "autoPromotion";
+            public const string AutoPromotion = "GET_POINT";
 
             //Chỉ có 1 set discount => action có discount lớn nhất tùy vào Discount Type
             public const string SetDiscount = "setDiscount";

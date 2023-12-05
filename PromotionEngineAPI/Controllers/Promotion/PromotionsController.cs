@@ -86,6 +86,7 @@ namespace PromotionEngineAPI.Controllers
             }
             Order responseModel = new Order();
             var list_remove_voucher = new List<CouponCode>();
+            if(orderInfo.Vouchers == null) orderInfo.Vouchers = new List<CouponCode>();
             foreach (var voucher in orderInfo.Vouchers)
             {
                 if ((voucher.VoucherCode == null && voucher.PromotionCode == null) ||
@@ -110,31 +111,33 @@ namespace PromotionEngineAPI.Controllers
 
                     responseModel.CustomerOrderInfo = orderInfo;
                     orderInfo.Vouchers = new List<CouponCode>();
-                    promotions = await _promotionService.GetAutoPromotions(orderInfo);
-                    if (orderInfo.Attributes.StoreInfo != null)
+                    if(orderInfo.Users != null)
                     {
-                        foreach (var promotion in promotions)
+                        promotions = await _promotionService.GetAutoPromotions(orderInfo);
+                        if (orderInfo.Attributes.StoreInfo != null)
                         {
-                            if (promotion.PromotionStoreMapping.All(e =>
-                                    e.Store.StoreCode != orderInfo.Attributes.StoreInfo.StoreCode))
+                            foreach (var promotion in promotions)
                             {
-                                list_remove_promotion.Add(promotion);
+                                if (promotion.PromotionStoreMapping.All(e =>
+                                        e.Store.StoreCode != orderInfo.Attributes.StoreInfo.StoreCode))
+                                {
+                                    list_remove_promotion.Add(promotion);
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        foreach (var promotion in promotions)
+                        else
                         {
-                            if (promotion.PromotionChannelMapping.All(e =>
-                                    e.Channel.ChannelCode != orderInfo.Attributes.ChannelInfo.ChannelCode))
+                            foreach (var promotion in promotions)
                             {
-                                list_remove_promotion.Add(promotion);
+                                if (promotion.PromotionChannelMapping.All(e =>
+                                        e.Channel.ChannelCode != orderInfo.Attributes.ChannelInfo.ChannelCode))
+                                {
+                                    list_remove_promotion.Add(promotion);
 
+                                }
                             }
                         }
                     }
-                
                 if (list_remove_promotion.Count() != 0)
                 {
                     foreach (var promotion in list_remove_promotion)
@@ -215,8 +218,8 @@ namespace PromotionEngineAPI.Controllers
                         responseModel.TotalAmount = responseModel.CustomerOrderInfo.Amount + orderInfo.ShippingFee;
                     }
                     //---------------------------------
-                    var effectss = responseModel.Effects.Where(e => e.PromotionType != null && e.Prop != null).ToList();
-                    responseModel.Effects = effectss;
+                    //var effectss = responseModel.Effects.Where(e => e.PromotionType != null && e.Prop != null).ToList();
+                    //responseModel.Effects = effectss;
                     foreach (var item in responseModel.Effects)
                     {
                         if (!item.EffectType.Equals("GET_POINT"))
@@ -306,8 +309,8 @@ namespace PromotionEngineAPI.Controllers
                 return StatusCode(statusCode: (int) HttpStatusCode.BadRequest, orderResponse);
             }
             // lọc effect lấy những cái có promotionType và prop
-            var effects = responseModel.Effects.Where(e => e.PromotionType != null && e.Prop != null).ToList();
-            responseModel.Effects = effects;
+            //var effects = responseModel.Effects.Where(e => e.PromotionType != null && e.Prop != null).ToList();
+            //responseModel.Effects = effects;
             orderResponse = new OrderResponseModel
             {
                 Code = (int) HttpStatusCode.OK,

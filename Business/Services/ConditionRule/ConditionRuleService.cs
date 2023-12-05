@@ -203,6 +203,7 @@ namespace ApplicationCore.Services
                                     && !o.DelFlg);
                                     var productDto = new ProductDto()
                                     {
+                                        BrandId = cate.BrandId,
                                         CateId = cate != null ? cate.CateId : "",
                                         ProductCateId = cate != null ? cate.ProductCateId : Guid.Empty,
                                         Code = product.Code,
