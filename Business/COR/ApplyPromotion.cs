@@ -390,6 +390,10 @@ namespace ApplicationCore.Chain
                 //order.Discount = discount;
                 return el;
             }).ToList();
+            foreach (var item in order.CustomerOrderInfo.CartItems)
+            {
+                item.Total = Math.Round(item.Total, 0);
+            }
         }
 
         #endregion
