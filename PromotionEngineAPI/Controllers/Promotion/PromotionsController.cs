@@ -110,7 +110,7 @@ namespace PromotionEngineAPI.Controllers
                 var list_remove_promotion = new List<Promotion>();
 
                     responseModel.CustomerOrderInfo = orderInfo;
-                    orderInfo.Vouchers = new List<CouponCode>();
+                    if(orderInfo.Vouchers.Count() == 0 || orderInfo.Vouchers == null) orderInfo.Vouchers = new List<CouponCode>();
                     if(orderInfo.Users != null)
                     {
                         promotions = await _promotionService.GetAutoPromotions(orderInfo);
@@ -147,6 +147,8 @@ namespace PromotionEngineAPI.Controllers
                 }
 
                 orderInfo.Vouchers = vouchers;
+                if (vouchers.Count() == 0 && orderInfo.Users == null) promotions = new List<Promotion>();
+                if(orderInfo.Users == null) promotions = new List<Promotion>();
                 if (!promotions.Any() && !orderInfo.Vouchers.Any())
                 {
                     orderResponse = new OrderResponseModel
@@ -294,6 +296,17 @@ namespace PromotionEngineAPI.Controllers
                             _promotionService.SetPromotions(promotions);
                             //Check promotion
                             responseModel = await _promotionService.HandlePromotion(responseModel);
+                            //nếu trong list Vouchers có voucherCode mà user bằng null thì báo lỗi
+                            if (orderInfo.Users == null && orderInfo.Vouchers[0].VoucherCode != null)
+                            {
+                                orderResponse = new OrderResponseModel
+                                {
+                                    Code = AppConstant.Err_Prefix + (int)AppConstant.ErrCode.Invalid_VoucherCode,
+                                    Message = $"{orderInfo.Vouchers[0].VoucherCode} - " + AppConstant.ErrMessage.Invalid_VoucherCode,
+                                    Order = responseModel
+                                };
+                                return Ok(orderResponse);
+                            }
                         }
                     }
                 }

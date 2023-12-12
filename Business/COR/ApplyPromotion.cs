@@ -255,7 +255,7 @@ namespace ApplicationCore.Chain
                     effectType = AppConstant.EffectMessage.SetDiscount;
                     discount = discount > (decimal) final ? (decimal) final : discount;
                     order.Discount = discount;
-                    SetDiscountFromOrder(order, discount, final, promotion);
+                    //SetDiscountFromOrder(order, discount, final, promotion);
                     break;
                 case (int) AppConstant.EnvVar.ActionType.Amount_Order:
                     discount = (decimal) action.DiscountAmount;
@@ -264,7 +264,7 @@ namespace ApplicationCore.Chain
                     discount = discount > (decimal) final ? (decimal) final : discount;
                     order.Discount = discount;
 
-                    SetDiscountFromOrder(order, discount, final, promotion);
+                    //SetDiscountFromOrder(order, discount, final, promotion);
                     break;
                 case (int) AppConstant.EnvVar.ActionType.Shipping:
                     if (action.DiscountAmount > 0)
@@ -302,7 +302,7 @@ namespace ApplicationCore.Chain
                         order.BonusPoint = 0;
                     }
 
-                    SetDiscountFromOrder(order, discount, final, promotion);
+                    //SetDiscountFromOrder(order, discount, final, promotion);
                     break;
             }
 
