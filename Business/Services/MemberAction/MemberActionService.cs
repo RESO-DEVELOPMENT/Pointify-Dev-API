@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ApplicationCore.Utils;
 using AutoMapper;
 using Infrastructure.DTOs.MemberAction;
 using Infrastructure.DTOs.Request;
@@ -24,7 +25,7 @@ namespace ApplicationCore.Services
         protected IGenericRepository<Transaction> _transaction => _unitOfWork.TransactionRepository;
 
 
-        public async Task<MemberActionDto> CreateMemberAction(MemberActionRequest request)
+        public async Task<MemberActionDto> CreateMemberAction(MemberActionRequest request,Guid promotionId)
         {
             MemberActionType actionType = await _memberActionType
                 .GetFirst(
@@ -44,8 +45,8 @@ namespace ApplicationCore.Services
                 ActionValue = 0,
                 MemberWalletId = wallet.Id,
                 MemberActionTypeId = actionType.Id,
-                InsDate = DateTime.Now,
-                UpdDate = DateTime.Now,
+                InsDate = TimeUtils.GetCurrentSEATime(),
+                UpdDate = TimeUtils.GetCurrentSEATime(),
             };
             _repository.Add(memberAction);
             await _unitOfWork.SaveAsync();
@@ -100,11 +101,12 @@ namespace ApplicationCore.Services
                 {
                     Id = Guid.NewGuid(),
                     BrandId = request.ApiKey,
-                    InsDate = DateTime.Now,
-                    UpdDate = DateTime.Now,
+                    InsDate = TimeUtils.GetCurrentSEATime(),
+                    UpdDate = TimeUtils.GetCurrentSEATime(),
                     MemberActionId = memberAction.Id,
                     MemberWalletId = memberAction.MemberWalletId,
                     TransactionJson = memberAction.Description,
+                    PromotionId = promotionId,
                     Amount = memberAction.ActionValue,
                     Currency = wallet.WalletType.Currency,
                     Type = request.MemberActionType,
@@ -126,7 +128,7 @@ namespace ApplicationCore.Services
                 }
             }
 
-            memberAction.UpdDate = DateTime.Now;
+            memberAction.UpdDate = TimeUtils.GetCurrentSEATime();
             _memberWallet.Update(wallet);
             _repository.Update(memberAction);
             var isSuccessful = await _unitOfWork.SaveAsync();

@@ -91,7 +91,7 @@ namespace ApplicationCore.Services
                 else
                 {
                     // Nếu đã có condition rule 
-                    conditionRuleEntity.UpdDate = DateTime.Now;
+                    conditionRuleEntity.UpdDate = TimeUtils.GetCurrentSEATime();
                     //conditionRuleEntity.InsDate = null;
                     conditionRuleRepo.Update(conditionRuleEntity);
                     //Delete old condition group of condition rule
@@ -106,8 +106,8 @@ namespace ApplicationCore.Services
                 {
                     PromotionTierId = Guid.NewGuid(),
                     ConditionRuleId = conditionRuleEntity.ConditionRuleId,
-                    InsDate = DateTime.Now,
-                    UpdDate = DateTime.Now,
+                    InsDate = TimeUtils.GetCurrentSEATime(),
+                    UpdDate = TimeUtils.GetCurrentSEATime(),
                 };
                 if (!param.PromotionId.Equals(Guid.Empty))
                 {
@@ -147,8 +147,8 @@ namespace ApplicationCore.Services
                                 Id = Guid.NewGuid(),
                                 ActionId = actionEntity.ActionId,
                                 ProductId = product,
-                                InsDate = DateTime.Now,
-                                UpdDate = DateTime.Now,
+                                InsDate = TimeUtils.GetCurrentSEATime(),
+                                UpdDate = TimeUtils.GetCurrentSEATime(),
                             };
                             mapRepo.Add(mappEntity);
                         }
@@ -187,8 +187,8 @@ namespace ApplicationCore.Services
                                  Id = Guid.NewGuid(),
                                  GiftId = postAction.GiftId,
                                  ProductId = product,
-                                 InsDate = DateTime.Now,
-                                 UpdDate = DateTime.Now,
+                                 InsDate = TimeUtils.GetCurrentSEATime(),
+                                 UpdDate = TimeUtils.GetCurrentSEATime(),
                              };
                              mapRepo.Add(mappEntity);
                          }
@@ -224,7 +224,7 @@ namespace ApplicationCore.Services
             {
                 IGenericRepository<PromotionTier> tierRepo = _unitOfWork.PromotionTierRepository;
                 var tierEntity = await tierRepo.GetFirst(filter: o => o.PromotionTierId.Equals(param.PromotionTierId));
-                var now = DateTime.Now;
+                var now = TimeUtils.GetCurrentSEATime();
                 var promotions = await _repository.GetFirst(
                     filter: o => o.PromotionId.Equals(param.PromotionId) && !o.DelFlg,
                     includeProperties: "PromotionTier");
@@ -372,14 +372,14 @@ namespace ApplicationCore.Services
                 {
                     var actionEntity = _mapper.Map<Infrastructure.Models.Action>(updateParam.Action);
                     IGenericRepository<Infrastructure.Models.Action> actionRepo = _unitOfWork.ActionRepository;
-                    actionEntity.UpdDate = DateTime.Now;
+                    actionEntity.UpdDate = TimeUtils.GetCurrentSEATime();
                     //actionEntity.InsDate = null;
                     //actionEntity.PromotionTierId = updateParam.PromotionTierId;
                     actionRepo.Update(actionEntity);
                     var tier = await promotionTierRepo.GetFirst(filter: el =>
                         el.ActionId.Equals(actionEntity.ActionId));
                     tier.Summary = CreateSummaryAction(actionEntity);
-                    tier.UpdDate = DateTime.Now;
+                    tier.UpdDate = TimeUtils.GetCurrentSEATime();
                     promotionTierRepo.Update(tier);
                     // Update danh sách các product trong bảng map
                     IGenericRepository<ActionProductMapping> actMapp = _unitOfWork.ActionProductMappingRepository;
@@ -393,8 +393,8 @@ namespace ApplicationCore.Services
                             Id = Guid.NewGuid(),
                             ActionId = actionEntity.ActionId,
                             ProductId = productId,
-                            InsDate = DateTime.Now,
-                            UpdDate = DateTime.Now,
+                            InsDate = TimeUtils.GetCurrentSEATime(),
+                            UpdDate = TimeUtils.GetCurrentSEATime(),
                         };
                         actMapp.Add(mapp);
                     }
@@ -403,14 +403,14 @@ namespace ApplicationCore.Services
                 {
                     var postActionEntity = _mapper.Map<Gift>(updateParam.Gift);
                     IGenericRepository<Gift> postActionRepo = _unitOfWork.GiftRepository;
-                    postActionEntity.UpdDate = DateTime.Now;
+                    postActionEntity.UpdDate = TimeUtils.GetCurrentSEATime();
                     //  postActionEntity.InsDate = null;
                     //postActionEntity.PromotionTierId = updateParam.PromotionTierId;
                     postActionRepo.Update(postActionEntity);
                     var tier = await promotionTierRepo.GetFirst(filter: el =>
                         el.GiftId.Equals(postActionEntity.GiftId));
                     //tier.Summary = CreateSummaryGift(postActionEntity);
-                    tier.UpdDate = DateTime.Now;
+                    tier.UpdDate = TimeUtils.GetCurrentSEATime();
                     promotionTierRepo.Update(tier);
                     // Update danh sách các product trong bảng map
                     IGenericRepository<GiftProductMapping> actMapp = _unitOfWork.GiftProductMappingRepository;
@@ -424,8 +424,8 @@ namespace ApplicationCore.Services
                             Id = Guid.NewGuid(),
                             GiftId = postActionEntity.GiftId,
                             ProductId = productId,
-                            InsDate = DateTime.Now,
-                            UpdDate = DateTime.Now,
+                            InsDate = TimeUtils.GetCurrentSEATime(),
+                            UpdDate = TimeUtils.GetCurrentSEATime(),
                         };
                         actMapp.Add(mapp);
                     }
@@ -442,7 +442,7 @@ namespace ApplicationCore.Services
                 {
                     IGenericRepository<ConditionRule> conditionRepo = _unitOfWork.ConditionRuleRepository;
                     var conditionRuleEntity = _mapper.Map<ConditionRule>(updateParam.ConditionRule);
-                    conditionRuleEntity.UpdDate = DateTime.Now;
+                    conditionRuleEntity.UpdDate = TimeUtils.GetCurrentSEATime();
                     conditionRepo.Update(conditionRuleEntity);
                     await DeleteOldGroups(conditionRuleEntity: conditionRuleEntity);
                     InsertConditionGroup(conditionGroups: updateParam.ConditionGroups,
@@ -520,8 +520,8 @@ namespace ApplicationCore.Services
                     ConditionRuleId = conditionRuleEntity.ConditionRuleId,
                     NextOperator = group.NextOperator,
                     Summary = "",
-                    InsDate = DateTime.Now,
-                    UpdDate = DateTime.Now,
+                    InsDate = TimeUtils.GetCurrentSEATime(),
+                    UpdDate = TimeUtils.GetCurrentSEATime(),
                 };
                 //conditionGroupEntity.Summary = CreateSummary(group);
                 conditionGroupRepo.Add(conditionGroupEntity);
@@ -537,8 +537,8 @@ namespace ApplicationCore.Services
                         productConditionEntity.ConditionGroupId = conditionGroupEntity.ConditionGroupId;
                         productConditionEntity.ProductConditionId = Guid.NewGuid();
                         productConditionEntity.DelFlg = false;
-                        productConditionEntity.UpdDate = DateTime.Now;
-                        productConditionEntity.InsDate = DateTime.Now;
+                        productConditionEntity.UpdDate = TimeUtils.GetCurrentSEATime();
+                        productConditionEntity.InsDate = TimeUtils.GetCurrentSEATime();
                         productConditionEntity.ProductConditionId = Guid.NewGuid();
                         productConditionRepo.Add(productConditionEntity);
                         //productCondition.ProductConditionId = productConditionEntity.ProductConditionId;
@@ -551,8 +551,8 @@ namespace ApplicationCore.Services
                         //        Id = Guid.NewGuid(),
                         //        ProductConditionId = productConditionEntity.ProductConditionId,
                         //        ProductId = product,
-                        //        UpdTime = DateTime.Now,
-                        //        InsDate = DateTime.Now,
+                        //        UpdTime = TimeUtils.GetCurrentSEATime(),
+                        //        InsDate = TimeUtils.GetCurrentSEATime(),
                         //    };
                         //    mappRepo.Add(mapp);
                         //}
@@ -569,9 +569,9 @@ namespace ApplicationCore.Services
                         orderConditionEntity.ConditionGroupId = conditionGroupEntity.ConditionGroupId;
                         orderConditionEntity.OrderConditionId = Guid.NewGuid();
                         orderConditionEntity.DelFlg = false;
-                        orderConditionEntity.UpdDate = DateTime.Now;
+                        orderConditionEntity.UpdDate = TimeUtils.GetCurrentSEATime();
                         orderConditionEntity.OrderConditionId = Guid.NewGuid();
-                        orderConditionEntity.InsDate = DateTime.Now;
+                        orderConditionEntity.InsDate = TimeUtils.GetCurrentSEATime();
                         orderConditionRepo.Add(orderConditionEntity);
                         //orderCondition.OrderConditionId = orderConditionEntity.OrderConditionId;
                     }
@@ -774,8 +774,8 @@ namespace ApplicationCore.Services
                 foreach (var level in levels)
                 {
                     level.Id = Guid.NewGuid();
-                    level.InsDate = DateTime.Now;
-                    level.UpdDate = DateTime.Now;
+                    level.InsDate = TimeUtils.GetCurrentSEATime();
+                    level.UpdDate = TimeUtils.GetCurrentSEATime();
                     mapRepo.Add(_mapper.Map<MemberLevelMapping>(level));
                 }
 
@@ -1733,8 +1733,8 @@ namespace ApplicationCore.Services
                         PromotionTierId = Guid.NewGuid(),
                         VoucherGroupId = group.VoucherGroupId,
                         PromotionId = dto.PromotionId,
-                        InsDate = DateTime.Now,
-                        UpdDate = DateTime.Now,
+                        InsDate = TimeUtils.GetCurrentSEATime(),
+                        UpdDate = TimeUtils.GetCurrentSEATime(),
                         TierIndex = 0,
                         Priority = 10,
                         VoucherQuantity = dto.VoucherQuantity,
@@ -1770,7 +1770,7 @@ namespace ApplicationCore.Services
                                 {
                                     voucher.PromotionTierId = tier.PromotionTierId;
                                     voucher.PromotionId = tier.PromotionId;
-                                    voucher.UpdDate = DateTime.Now;
+                                    voucher.UpdDate = TimeUtils.GetCurrentSEATime();
                                     voucherRepo.Update(voucher);
                                 }
 
@@ -1837,8 +1837,8 @@ namespace ApplicationCore.Services
                                     Id = Guid.NewGuid(),
                                     TransactionJson = req.InvoiceId,
                                     BrandId = brand.BrandId,
-                                    InsDate = DateTime.Now,
-                                    UpdDate = DateTime.Now,
+                                    InsDate = TimeUtils.GetCurrentSEATime(),
+                                    UpdDate = TimeUtils.GetCurrentSEATime(),
                                     VoucherId = voucher?.VoucherId,
                                     PromotionId = item.PromotionId,
                                     Amount = item.Amount,
@@ -1852,7 +1852,7 @@ namespace ApplicationCore.Services
                                 if (res >= 0 && voucher != null)
                                 {
                                     voucher.IsUsed = true;
-                                    voucher.UsedDate = DateTime.Now;
+                                    voucher.UsedDate = TimeUtils.GetCurrentSEATime();
                                     voucher.TransactionId = transaction.Id;
                                     voucher.OrderId = req.InvoiceId;
                                     _unitOfWork.VoucherRepository.Update(voucher);
@@ -1878,17 +1878,15 @@ namespace ApplicationCore.Services
                                     item.Amount,
                                     item.EffectType,
                                     $"[{store.StoreCode}]  Tích {item.Amount} điểm cho {user.PhoneNumber} ");
-                                var dto = await _memberActionService.CreateMemberAction(request);
+                                var dto = await _memberActionService.CreateMemberAction(request, item.PromotionId);
                                 if (dto?.TransactionId != null)
                                 {
                                     listTransactionId.Add((Guid)dto.TransactionId);
                                 }
-
                                 break;
                             }
                     }
                 }
-
                 return listTransactionId;
             }
         }
