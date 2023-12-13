@@ -1,5 +1,4 @@
-﻿
-using ApplicationCore.Chain;
+﻿using ApplicationCore.Chain;
 using ApplicationCore.Request;
 using ApplicationCore.Utils;
 using AutoMapper;
@@ -45,9 +44,13 @@ namespace ApplicationCore.Services
             _storeService = storeService;
             _memberActionService = memberActionService;
         }
+
         protected override IGenericRepository<Promotion> _repository => _unitOfWork.PromotionRepository;
         public IGenericRepository<Product> _product => _unitOfWork.ProductRepository;
-        public IGenericRepository<ProductConditionMapping> _productMapping => _unitOfWork.ProductConditionMappingRepository;
+
+        public IGenericRepository<ProductConditionMapping> _productMapping =>
+            _unitOfWork.ProductConditionMappingRepository;
+
         public IGenericRepository<ProductCondition> _productCondition => _unitOfWork.ProductConditionRepository;
         public IGenericRepository<ConditionGroup> _conditionGroup => _unitOfWork.ConditionGroupRespository;
         public IGenericRepository<PromotionTier> _promotionTier => _unitOfWork.PromotionTierRepository;
@@ -56,11 +59,14 @@ namespace ApplicationCore.Services
         {
             _promotions = promotions;
         }
+
         public List<Promotion> GetPromotions()
         {
             return _promotions;
         }
+
         #region CRUD promotion tier
+
         public async Task<PromotionTierParam> CreatePromotionTier(PromotionTierParam param)
         {
             try
@@ -90,6 +96,7 @@ namespace ApplicationCore.Services
                     //Delete old condition group of condition rule
                     await DeleteOldGroups(conditionRuleEntity: conditionRuleEntity);
                 }
+
                 // Create condition group
                 InsertConditionGroup(conditionGroups: param.ConditionGroups, conditionRuleEntity: conditionRuleEntity);
                 // Create promotion tier
@@ -106,15 +113,17 @@ namespace ApplicationCore.Services
                     promotionTier.PromotionId = param.PromotionId;
                 }
                 else
-                {   //promotionId ~ null
+                {
+                    //promotionId ~ null
                     promotionTier.PromotionId = new Guid();
                 }
 
                 // Create action
                 if (param.Action.ActionType != null)
                 {
-
-                    var countTier = await promotionTierRepo.CountAsync(filter: o => o.PromotionId.Equals(promotionTier.PromotionId));
+                    var countTier =
+                        await promotionTierRepo.CountAsync(filter: o =>
+                            o.PromotionId.Equals(promotionTier.PromotionId));
                     var actionEntity = _mapper.Map<Infrastructure.Models.Action>(param.Action);
                     actionEntity.ActionId = Guid.NewGuid();
                     //actionEntity.PromotionTierId = promotionTier.PromotionTierId;
@@ -146,12 +155,12 @@ namespace ApplicationCore.Services
                     }*/
                     param.Action = _mapper.Map<ActionRequestParam>(actionEntity);
                 }
-                else
-                if (param.Gift.ActionType != null)
+                else if (param.Gift.ActionType != null)
                 {
                     // Create membership action
 
-                    var countTier = await promotionTierRepo.CountAsync(filter: o => o.PromotionId.Equals(promotionTier.ActionId));
+                    var countTier =
+                        await promotionTierRepo.CountAsync(filter: o => o.PromotionId.Equals(promotionTier.ActionId));
                     var postAction = _mapper.Map<Gift>(param.Gift);
                     postAction.GiftId = Guid.NewGuid();
                     //postAction.PromotionTierId = promotionTier.PromotionTierId;
@@ -188,8 +197,10 @@ namespace ApplicationCore.Services
                 }
                 else
                 {
-                    throw new ErrorObj(code: (int)HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.Bad_Request);
+                    throw new ErrorObj(code: (int)HttpStatusCode.BadRequest,
+                        message: AppConstant.ErrMessage.Bad_Request);
                 }
+
                 await _unitOfWork.SaveAsync();
                 return param;
             }
@@ -201,7 +212,8 @@ namespace ApplicationCore.Services
             {
                 Debug.WriteLine(e.StackTrace);
                 Debug.WriteLine(e.InnerException);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
 
@@ -212,13 +224,14 @@ namespace ApplicationCore.Services
                 IGenericRepository<PromotionTier> tierRepo = _unitOfWork.PromotionTierRepository;
                 var tierEntity = await tierRepo.GetFirst(filter: o => o.PromotionTierId.Equals(param.PromotionTierId));
                 var now = DateTime.Now;
-                var promotions = await _repository.GetFirst(filter: o => o.PromotionId.Equals(param.PromotionId) && !o.DelFlg, includeProperties: "PromotionTier");
+                var promotions = await _repository.GetFirst(
+                    filter: o => o.PromotionId.Equals(param.PromotionId) && !o.DelFlg,
+                    includeProperties: "PromotionTier");
                 var tiers = promotions.PromotionTier;
                 tiers.Remove(tierEntity);
                 var result = await _unitOfWork.SaveAsync();
                 if (result > 0)
                 {
-
                     var promotionTiers = await tierRepo.Get(filter: o => o.PromotionId.Equals(param.PromotionId));
                     for (int i = 0; i < promotionTiers.Count(); i++)
                     {
@@ -236,7 +249,8 @@ namespace ApplicationCore.Services
             {
                 Debug.WriteLine(e.StackTrace);
                 Debug.WriteLine(e.InnerException);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
 
@@ -251,14 +265,14 @@ namespace ApplicationCore.Services
                 // Lấy danh sách promotion tier
                 Expression<Func<PromotionTier, bool>> filter = el => el.PromotionId.Equals(promotionId);
                 var tiers = (
-                    await _tierRepo.Get(0, 0, filter: filter,
-                    orderBy: el => el.OrderBy(o => o.InsDate),
-                    includeProperties: "ConditionRule," +
-                    "ConditionRule.ConditionGroup," +
-                    "ConditionRule.ConditionGroup.OrderCondition," +
-                    "ConditionRule.ConditionGroup.ProductCondition," +
-                    "Gift," +
-                    "Action"))
+                        await _tierRepo.Get(0, 0, filter: filter,
+                            orderBy: el => el.OrderBy(o => o.InsDate),
+                            includeProperties: "ConditionRule," +
+                                               "ConditionRule.ConditionGroup," +
+                                               "ConditionRule.ConditionGroup.OrderCondition," +
+                                               "ConditionRule.ConditionGroup.ProductCondition," +
+                                               "Gift," +
+                                               "Action"))
                     .ToList();
                 // Reorder các condition trong group
                 List<PromotionTierResponseParam> result = new List<PromotionTierResponseParam>();
@@ -342,12 +356,13 @@ namespace ApplicationCore.Services
             {
                 Debug.WriteLine(e.StackTrace);
                 Debug.WriteLine(e.InnerException);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
+
         public async Task<PromotionTierUpdateParam> UpdatePromotionTier(PromotionTierUpdateParam updateParam)
         {
-
             try
             {
                 IGenericRepository<PromotionTier> promotionTierRepo = _unitOfWork.PromotionTierRepository;
@@ -360,7 +375,8 @@ namespace ApplicationCore.Services
                     //actionEntity.InsDate = null;
                     //actionEntity.PromotionTierId = updateParam.PromotionTierId;
                     actionRepo.Update(actionEntity);
-                    var tier = await promotionTierRepo.GetFirst(filter: el => el.ActionId.Equals(actionEntity.ActionId));
+                    var tier = await promotionTierRepo.GetFirst(filter: el =>
+                        el.ActionId.Equals(actionEntity.ActionId));
                     tier.Summary = CreateSummaryAction(actionEntity);
                     tier.UpdDate = DateTime.Now;
                     promotionTierRepo.Update(tier);
@@ -390,7 +406,8 @@ namespace ApplicationCore.Services
                     //  postActionEntity.InsDate = null;
                     //postActionEntity.PromotionTierId = updateParam.PromotionTierId;
                     postActionRepo.Update(postActionEntity);
-                    var tier = await promotionTierRepo.GetFirst(filter: el => el.GiftId.Equals(postActionEntity.GiftId));
+                    var tier = await promotionTierRepo.GetFirst(filter: el =>
+                        el.GiftId.Equals(postActionEntity.GiftId));
                     //tier.Summary = CreateSummaryGift(postActionEntity);
                     tier.UpdDate = DateTime.Now;
                     promotionTierRepo.Update(tier);
@@ -414,8 +431,10 @@ namespace ApplicationCore.Services
                 }
                 else
                 {
-                    throw new ErrorObj(code: (int)HttpStatusCode.BadRequest, message: AppConstant.ErrMessage.Bad_Request);
+                    throw new ErrorObj(code: (int)HttpStatusCode.BadRequest,
+                        message: AppConstant.ErrMessage.Bad_Request);
                 }
+
                 //await _unitOfWork.SaveAsync();
                 // update condition rule
                 if (!updateParam.ConditionRule.ConditionRuleId.Equals(Guid.Empty))
@@ -425,7 +444,8 @@ namespace ApplicationCore.Services
                     conditionRuleEntity.UpdDate = DateTime.Now;
                     conditionRepo.Update(conditionRuleEntity);
                     await DeleteOldGroups(conditionRuleEntity: conditionRuleEntity);
-                    InsertConditionGroup(conditionGroups: updateParam.ConditionGroups, conditionRuleEntity: conditionRuleEntity);
+                    InsertConditionGroup(conditionGroups: updateParam.ConditionGroups,
+                        conditionRuleEntity: conditionRuleEntity);
                 }
 
 
@@ -441,9 +461,11 @@ namespace ApplicationCore.Services
                 Debug.WriteLine(e.InnerException);
                 Debug.WriteLine(e.ToString());
                 Debug.WriteLine(e.Message);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
+
         async Task<bool> DeleteOldGroups(ConditionRule conditionRuleEntity)
         {
             IGenericRepository<ConditionGroup> conditionGroupRepo = _unitOfWork.ConditionGroupRepository;
@@ -454,7 +476,8 @@ namespace ApplicationCore.Services
 
             // Delete old groups and old conditions
             List<ConditionGroup> oldGroups = (await conditionGroupRepo.Get(pageIndex: 0, pageSize: 0,
-                filter: o => o.ConditionRuleId.Equals(conditionRuleEntity.ConditionRuleId), includeProperties: "ProductCondition")).ToList();
+                filter: o => o.ConditionRuleId.Equals(conditionRuleEntity.ConditionRuleId),
+                includeProperties: "ProductCondition")).ToList();
             if (oldGroups.Count > 0)
             {
                 foreach (var group in oldGroups)
@@ -462,17 +485,23 @@ namespace ApplicationCore.Services
                     var productConditions = group.ProductCondition.ToList();
                     foreach (var prodCond in productConditions)
                     {
-                        prodCondMapRepo.Delete(id: Guid.Empty, filter: o => o.ProductConditionId.Equals(prodCond.ProductConditionId));
+                        prodCondMapRepo.Delete(id: Guid.Empty,
+                            filter: o => o.ProductConditionId.Equals(prodCond.ProductConditionId));
                     }
 
-                    productConditionRepo.Delete(id: Guid.Empty, filter: o => o.ConditionGroupId.Equals(group.ConditionGroupId));
-                    orderConditionRepo.Delete(id: Guid.Empty, filter: o => o.ConditionGroupId.Equals(group.ConditionGroupId));
+                    productConditionRepo.Delete(id: Guid.Empty,
+                        filter: o => o.ConditionGroupId.Equals(group.ConditionGroupId));
+                    orderConditionRepo.Delete(id: Guid.Empty,
+                        filter: o => o.ConditionGroupId.Equals(group.ConditionGroupId));
                     conditionGroupRepo.Delete(id: group.ConditionGroupId);
                 }
+
                 await _unitOfWork.SaveAsync();
             }
+
             return true;
         }
+
         void InsertConditionGroup(List<ConditionGroupDto> conditionGroups, ConditionRule conditionRuleEntity)
         {
             IGenericRepository<ConditionGroup> conditionGroupRepo = _unitOfWork.ConditionGroupRepository;
@@ -499,7 +528,8 @@ namespace ApplicationCore.Services
                 // Create product condition
                 if (group.ProductCondition != null && group.ProductCondition.Count > 0)
                 {
-                    IGenericRepository<ProductConditionMapping> mappRepo = _unitOfWork.ProductConditionMappingRepository;
+                    IGenericRepository<ProductConditionMapping>
+                        mappRepo = _unitOfWork.ProductConditionMappingRepository;
                     foreach (var productCondition in group.ProductCondition)
                     {
                         var productConditionEntity = _mapper.Map<ProductCondition>(productCondition);
@@ -526,9 +556,9 @@ namespace ApplicationCore.Services
                         //    mappRepo.Add(mapp);
                         //}
                         // -----------------ko đụng -----------------
-
                     }
                 }
+
                 // Create order condition
                 if (group.OrderCondition != null && group.OrderCondition.Count > 0)
                 {
@@ -546,10 +576,12 @@ namespace ApplicationCore.Services
                     }
                 }
             }
-
         }
+
         #endregion
+
         #region check voucher
+
         public async Task<Order> HandlePromotion(Order orderResponse)
         {
             foreach (var promotion in _promotions)
@@ -557,26 +589,38 @@ namespace ApplicationCore.Services
                 //Check promotion is active
                 if (promotion.Status != (int)AppConstant.EnvVar.PromotionStatus.PUBLISH)
                 {
-                    throw new ErrorObj(code: (int)AppConstant.ErrCode.InActive_Promotion, message: AppConstant.ErrMessage.InActive_Promotion, description: AppConstant.ErrMessage.InActive_Promotion);
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.InActive_Promotion,
+                        message: AppConstant.ErrMessage.InActive_Promotion,
+                        description: AppConstant.ErrMessage.InActive_Promotion);
                 }
+
                 //Check promotion is time 
                 if (promotion.StartDate >= orderResponse.CustomerOrderInfo.BookingDate)
                 {
-                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_Early, message: AppConstant.ErrMessage.Invalid_Time, description: AppConstant.ErrMessage.Invalid_Early);
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Invalid_Early,
+                        message: AppConstant.ErrMessage.Invalid_Time,
+                        description: AppConstant.ErrMessage.Invalid_Early);
                 }
+
                 //Check promotion is expired
                 if (promotion.EndDate <= orderResponse.CustomerOrderInfo.BookingDate)
                 {
-                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Expire_Promotion, message: AppConstant.ErrMessage.Expire_Promotion, description: AppConstant.ErrMessage.Expire_Promotion);
+                    throw new ErrorObj(code: (int)AppConstant.ErrCode.Expire_Promotion,
+                        message: AppConstant.ErrMessage.Expire_Promotion,
+                        description: AppConstant.ErrMessage.Expire_Promotion);
                 }
             }
+
             _checkPromotionHandler.SetPromotions(_promotions);
             _checkPromotionHandler.Handle(orderResponse);
             _promotions = _checkPromotionHandler.GetPromotions();
             return orderResponse;
         }
+
         #endregion
+
         #region update promotion
+
         public async Task<PromotionDto> UpdatePromotion(PromotionDto dto)
         {
             try
@@ -587,13 +631,16 @@ namespace ApplicationCore.Services
                     IPromotionRepository promotionRepo = new PromotionRepositoryImp();
                     await promotionRepo.SetUnlimitedDate(_mapper.Map<Promotion>(dto));
                 }
+
                 if ((dto.ForMembership == 1 || dto.ForMembership == 3)
-                && dto.MemberLevelMapping != null
-                && dto.MemberLevelMapping.Count() > 0)
+                    && dto.MemberLevelMapping != null
+                    && dto.MemberLevelMapping.Count() > 0)
                 {
-                    await DeleteAndAddMemberLevelMapp(promotionId: dto.PromotionId, levels: dto.MemberLevelMapping.ToList());
+                    await DeleteAndAddMemberLevelMapp(promotionId: dto.PromotionId,
+                        levels: dto.MemberLevelMapping.ToList());
                     dto.MemberLevelMapping = null;
                 }
+
                 var exisPromo = await _repository.GetFirst(filter: o => o.PromotionId.Equals(dto.PromotionId));
                 if (exisPromo == null)
                 {
@@ -613,6 +660,7 @@ namespace ApplicationCore.Services
                 throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: ex.Message);
             }
         }
+
         private async Task<Promotion> MapEntityForUpdate(Promotion dto, PromotionDto param)
         {
             try
@@ -629,22 +677,27 @@ namespace ApplicationCore.Services
                     {
                         dto.ApplyBy = entity.ApplyBy;
                     }
+
                     if (dto.SaleMode == 0)
                     {
                         dto.SaleMode = entity.SaleMode;
                     }
+
                     if (dto.Gender == 0)
                     {
                         dto.Gender = entity.Gender;
                     }
+
                     if (dto.PaymentMethod == 0)
                     {
                         dto.PaymentMethod = entity.PaymentMethod;
                     }
+
                     if (dto.ForHoliday == 0)
                     {
                         dto.ForHoliday = entity.ForHoliday;
                     }
+
                     //if (dto.ForMembership == 0)
                     //{
                     //    dto.ForMembership = entity.ForMembership;
@@ -653,54 +706,63 @@ namespace ApplicationCore.Services
                     {
                         dto.DayFilter = entity.DayFilter;
                     }
+
                     if (dto.HourFilter == 0)
                     {
                         dto.HourFilter = entity.HourFilter;
                     }
+
                     if (dto.PostActionType == 0)
                     {
                         dto.PostActionType = entity.PostActionType;
                     }
+
                     if (dto.ActionType == 0)
                     {
                         dto.ActionType = entity.ActionType;
                     }
+
                     if (param.StartDate == null)
                     {
                         dto.StartDate = entity.StartDate;
                     }
+
                     if (param.EndDate == null)
                     {
                         dto.EndDate = entity.EndDate;
                     }
+
                     if (dto.Exclusive == -1)
                     {
                         dto.Exclusive = entity.Exclusive;
                     }
+
                     dto.HasVoucher = entity.HasVoucher;
                     dto.IsAuto = entity.IsAuto;
                     if (dto.HasVoucher == false && dto.IsAuto == false)
                     {
                         dto.PromotionType = (int)AppConstant.EnvVar.PromotionType.Using_PromoCode;
                     }
+
                     if (dto.HasVoucher == true && dto.IsAuto == false)
                     {
                         dto.PromotionType = (int)AppConstant.EnvVar.PromotionType.Using_Voucher;
                     }
+
                     if (dto.HasVoucher == false && dto.IsAuto == true)
                     {
                         dto.PromotionType = (int)AppConstant.EnvVar.PromotionType.Automatic;
                     }
-
                 }
+
                 return dto;
             }
             catch (Exception ex)
             {
                 throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: ex.Message);
             }
-
         }
+
         private async Task<bool> DeleteAndAddMemberLevelMapp(Guid promotionId, List<MemberLevelMappingDto> levels)
         {
             try
@@ -715,16 +777,19 @@ namespace ApplicationCore.Services
                     level.UpdDate = DateTime.Now;
                     mapRepo.Add(_mapper.Map<MemberLevelMapping>(level));
                 }
+
                 return await _unitOfWork.SaveAsync() > 0;
             }
             catch (Exception ex)
             {
                 throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: ex.Message);
             }
-
         }
+
         #endregion
+
         #region create summary for condition group
+
         private List<Object> ConvertConditionList(ConditionGroupDto group)
         {
             var totalCondition = 0;
@@ -736,11 +801,13 @@ namespace ApplicationCore.Services
                 totalCondition += group.ProductCondition.Count;
                 productCond = true;
             }
+
             if (group.OrderCondition != null && group.OrderCondition.Count > 0)
             {
                 totalCondition += group.OrderCondition.Count;
                 orderCond = true;
             }
+
             Object[] conditions = new Object[totalCondition];
             if (productCond)
             {
@@ -749,6 +816,7 @@ namespace ApplicationCore.Services
                     conditions[productCondition.IndexGroup] = productCondition;
                 }
             }
+
             if (orderCond)
             {
                 foreach (var orderCondition in group.OrderCondition)
@@ -756,8 +824,10 @@ namespace ApplicationCore.Services
                     conditions[orderCondition.IndexGroup] = orderCondition;
                 }
             }
+
             return conditions.ToList();
         }
+
         private string CreateSummary(ConditionGroupDto group)
         {
             var result = "";
@@ -959,8 +1029,11 @@ namespace ApplicationCore.Services
 
             return result;
         }
+
         #endregion
+
         #region create summary for action
+
         private string CreateSummaryAction(Infrastructure.Models.Action entity)
         {
             var result = "";
@@ -1165,32 +1238,42 @@ namespace ApplicationCore.Services
                     return number + "th";
             }
         }
+
         #endregion
+
         #region statistic
+
         public async Task<PromotionStatusDto> CountPromotionStatus(Guid brandId)
         {
             if (brandId.Equals(Guid.Empty))
             {
-                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest, message: AppConstant.StatisticMessage.BRAND_ID_INVALID, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.BadRequest,
+                    message: AppConstant.StatisticMessage.BRAND_ID_INVALID,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
+
             try
             {
                 var result = new PromotionStatusDto()
                 {
                     Total = await _repository.CountAsync(filter: o => o.BrandId.Equals(brandId)
-                                && !o.DelFlg),
+                                                                      && !o.DelFlg),
                     Draft = await _repository.CountAsync(filter: o => o.BrandId.Equals(brandId)
-                                && o.Status == (int)AppConstant.EnvVar.PromotionStatus.DRAFT
-                                && !o.DelFlg),
+                                                                      && o.Status == (int)AppConstant.EnvVar
+                                                                          .PromotionStatus.DRAFT
+                                                                      && !o.DelFlg),
                     Publish = await _repository.CountAsync(filter: o => o.BrandId.Equals(brandId)
-                                && o.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH
-                                && !o.DelFlg),
+                                                                        && o.Status == (int)AppConstant.EnvVar
+                                                                            .PromotionStatus.PUBLISH
+                                                                        && !o.DelFlg),
                     Unpublish = await _repository.CountAsync(filter: o => o.BrandId.Equals(brandId)
-                                && o.Status == (int)AppConstant.EnvVar.PromotionStatus.UNPUBLISH
-                                && !o.DelFlg),
+                                                                          && o.Status == (int)AppConstant.EnvVar
+                                                                              .PromotionStatus.UNPUBLISH
+                                                                          && !o.DelFlg),
                     Expired = await _repository.CountAsync(filter: o => o.BrandId.Equals(brandId)
-                                && o.Status == (int)AppConstant.EnvVar.PromotionStatus.EXPIRED
-                                && !o.DelFlg)
+                                                                        && o.Status == (int)AppConstant.EnvVar
+                                                                            .PromotionStatus.EXPIRED
+                                                                        && !o.DelFlg)
                 };
 
                 return result;
@@ -1198,14 +1281,14 @@ namespace ApplicationCore.Services
             catch (Exception e)
             {
                 Debug.WriteLine(e.StackTrace);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: AppConstant.StatisticMessage.PROMO_COUNT_ERR, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError,
+                    message: AppConstant.StatisticMessage.PROMO_COUNT_ERR,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
-
         }
 
         public async Task<DistributionStat> DistributionStatistic(Guid promotionId, Guid brandId)
         {
-
             try
             {
                 /* IGenericRepository<PromotionStoreMapping> storeMappRepo = _unitOfWork.PromotionStoreMappingRepository;
@@ -1289,59 +1372,59 @@ namespace ApplicationCore.Services
             catch (Exception e)
             {
                 Debug.WriteLine(e.StackTrace);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
-
         }
 
-
         #endregion
+
         public async Task<List<Promotion>> GetAutoPromotions(CustomerOrderInfo orderInfo)
         {
             IEnumerable<Promotion> promotions = null;
             if (orderInfo.Attributes.StoreInfo != null)
             {
                 promotions = await _repository.Get(filter: el =>
-                    el.IsAuto
-                    && el.Brand.BrandCode.Equals(orderInfo.Attributes.StoreInfo.BrandCode)
-                    && el.StartDate <= orderInfo.BookingDate
-                    && (el.EndDate != null ? (el.EndDate >= orderInfo.BookingDate) : true)
-                    && el.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH
-                    && !el.DelFlg,
-                        includeProperties:
-                                    "PromotionTier.Action.ActionProductMapping.Product," +
-                                    //"PromotionTier.Gift.GiftProductMapping.Product," +
-                                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
-                                    "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," + //checklai
-                                    "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
-                                "PromotionTier.VoucherGroup," +
-                            "PromotionStoreMapping.Store," +
-                            "Brand," +
-                            "PromotionChannelMapping.Channel," +
-                        "MemberLevelMapping.MemberLevel"
-                    );
+                        el.IsAuto
+                        && el.Brand.BrandCode.Equals(orderInfo.Attributes.StoreInfo.BrandCode)
+                        && el.StartDate <= orderInfo.BookingDate
+                        && (el.EndDate != null ? (el.EndDate >= orderInfo.BookingDate) : true)
+                        && el.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH
+                        && !el.DelFlg,
+                    includeProperties:
+                    "PromotionTier.Action.ActionProductMapping.Product," +
+                    //"PromotionTier.Gift.GiftProductMapping.Product," +
+                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
+                    "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," + //checklai
+                    "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
+                    "PromotionTier.VoucherGroup," +
+                    "PromotionStoreMapping.Store," +
+                    "Brand," +
+                    "PromotionChannelMapping.Channel," +
+                    "MemberLevelMapping.MemberLevel"
+                );
             }
             else
             {
                 promotions = await _repository.Get(filter: el =>
-                    el.IsAuto
-                    && el.Brand.BrandCode.Equals(orderInfo.Attributes.ChannelInfo.BrandCode)
-                    && el.StartDate <= orderInfo.BookingDate
-                    && (el.EndDate != null ? (el.EndDate >= orderInfo.BookingDate) : true)
-                    && el.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH
-                    && !el.DelFlg,
-                        includeProperties:
-                                    "PromotionTier.Action.ActionProductMapping.Product," +
-                                    //"PromotionTier.Gift.GiftProductMapping.Product," +
-                                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
-                                    "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," + //checklai
-                                    "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
-                                "PromotionTier.VoucherGroup," +
-                            "PromotionStoreMapping.Store," +
-                            "Brand," +
-                            "PromotionChannelMapping.Channel," +
-                        "MemberLevelMapping.MemberLevel"
-                    );
+                        el.IsAuto
+                        && el.Brand.BrandCode.Equals(orderInfo.Attributes.ChannelInfo.BrandCode)
+                        && el.StartDate <= orderInfo.BookingDate
+                        && (el.EndDate != null ? (el.EndDate >= orderInfo.BookingDate) : true)
+                        && el.Status == (int)AppConstant.EnvVar.PromotionStatus.PUBLISH
+                        && !el.DelFlg,
+                    includeProperties:
+                    "PromotionTier.Action.ActionProductMapping.Product," +
+                    //"PromotionTier.Gift.GiftProductMapping.Product," +
+                    //"PromotionTier.Gift.GameCampaign.GameMaster," +
+                    "PromotionTier.ConditionRule.ConditionGroup.OrderCondition," + //checklai
+                    "PromotionTier.ConditionRule.ConditionGroup.ProductCondition.ProductConditionMapping.Product," +
+                    "PromotionTier.VoucherGroup," +
+                    "PromotionStoreMapping.Store," +
+                    "Brand," +
+                    "PromotionChannelMapping.Channel," +
+                    "MemberLevelMapping.MemberLevel"
+                );
             }
 
             return promotions.ToList();
@@ -1358,34 +1441,46 @@ namespace ApplicationCore.Services
                 {
                     product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
                 }
+
                 foreach (var item in order.Vouchers)
                 {
-                    promotionCode = await _repository.GetFirst(filter: el => el.PromotionCode.Equals(item.PromotionCode));
+                    promotionCode =
+                        await _repository.GetFirst(filter: el => el.PromotionCode.Equals(item.PromotionCode));
                 }
-                var checkProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
+
+                var checkProductMapping =
+                    await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
                 bool GetPointCheck = promotionCode.PromotionCode.StartsWith("GETPOINT");
                 if (checkProductMapping != null)
                 {
-                    var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
-                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
-                    var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
+                    var productCondition = await _productCondition.GetFirst(filter: el =>
+                        el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
+                    var conditionGroup = await _conditionGroup.GetFirst(filter: el =>
+                        el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
+                    var tier = await _promotionTier.GetFirst(filter: el =>
+                        el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
                     if (promotionCode.PromotionId.Equals(tier.PromotionId))
                     {
                         return true;
                     }
-
                 }
+
                 if (GetPointCheck == true)
                 {
                     return true;
                 }
+
                 if (promotionCode != null)
                 {
-                    var promotionTier = await _promotionTier.GetFirst(filter: el => el.PromotionId.Equals(promotionCode.PromotionId));
-                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionRuleId.Equals(promotionTier.ConditionRuleId));
-                    var productionCondition = await _productCondition.GetFirst(filter: el => el.ConditionGroupId.Equals(conditionGroup.ConditionGroupId));
+                    var promotionTier =
+                        await _promotionTier.GetFirst(filter: el => el.PromotionId.Equals(promotionCode.PromotionId));
+                    var conditionGroup = await _conditionGroup.GetFirst(filter: el =>
+                        el.ConditionRuleId.Equals(promotionTier.ConditionRuleId));
+                    var productionCondition = await _productCondition.GetFirst(filter: el =>
+                        el.ConditionGroupId.Equals(conditionGroup.ConditionGroupId));
                     if (productionCondition == null) return true;
                 }
+
                 return false;
             }
             catch (ErrorObj e1)
@@ -1398,9 +1493,9 @@ namespace ApplicationCore.Services
             {
                 Debug.WriteLine("\n\nError at CheckProduct: \n" + e.Message);
 
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
-
         }
 
         public async Task<bool> CheckProducWithPromotion(CustomerOrderInfo customerOrderInfo, Guid promotionId)
@@ -1414,19 +1509,24 @@ namespace ApplicationCore.Services
                 {
                     product = await _product.GetFirst(filter: el => el.Code.Equals(item.ProductCode));
                 }
-                var checkProductMapping = await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
+
+                var checkProductMapping =
+                    await _productMapping.GetFirst(filter: el => el.ProductId.Equals(product.ProductId));
                 if (checkProductMapping != null)
                 {
-                    var productCondition = await _productCondition.GetFirst(filter: el => el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
-                    var conditionGroup = await _conditionGroup.GetFirst(filter: el => el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
-                    var tier = await _promotionTier.GetFirst(filter: el => el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
+                    var productCondition = await _productCondition.GetFirst(filter: el =>
+                        el.ProductConditionId.Equals(checkProductMapping.ProductConditionId));
+                    var conditionGroup = await _conditionGroup.GetFirst(filter: el =>
+                        el.ConditionGroupId.Equals(productCondition.ConditionGroupId));
+                    var tier = await _promotionTier.GetFirst(filter: el =>
+                        el.ConditionRuleId.Equals(conditionGroup.ConditionRuleId));
                     if (promotionCode.PromotionId.Equals(tier.PromotionId))
                     {
                         return true;
                     }
                 }
-                return false;
 
+                return false;
             }
             catch (Exception e)
             {
@@ -1440,18 +1540,18 @@ namespace ApplicationCore.Services
             try
             {
                 var promo = await _repository.GetFirst(filter:
-                        o => o.PromotionCode.ToLower().Equals(promoCode.ToLower())
-                       && !o.DelFlg
-                       && o.BrandId.Equals(brandId)
-                       && o.Status != (int)AppConstant.EnvVar.PromotionStatus.EXPIRED);
+                    o => o.PromotionCode.ToLower().Equals(promoCode.ToLower())
+                         && !o.DelFlg
+                         && o.BrandId.Equals(brandId)
+                         && o.Status != (int)AppConstant.EnvVar.PromotionStatus.EXPIRED);
                 return promo != null;
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e.InnerException);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
-
         }
 
         public async Task<bool> DeletePromotion(Guid promotionId)
@@ -1463,30 +1563,47 @@ namespace ApplicationCore.Services
                 var existPromo = await _repository.GetFirst(filter: el => el.PromotionId == promotionId) != null;
                 if (!existPromo)
                 {
-                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: AppConstant.ErrMessage.Not_Found_Resource);
+                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
+                        message: AppConstant.ErrMessage.Not_Found_Resource);
                 }
+
                 #endregion
+
                 #region Update DelFlag của promotion
-                var promo = await _repository.GetFirst(filter: o => o.PromotionId.Equals(promotionId), includeProperties: "Voucher");
+
+                var promo = await _repository.GetFirst(filter: o => o.PromotionId.Equals(promotionId),
+                    includeProperties: "Voucher");
                 promo.DelFlg = true;
                 _repository.Update(promo);
                 //await _unitOfWork.SaveAsync();
+
                 #endregion
+
                 #region Xóa bảng store mapping
+
                 IGenericRepository<PromotionStoreMapping> storeMappRepo = _unitOfWork.PromotionStoreMappingRepository;
                 storeMappRepo.Delete(id: Guid.Empty, filter: o => o.PromotionId.Equals(promotionId));
                 //await _unitOfWork.SaveAsync();
+
                 #endregion
+
                 #region Xóa bảng channel mapping
+
                 IGenericRepository<PromotionChannelMapping> channelMappRepo = _unitOfWork.VoucherChannelRepository;
                 channelMappRepo.Delete(id: Guid.Empty, filter: o => o.PromotionId.Equals(promotionId));
                 //await _unitOfWork.SaveAsync();
+
                 #endregion
+
                 #region Xóa bảng member level mapping
+
                 IGenericRepository<MemberLevelMapping> memberMappRepo = _unitOfWork.MemberLevelMappingRepository;
                 memberMappRepo.Delete(id: Guid.Empty, filter: o => o.PromotionId.Equals(promotionId));
+
                 #endregion
+
                 #region Xóa tier
+
                 IGenericRepository<PromotionTier> tierRepo = _unitOfWork.PromotionTierRepository;
                 var tierList = (await tierRepo.Get(filter: o => o.PromotionId.Equals(promotionId))).ToList();
                 if (tierList != null && tierList.Count > 0)
@@ -1495,11 +1612,13 @@ namespace ApplicationCore.Services
                     {
                         promo.PromotionTier.Remove(tier);
                         _repository.Update(promo);
-
                     }
                 }
+
                 #endregion
+
                 #region Xóa voucher và tierId
+
                 //foreach (var voucher in promo.Voucher)
                 //{
                 //    if (!voucher.IsRedemped && !voucher.IsUsed)
@@ -1510,21 +1629,24 @@ namespace ApplicationCore.Services
                 //}
 
                 //promo.Voucher = null;
+
                 #endregion
+
                 return await _unitOfWork.SaveAsync() > 0;
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e.InnerException);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
 
 
         #region create promotion
+
         public async Task<PromotionDto> CreatePromotion(PromotionDto dto)
         {
-
             var now = Common.GetCurrentDatetime();
             try
             {
@@ -1536,14 +1658,17 @@ namespace ApplicationCore.Services
                 {
                     promoEntity.PromotionType = 2;
                 }
+
                 if (dto.HasVoucher == true && dto.IsAuto == false)
                 {
                     promoEntity.PromotionType = 1;
                 }
+
                 if (dto.HasVoucher == false && dto.IsAuto == true)
                 {
                     promoEntity.PromotionType = 3;
                 }
+
                 try
                 {
                     _repository.Add(promoEntity);
@@ -1554,20 +1679,20 @@ namespace ApplicationCore.Services
                     }
 
                     await _unitOfWork.SaveAsync();
-
                 }
                 catch (Exception e)
                 {
                     throw new Exception(e.Message);
                 }
+
                 return _mapper.Map<PromotionDto>(promoEntity);
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e.InnerException);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: AppConstant.ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
-
         }
 
         public Task<Promotion> GetPromotionByPromotionId(Guid promotionId)
@@ -1596,8 +1721,9 @@ namespace ApplicationCore.Services
             {
                 IGenericRepository<PromotionTier> tierRepo = _unitOfWork.PromotionTierRepository;
                 IGenericRepository<VoucherGroup> voucherGroupRepo = _unitOfWork.VoucherGroupRepository;
-                IGenericRepository<Infrastructure.Models.Voucher> voucherRepo = _unitOfWork.VoucherRepository;
-                var group = await voucherGroupRepo.GetFirst(filter: o => o.VoucherGroupId.Equals(voucherGroupId) && !o.DelFlg);
+                IGenericRepository<Voucher> voucherRepo = _unitOfWork.VoucherRepository;
+                var group = await voucherGroupRepo.GetFirst(filter: o =>
+                    o.VoucherGroupId.Equals(voucherGroupId) && !o.DelFlg);
                 if (group != null)
                 {
                     var tier = new PromotionTier()
@@ -1617,6 +1743,7 @@ namespace ApplicationCore.Services
                     {
                         tier.ActionId = group.ActionId;
                     }
+
                     if (group.GiftId != null)
                     {
                         tier.GiftId = group.GiftId;
@@ -1626,15 +1753,18 @@ namespace ApplicationCore.Services
                     if (dto.VoucherGroupId != null && !dto.VoucherGroupId.Equals(Guid.Empty))
                     {
                         var vouchers = await voucherRepo.Get(filter: o => o.VoucherGroupId.Equals(group.VoucherGroupId)
-                                                              && (o.PromotionTierId == null || o.PromotionTierId.Equals(Guid.Empty))
-                                                              && (o.PromotionId == null || o.PromotionId.Equals(Guid.Empty)));
+                                                                          && (o.PromotionTierId == null ||
+                                                                              o.PromotionTierId.Equals(Guid.Empty))
+                                                                          && (o.PromotionId == null ||
+                                                                              o.PromotionId.Equals(Guid.Empty)));
                         if (vouchers.Count() > 0 && dto.VoucherQuantity > 0)
                         {
                             var remain = dto.VoucherQuantity;
                             while (remain > 0)
                             {
-                                var voucher = vouchers.Where(o => (o.PromotionTierId == null || o.PromotionTierId.Equals(Guid.Empty))
-                                                    && (o.PromotionId == null || o.PromotionId.Equals(Guid.Empty))).First();
+                                var voucher = vouchers.Where(o =>
+                                    (o.PromotionTierId == null || o.PromotionTierId.Equals(Guid.Empty))
+                                    && (o.PromotionId == null || o.PromotionId.Equals(Guid.Empty))).First();
                                 if (voucher != null)
                                 {
                                     voucher.PromotionTierId = tier.PromotionTierId;
@@ -1642,6 +1772,7 @@ namespace ApplicationCore.Services
                                     voucher.UpdDate = DateTime.Now;
                                     voucherRepo.Update(voucher);
                                 }
+
                                 if (voucher == null && remain > 0)
                                 {
                                     remain = 0;
@@ -1651,217 +1782,116 @@ namespace ApplicationCore.Services
                                     remain--;
                                 }
                             }
-
                         }
                     }
-
                 }
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e.InnerException);
-                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message, description: ErrMessage.Internal_Server_Error);
+                throw new ErrorObj(code: (int)HttpStatusCode.InternalServerError, message: e.Message,
+                    description: AppConstant.ErrMessage.Internal_Server_Error);
             }
         }
+
         #endregion
 
         #region check out Promotion
+
         public async Task<List<Guid>> CheckoutPromotion(CheckOutPromotion req)
         {
             var store = await _unitOfWork.StoreRepository.GetFirst(filter: el => el.StoreCode.Equals(req.StoreCode));
-            Transaction transaction = new Transaction();
             List<Guid> listTransactionId = new List<Guid>();
             if (store == null)
             {
-                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: ErrMessage.Not_Found_Resource);
+                throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
+                    message: AppConstant.ErrMessage.Not_Found_Resource);
             }
             var brand = await _brandService.GetByIdAsync((Guid)store.BrandId);
             if (brand == null)
             {
-                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: ErrMessage.Not_Found_Resource);
+                throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
+                    message: AppConstant.ErrMessage.Not_Found_Resource);
             }
-            if (req != null)
-            {
-                if (req.listEffect != null)
-                {
-                    foreach(var item in req.listEffect)
-                    {
-                        if (item.effectType.Equals(EffectMessage.SetDiscount))
-                        {
-                            var type = item.effectType;
-                            Promotion checkPromotion = await _repository.GetFirst(filter: el => el.PromotionId.Equals(item.PromotionId));
-                            if (checkPromotion.ForMembership == 1)
-                            {
-                                transaction = await AddTransactionAsync(req, item.PromotionId, type);
-                                Membership user = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.MembershipId.Equals(req.UserId));
-                                if (user != null)
-                                {
-                                    MemberActionRequest request = new MemberActionRequest(brand.BrandId,
-                                           store.StoreCode,
-                                           user.MembershipId, req.FinalAmount,
-                                           EffectMessage.Payment,
-                                           $"[{store.StoreCode}] Thanh toán đơn hàng trị giá {req.FinalAmount}");
-                                    Infrastructure.Models.Voucher voucher = null;
-                                    if (req.VoucherCode.Any())
-                                    {
-                                        voucher = await _unitOfWork.VoucherRepository.GetFirst(filter: el => el.VoucherCode.Equals(req.VoucherCode));
-                                        bool checkVoucher = await UpdateVourcher(voucher.VoucherId, transaction.Id);
-                                        if (!checkVoucher)
-                                        {
-                                            voucher = null;
-                                            throw new ErrorObj(code: (int)HttpStatusCode.UnprocessableEntity,
-                                                message: ErrMessage.Invalid_Voucher);
-                                        }
-                                    }
-                                    var dto = await _memberActionService.CreateMemberAction(request);
-                                    if (dto != null)
-                                    {
-                                        transaction.MemberWalletId = dto.MemberWalletId;
-                                        transaction.MemberActionId = dto.Id;
-                                        transaction.VoucherId = voucher.VoucherId;
-                                        transaction.UpdDate = TimeUtils.GetCurrentSEATime();
-                                        _unitOfWork.TransactionRepository.Update(transaction);
-                                        await _unitOfWork.SaveAsync();
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                transaction = await AddTransactionAsync(req, item.PromotionId, type);
-                                Membership user = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.MembershipId.Equals(req.UserId));
-                                if (user != null)
-                                {
-                                    MemberActionRequest request = new MemberActionRequest(brand.BrandId,
-                                           store.StoreCode,
-                                           user.MembershipId, req.FinalAmount,
-                                           EffectMessage.Payment,
-                                           $"[{store.StoreCode}] Thanh toán đơn hàng trị giá {req.FinalAmount}");
-                                    var dto = await _memberActionService.CreateMemberAction(request);
-                                    if (dto != null)
-                                    {
-                                        transaction.MemberWalletId = dto.MemberWalletId;
-                                        transaction.MemberActionId = dto.Id;
-                                        transaction.UpdDate = TimeUtils.GetCurrentSEATime();
-                                        _unitOfWork.TransactionRepository.Update(transaction);
-                                        await _unitOfWork.SaveAsync();
-                                    }
-                                }
-                            }
-                        } else {
-                            var type = item.effectType;
-                            Membership user1 = await _unitOfWork.MembershipRepository.GetFirst(filter: el => el.MembershipId.Equals(req.UserId));
-                            if(user1 == null)
-                            {
-                                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: ErrMessage.Not_Found_Resource);
-                            }
-                            MemberActionRequest request = new MemberActionRequest(brand.BrandId,
-                                    store.StoreCode,
-                                    (Guid)req.UserId, req.BonusPoint,
-                                    type,
-                                    $"[{store.StoreCode}] Thanh toán đơn hàng và tích {req.BonusPoint} điểm cho {user1.Fullname} ");
-                            var dto = await _memberActionService.CreateMemberAction(request);
-                            
-                            transaction = await AddTransactionAsync(req, item.PromotionId, type);
-                            if(dto != null)
-                            {
-                                transaction.MemberWalletId = dto.MemberWalletId;
-                                transaction.MemberActionId = dto.Id;
-                                _unitOfWork.TransactionRepository.Update(transaction);
-                                await _unitOfWork.SaveAsync();
-                            }
-                            await CheckPointUpLevel(user1);
-                        }
-                        listTransactionId.Add(transaction.Id);
-                    }
-                    return listTransactionId;
-                }
-            }
-            return null;
-        }
-        private async Task<bool> CheckPointUpLevel(Membership membership)
-        {
-            List<MemberWallet> memberWallets =(List<MemberWallet>) await _unitOfWork.MemberWalletRepository
-                .Get(filter: el => el.MemberId.Equals(membership.MembershipId));
-            WalletType walletType = await _unitOfWork.WalletTypeRepository.GetFirst(filter: el => el.Currency.Equals("BEAN"));
-            foreach(var item in memberWallets)
-            {
-                if (item.WalletTypeId.Equals(walletType.Id))
-                {
-                    //check điểm
 
-                    if(item.BalanceHistory >= MaxPointLevel.MAXPOINTLEVEL_BRONZE)
+            if (req == null) return null;
+            {
+                if (req.ListEffect == null) return null;
+                foreach (var item in req.ListEffect)
+                {
+                    switch (item.EffectType)
                     {
-                        //up level
-                        //silver
-                        MemberLevel memberLevel = await _unitOfWork.MemberLevelRepository
-                        .GetFirst(filter: el => el.IndexLevel.Equals(IndexLevel.INDEXLEVEL_SILVER));
-                        membership.MemberLevelId = memberLevel.MemberLevelId;
-                        membership.UpdDate = TimeUtils.GetCurrentSEATime();
-                        _unitOfWork.MembershipRepository.UpdateForeignKey(membership);
-                        int check = await _unitOfWork.SaveAsync();
-                        return check > 0;
-                    }else if(item.BalanceHistory >= MaxPointLevel.MAXPOINTLEVEL_SILVER)
-                    {
-                        //up level
-                        //gold
-                        MemberLevel memberLevel = await _unitOfWork.MemberLevelRepository
-                        .GetFirst(filter: el => el.IndexLevel.Equals(IndexLevel.INDEXLEVEL_GOLD));
-                        membership.MemberLevelId = memberLevel.MemberLevelId;
-                        membership.UpdDate = TimeUtils.GetCurrentSEATime();
-                        _unitOfWork.MembershipRepository.UpdateForeignKey(membership);
-                        int check = await _unitOfWork.SaveAsync();
-                        return check > 0;
-                    }
-                    else
-                    {
-                        return false;
+                        case EffectMessage.SetDiscount:
+                            {
+                                Voucher voucher = new Voucher();
+                                if (req.VoucherCode != null)
+                                {
+                                    voucher =
+                                        await _unitOfWork.VoucherRepository.GetFirst(filter: el =>
+                                            el.VoucherCode.Equals(req.VoucherCode) && el.PromotionId.Equals(item.PromotionId));
+                                }
+
+                                Transaction transaction = new Transaction()
+                                {
+                                    Id = Guid.NewGuid(),
+                                    TransactionJson = req.InvoiceId,
+                                    BrandId = brand.BrandId,
+                                    InsDate = DateTime.Now,
+                                    UpdDate = DateTime.Now,
+                                    VoucherId = voucher?.VoucherId,
+                                    PromotionId = item.PromotionId,
+                                    Amount = item.Amount,
+                                    IsIncrease = false,
+                                    Currency = "đ",
+                                    Type = item.EffectType
+                                };
+                                _unitOfWork.TransactionRepository.Add(transaction);
+
+                                var res = await _unitOfWork.SaveAsync();
+                                if (res >= 0 && voucher != null)
+                                {
+                                    voucher.IsUsed = true;
+                                    voucher.UsedDate = DateTime.Now;
+                                    voucher.TransactionId = transaction.Id;
+                                    voucher.OrderId = req.InvoiceId;
+                                    _unitOfWork.VoucherRepository.Update(voucher);
+                                    await _unitOfWork.SaveAsync();
+                                }
+                                listTransactionId.Add(transaction.Id);
+                                break;
+                            }
+                        case (EffectMessage.GetPoint):
+                            {
+                                Membership user =
+                                    await _unitOfWork.MembershipRepository.GetFirst(filter: el =>
+                                        el.MembershipId.Equals(req.UserId));
+                                if (user == null)
+                                {
+                                    throw new ErrorObj(code: (int)HttpStatusCode.NotFound,
+                                        message: AppConstant.ErrMessage.Not_Found_Resource);
+                                }
+                                MemberActionRequest request = new MemberActionRequest(
+                                    brand.BrandId,
+                                    store.StoreCode,
+                                    user.MembershipId,
+                                    item.Amount,
+                                    item.EffectType,
+                                    $"[{store.StoreCode}]  Tích {item.Amount} điểm cho {user.PhoneNumber} ");
+                                var dto = await _memberActionService.CreateMemberAction(request);
+                                if (dto?.TransactionId != null)
+                                {
+                                    listTransactionId.Add((Guid)dto.TransactionId);
+                                }
+
+                                break;
+                            }
                     }
                 }
+
+                return listTransactionId;
             }
-            return false;
         }
-        private async Task<bool> UpdateVourcher(Guid voucherId, Guid transactionId)
-        {
-            Infrastructure.Models.Voucher voucher = await _unitOfWork.VoucherRepository.GetById(voucherId);
-            voucher.IsUsed = true;
-            voucher.UsedDate = TimeUtils.GetCurrentSEATime();
-            voucher.UpdDate = TimeUtils.GetCurrentSEATime();
-            voucher.TransactionId = transactionId;
-            _unitOfWork.VoucherRepository.Update(voucher);
-            await _unitOfWork.SaveAsync();
-            return true;
-        }
-        private async Task<Transaction> AddTransactionAsync(CheckOutPromotion req, Guid? promotionId, string effectType)
-        {
-            List<Transaction> transactions = new List<Transaction>();
-            var store = await _unitOfWork.StoreRepository.GetFirst(filter: el => el.StoreCode.Equals(req.StoreCode));
-            if (store == null)
-            {
-                throw new ErrorObj(code: (int)HttpStatusCode.UnprocessableEntity, message: ErrMessage.Not_Found_Resource);
-            }
-            var brand = await _brandService.GetByIdAsync((Guid)store.BrandId);
-            if (brand == null)
-            {
-                throw new ErrorObj(code: (int)HttpStatusCode.NotFound, message: ErrMessage.Not_Found_Resource);
-            }
-            Promotion promotion = await _repository.GetFirst(filter: el => el.PromotionId.Equals(promotionId));
-            Transaction transaction = new Transaction()
-            {
-                Id = Guid.NewGuid(),
-                TransactionJson = req.InvoiceId,
-                BrandId = brand.BrandId,
-                InsDate = TimeUtils.GetCurrentSEATime(),
-                UpdDate = TimeUtils.GetCurrentSEATime(),
-                PromotionId = promotionId,
-                Amount = promotion.PromotionCode.StartsWith("GETPOINT") ? req.BonusPoint : req.FinalAmount,
-                IsIncrease = promotion.PromotionCode.StartsWith("GETPOINT") ? true : false,
-                Currency = promotion.PromotionCode.StartsWith("GETPOINT") ? "Point" : "VND",
-                Type = effectType
-            };
-            _unitOfWork.TransactionRepository.Add(transaction);
-            await _unitOfWork.SaveAsync();
-            return transaction;
-        }
+
         #endregion
     }
 }

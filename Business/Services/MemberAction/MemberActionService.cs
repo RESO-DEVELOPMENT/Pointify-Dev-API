@@ -49,41 +49,49 @@ namespace ApplicationCore.Services
             };
             _repository.Add(memberAction);
             await _unitOfWork.SaveAsync();
+            MemberActionDto dto = new MemberActionDto()
+            {
+                Id = memberAction.Id,
+                ActionValue = memberAction.ActionValue,
+                Description = memberAction.Description,
+                MemberWalletId = memberAction.MemberWalletId,
+                MemberActionTypeId = memberAction.MemberActionTypeId
+            };
             switch (request.MemberActionType)
             {
                 case TrasactionType.GET_POINT:
-                {
-                    wallet.Balance += request.Amount;
-                    wallet.BalanceHistory += request.Amount;
-                    memberAction.ActionValue = request.Amount;
-                    memberAction.Status = MemberActionStatus.Success;
-                    memberAction.Description = $"[{MemberActionStatus.Success}] " + request.Description;
-                    break;
-                }
-                case TrasactionType.TOP_UP:
-                {
-                    wallet.Balance += request.Amount;
-                    wallet.BalanceHistory += request.Amount;
-                    memberAction.ActionValue = request.Amount;
-                    memberAction.Status = MemberActionStatus.Success;
-                    memberAction.Description = $"[{MemberActionStatus.Success}] " + request.Description;
-                    break;
-                }
-                case TrasactionType.PAYMENT:
-                {
-                    if (wallet.Balance < request.Amount)
                     {
-                        memberAction.Status = MemberActionStatus.Fail;
-                        memberAction.Description = $"[{MemberActionStatus.Fail}] Số dư tài khoản không đủ";
+                        wallet.Balance += request.Amount;
+                        wallet.BalanceHistory += request.Amount;
+                        memberAction.ActionValue = request.Amount;
+                        memberAction.Status = MemberActionStatus.Success;
+                        memberAction.Description = $"[{MemberActionStatus.Success}] " + request.Description;
                         break;
                     }
+                case TrasactionType.TOP_UP:
+                    {
+                        wallet.Balance += request.Amount;
+                        wallet.BalanceHistory += request.Amount;
+                        memberAction.ActionValue = request.Amount;
+                        memberAction.Status = MemberActionStatus.Success;
+                        memberAction.Description = $"[{MemberActionStatus.Success}] " + request.Description;
+                        break;
+                    }
+                case TrasactionType.PAYMENT:
+                    {
+                        if (wallet.Balance < request.Amount)
+                        {
+                            memberAction.Status = MemberActionStatus.Fail;
+                            memberAction.Description = $"[{MemberActionStatus.Fail}] Số dư tài khoản không đủ";
+                            break;
+                        }
 
-                    wallet.Balance -= request.Amount;
-                    memberAction.ActionValue = request.Amount;
-                    memberAction.Status = MemberActionStatus.Success;
-                    memberAction.Description = $"[{MemberActionStatus.Success}] " + request.Description;
-                    break;
-                }
+                        wallet.Balance -= request.Amount;
+                        memberAction.ActionValue = request.Amount;
+                        memberAction.Status = MemberActionStatus.Success;
+                        memberAction.Description = $"[{MemberActionStatus.Success}] " + request.Description;
+                        break;
+                    }
             }
             Guid guid = Guid.Empty;
             if (memberAction.Status == MemberActionStatus.Success)
@@ -100,8 +108,9 @@ namespace ApplicationCore.Services
                     Amount = memberAction.ActionValue,
                     Currency = wallet.WalletType.Currency,
                     Type = request.MemberActionType,
-                    IsIncrease = (request.MemberActionType == TrasactionType.GET_POINT 
-                    || request.MemberActionType == TrasactionType.TOP_UP) ? true : false,
+                    IsIncrease =
+                        (request.MemberActionType == AppConstant.EffectMessage.GetPoint ||
+                         request.MemberActionType == AppConstant.EffectMessage.TopUp),
                 };
                 guid = transaction.Id;
                 _transaction.Add(transaction);
@@ -111,14 +120,23 @@ namespace ApplicationCore.Services
                     memberAction.Status = MemberActionStatus.Fail;
                     memberAction.Description = $"[{MemberActionStatus.Fail}] Giao dịch thất bại";
                 }
+                else
+                {
+                    dto.TransactionId = transaction.Id;
+                }
             }
+
             memberAction.UpdDate = DateTime.Now;
             _memberWallet.Update(wallet);
             _repository.Update(memberAction);
             var isSuccessful = await _unitOfWork.SaveAsync();
-            var response = _mapper.Map<MemberActionDto>(memberAction);
-            response.TransactionId = guid;
-            return isSuccessful > 0 ? response : null;
+            if (isSuccessful > 0)
+            {
+                dto.Description = memberAction.Description;
+                dto.Status = memberAction.Status;
+            }
+
+            return isSuccessful > 0 ? dto : null;
         }
     }
 }

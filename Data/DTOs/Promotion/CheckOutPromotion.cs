@@ -7,8 +7,11 @@ namespace Infrastructure.DTOs.Promotion
     {
         public string StoreCode { get; set; }
         public Guid? UserId { get; set; }
-        public List<Effects>? listEffect { get; set; }
+        
+        public List<Effects>? ListEffect { get; set; }
         public string? VoucherCode { get; set; }
+        
+        public decimal Discount { get; set; }
         public decimal FinalAmount { get; set; }
         public decimal BonusPoint { get; set; }
         public string InvoiceId { get; set; }
@@ -16,6 +19,8 @@ namespace Infrastructure.DTOs.Promotion
     public class Effects
     {
         public Guid PromotionId { get; set; }
-        public string effectType { get; set; }
+        public string EffectType { get; set; }
+        
+        public decimal Amount { get; set; }
     }
 }
