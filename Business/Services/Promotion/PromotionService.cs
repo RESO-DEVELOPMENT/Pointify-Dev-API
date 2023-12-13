@@ -20,6 +20,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Infrastructure.Helper.AppConstant;
 using static Infrastructure.Helper.AppConstant.EnvVar;
+using Voucher = Infrastructure.Models.Voucher;
 
 namespace ApplicationCore.Services
 {
