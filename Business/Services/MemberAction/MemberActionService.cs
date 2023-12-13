@@ -48,6 +48,14 @@ namespace ApplicationCore.Services
             };
             _repository.Add(memberAction);
             await _unitOfWork.SaveAsync();
+            MemberActionDto dto = new MemberActionDto()
+            {
+                Id = memberAction.Id,
+                ActionValue = memberAction.ActionValue,
+                Description = memberAction.Description,
+                MemberWalletId = memberAction.MemberWalletId,
+                MemberActionTypeId = memberAction.MemberActionTypeId
+            };
             switch (request.MemberActionType)
             {
                 case "GET_POINT":
@@ -99,7 +107,9 @@ namespace ApplicationCore.Services
                     Amount = memberAction.ActionValue,
                     Currency = wallet.WalletType.Currency,
                     Type = request.MemberActionType,
-                    IsIncrease = (request.MemberActionType == "GET_POINT" || request.MemberActionType == "TOP_UP")? true : false,
+                    IsIncrease =
+                        (request.MemberActionType == AppConstant.EffectMessage.GetPoint ||
+                         request.MemberActionType == AppConstant.EffectMessage.TopUp),
                 };
 
                 _transaction.Add(transaction);
@@ -109,12 +119,23 @@ namespace ApplicationCore.Services
                     memberAction.Status = AppConstant.MemberActionStatus.Fail;
                     memberAction.Description = "[Thất bại] Giao dịch thất bại";
                 }
+                else
+                {
+                    dto.TransactionId = transaction.Id;
+                }
             }
+
             memberAction.UpdDate = DateTime.Now;
             _memberWallet.Update(wallet);
             _repository.Update(memberAction);
             var isSuccessful = await _unitOfWork.SaveAsync();
-            return isSuccessful > 0 ? _mapper.Map<MemberActionDto>(memberAction) : null;
+            if (isSuccessful > 0)
+            {
+                dto.Description = memberAction.Description;
+                dto.Status = memberAction.Status;
+            }
+
+            return isSuccessful > 0 ? dto : null;
         }
     }
 }
