@@ -39,6 +39,22 @@ namespace WebAPI.Controllers.MemberAction
 
             return Ok(result);
         }
+        //done
+        // POST : api/member-action
+        [HttpPost]
+        [Route("member-action")]
+        public async Task<IActionResult> MemberAction(MemberActionRequest request)
+        {
+            try
+            {
+                return Ok(await _service.CreateMemberAction(request));
+            }
+            catch (ErrorObj e)
+            {
+                return StatusCode(statusCode: e.Code, e);
+            }
+        }
+
 
         //GET: api/member-actions/{id}
         [HttpGet("member-actions/{id}")]

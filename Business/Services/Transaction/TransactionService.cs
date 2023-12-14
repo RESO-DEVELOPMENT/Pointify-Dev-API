@@ -88,7 +88,7 @@ namespace ApplicationCore.Services
                                     effect.EffectType,
                                     $"[{order.CustomerOrderInfo.Id}] Thanh toán đơn hàng và tích {order.BonusPoint} điểm cho {order.CustomerOrderInfo.Users.UserName} ");
 
-                                await _memberActionService.CreateMemberAction(request, effect.PromotionId);
+                                await _memberActionService.CreateMemberAction(request);
                             }
                             else if (effect.EffectType.Contains(AppConstant.EffectMessage.SetDiscount))
                             {
@@ -102,7 +102,7 @@ namespace ApplicationCore.Services
                                         AppConstant.EffectMessage.Payment,
                                         $"[{order.CustomerOrderInfo.Id}] Thanh toán đơn hàng trị giá {order.FinalAmount}");
 
-                                        await _memberActionService.CreateMemberAction(request, effect.PromotionId);
+                                        await _memberActionService.CreateMemberAction(request);
                                     }
                                 } 
                             }

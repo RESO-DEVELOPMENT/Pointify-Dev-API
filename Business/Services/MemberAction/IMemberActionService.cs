@@ -8,6 +8,6 @@ namespace ApplicationCore.Services
 {
     public interface IMemberActionService : IBaseService<MemberAction, MemberActionDto>
     {
-        public Task<MemberActionDto> CreateMemberAction(MemberActionRequest request, Guid promotionId);
+        public Task<MemberActionDto> CreateMemberAction(MemberActionRequest request);
     }
 }

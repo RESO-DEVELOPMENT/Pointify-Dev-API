@@ -25,7 +25,7 @@ namespace ApplicationCore.Services
         protected IGenericRepository<Transaction> _transaction => _unitOfWork.TransactionRepository;
 
 
-        public async Task<MemberActionDto> CreateMemberAction(MemberActionRequest request,Guid promotionId)
+        public async Task<MemberActionDto> CreateMemberAction(MemberActionRequest request)
         {
             MemberActionType actionType = await _memberActionType
                 .GetFirst(
@@ -94,7 +94,6 @@ namespace ApplicationCore.Services
                         break;
                     }
             }
-            Guid guid = Guid.Empty;
             if (memberAction.Status == MemberActionStatus.Success)
             {
                 Transaction transaction = new Transaction()
@@ -106,7 +105,6 @@ namespace ApplicationCore.Services
                     MemberActionId = memberAction.Id,
                     MemberWalletId = memberAction.MemberWalletId,
                     TransactionJson = memberAction.Description,
-                    PromotionId = promotionId,
                     Amount = memberAction.ActionValue,
                     Currency = wallet.WalletType.Currency,
                     Type = request.MemberActionType,
@@ -114,7 +112,6 @@ namespace ApplicationCore.Services
                         (request.MemberActionType == AppConstant.EffectMessage.GetPoint ||
                          request.MemberActionType == AppConstant.EffectMessage.TopUp),
                 };
-                guid = transaction.Id;
                 _transaction.Add(transaction);
                 var isSuccess = await _unitOfWork.SaveAsync();
                 if (isSuccess < 1)
