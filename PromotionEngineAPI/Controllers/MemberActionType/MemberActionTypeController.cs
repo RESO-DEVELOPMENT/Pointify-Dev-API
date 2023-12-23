@@ -55,7 +55,7 @@ namespace WebAPI.Controllers.MemberActionType
         {
             //check MemberActionType
             var result = await _service.GetFirst(filter: el => el.MemberShipProgram.BrandId.Equals(apiKey));
-            if (result != null)
+            if (result == null)
             {
                 return NotFound(dto);
             }

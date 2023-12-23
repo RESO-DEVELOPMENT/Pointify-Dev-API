@@ -346,8 +346,8 @@ namespace PromotionEngineAPI.Controllers
                 return StatusCode(statusCode: e.Code, e);
             }
         }
-        
-        
+
+        #region check Promotion channel
         //[HttpPost]
         //[Route("channel/check-promotion")]
         //public async Task<IActionResult> CheckPromotionChannel([FromBody] CustomerOrderInfo orderInfo)
@@ -687,6 +687,7 @@ namespace PromotionEngineAPI.Controllers
         //    };
         //    return Ok(orderResponse);
         //}
+        #endregion
 
         private void Setorder(Order order)
         {

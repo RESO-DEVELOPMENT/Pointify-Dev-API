@@ -27,9 +27,13 @@ namespace ApplicationCore.Services
 
         public async Task<MemberActionDto> CreateMemberAction(MemberActionRequest request)
         {
+            Membership membership = await _unitOfWork.MembershipRepository.GetFirst(
+                               filter: x => x.MembershipId.Equals(request.MembershipId),
+                                              includeProperties: "MemberProgram"
+                                                         );
             MemberActionType actionType = await _memberActionType
                 .GetFirst(
-                    filter: x => x.Code.Equals(request.MemberActionType));
+                    filter: x => x.Code.Equals(request.MemberActionType) && x.MemberShipProgramId.Equals(membership.MemberProgramId));
 
             MemberWallet wallet = await _memberWallet.GetFirst(
                 filter: x =>
