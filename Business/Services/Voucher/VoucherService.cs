@@ -37,6 +37,11 @@ namespace ApplicationCore.Services
             _voucherGroupService = voucherGroupService;
             _membershipService = membershipService;
         }
+
+        public VoucherService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        {
+        }
+
         protected override IGenericRepository<Voucher> _repository => _unitOfWork.VoucherRepository;
         protected IGenericRepository<VoucherGroup> _voucherGroupRepos => _unitOfWork.VoucherGroupRepository;
         protected IGenericRepository<Transaction> _transRepos => _unitOfWork.TransactionRepository;
