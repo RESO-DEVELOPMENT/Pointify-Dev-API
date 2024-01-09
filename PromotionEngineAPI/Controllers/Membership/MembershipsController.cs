@@ -112,7 +112,6 @@ namespace PromotionEngineAPI.Controllers
             {
                 return NotFound();
             }
-
             return Ok(result);
         }
 

@@ -21,8 +21,10 @@ namespace ApplicationCore.Services
 {
     public class MembershipService : BaseService<Membership, MembershipDto>, IMembershipService
     {
-        public MembershipService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        private readonly IVoucherService _voucherService;
+        public MembershipService(IUnitOfWork unitOfWork, IMapper mapper, IVoucherService voucherService) : base(unitOfWork, mapper)
         {
+            _voucherService = voucherService;
         }
 
         protected override IGenericRepository<Membership> _repository => _unitOfWork.MembershipRepository;
@@ -32,7 +34,6 @@ namespace ApplicationCore.Services
         IGenericRepository<MemberWallet> _memberWallet => _unitOfWork.MemberWalletRepository;
         IGenericRepository<MembershipCard> _membershipCard => _unitOfWork.MemberShipCardRepository;
         IGenericRepository<MembershipCardType> _membershipCardType => _unitOfWork.MembershipCardTypeResponsitory;
-
 
         //done
         public async Task<MembershipDto> CreateNewMember(Guid apiKey, MembershipDto dto)
@@ -55,6 +56,8 @@ namespace ApplicationCore.Services
                 dto.MemberLevelId = lowestLevel.MemberLevelId;
                 var entity = _mapper.Map<Membership>(dto);
                 _repository.Add(entity);
+                if(apiKey.Equals(Guid.Parse("7f77ca43-940b-403d-813a-38b3b3a7b667")))
+                await _voucherService.ApplyVoucher(Guid.Parse("ebc6df01-170a-42a7-bab6-639749b6bcd2"), dto.MembershipId, 5);
                 foreach (var walletType in listWallet)
                 {
                     MemberWallet memberWallet = new MemberWallet()
