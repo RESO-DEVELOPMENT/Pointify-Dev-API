@@ -76,11 +76,11 @@ namespace ApplicationCore.Services
             try
             {
                 dto.ActionId = Guid.NewGuid();
-                dto.InsDate = DateTime.Now;
-                dto.UpdDate = DateTime.Now;
+                dto.InsDate = TimeUtils.GetCurrentSEATime();
+                dto.UpdDate = TimeUtils.GetCurrentSEATime();
                 var entity = _mapper.Map<Infrastructure.Models.Action>(dto);
                 _repository.Add(entity);
-                if (dto.ListProduct.Count > 0 && dto.ActionType > (int)AppConstant.EnvVar.ActionType.Shipping)
+                if (dto.ListProduct.Count > 0)
                 {
                     IGenericRepository<ActionProductMapping> mappRepo = _unitOfWork.ActionProductMappingRepository;
                     foreach (var product in dto.ListProduct)
@@ -89,8 +89,8 @@ namespace ApplicationCore.Services
                         {
                             ActionId = dto.ActionId,
                             Id = Guid.NewGuid(),
-                            InsDate = DateTime.Now,
-                            UpdDate = DateTime.Now,
+                            InsDate = TimeUtils.GetCurrentSEATime(),
+                            UpdDate = TimeUtils.GetCurrentSEATime(),
                             ProductId = product.ProductId,
                             Quantity = product.Quantity,
                         };

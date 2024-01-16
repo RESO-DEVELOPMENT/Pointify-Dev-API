@@ -172,7 +172,7 @@ namespace PromotionEngineAPI.Controllers
                     // apply auto + voucher or promoCode
                     _promotionService.SetPromotions(promotions);
                     var voucherPromotion = await _voucherService.CheckVoucher(orderInfo);
-                    if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count >= 1)
+                     if (_promotionService.GetPromotions() != null && _promotionService.GetPromotions().Count >= 1)
                     {
                         //promotions.Add(_promotionService.GetPromotions().First());
                         if(voucherPromotion.Count() != 0)promotions.Add(voucherPromotion.First());
